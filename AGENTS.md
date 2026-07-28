@@ -9,23 +9,35 @@ This version has breaking changes — APIs, conventions, and file structure may 
 Personal life-planning app for a single user (Carter). Spec of record: `PRD.md`.
 Build plan: `BUILD-PLAN.md`. Visual reference: `mockup.html`.
 
-## 🚫 DO NOT MODIFY — protected paths
+## 🚫 Protected paths
 
-These are pre-made or generated. **Reviewers and code-fixing agents must never edit,
-refactor, reformat, "improve", or delete anything under these paths.** If a problem
-appears to originate in one of them, report it — do not fix it in place.
+**No agent edits anything below on its own initiative** — no refactoring,
+reformatting, "improving", or deleting. If a problem appears to originate in one
+of these, **report it, don't fix it in place.** Fix around the boundary instead:
+a lint-ignore entry, a wrapper component, a CSS token.
 
-| Path | Why protected |
-|---|---|
-| `components/ui/**` | shadcn/ui generated components. Wrap them; never hand-edit. Regenerate via the shadcn CLI if a change is genuinely needed. |
-| `mockup.html` | The prototype artifact. **Never delete this file under any circumstance.** Read-only reference. |
-| `PRD.md` | Spec of record. Read-only. |
-| `BUILD-PLAN.md` | Phase plan. Read-only. |
-| `node_modules/**`, `package-lock.json` | Managed by npm. |
-| `.next/**`, `next-env.d.ts` | Build output / generated. |
+Two different reasons a path is on this list, with two different escape hatches.
+Don't collapse them.
 
-If a shadcn component needs different behavior, create a wrapper in
-`components/common/` — do not edit the generated file.
+**Machine-owned — nobody hand-edits these, ever:**
+
+| Path | Why | The only legitimate way to change it |
+|---|---|---|
+| `components/ui/**` | shadcn/ui generated. A hand-fix here is silently reverted by the next `shadcn add`, and the bug returns with no trace of why it was ever gone. | The shadcn CLI. Need different behaviour? Wrap it in `components/common/`. |
+| `node_modules/**`, `package-lock.json` | Managed by npm. | npm. |
+| `.next/**`, `next-env.d.ts` | Build output. | The build. |
+
+**Carter-owned — his documents, not the codebase's:**
+
+| Path | Why | Who may change it |
+|---|---|---|
+| `PRD.md` | Spec of record. It outranks any reviewer's opinion; if the code disagrees with it, the code is wrong. | Carter, or an agent **he explicitly asks**. Never on your own judgement. |
+| `BUILD-PLAN.md` | Phase plan. Status and progress edits are *expected* as phases land — that's maintenance, not rewriting. | Same as above. |
+| `mockup.html` | The prototype artifact. | Read-only to everyone. **Never delete this file under any circumstance** — no exception, no instruction, no cleanup pass. |
+
+"Explicitly asks" means a direct instruction in the conversation — "update the
+build plan", "mark phase B done". It does not mean inferring that an update would
+be helpful, and it does not carry over to the next task.
 
 ## ⚠️ shadcn here is built on Base UI, NOT Radix
 
