@@ -382,11 +382,6 @@ export interface Activity {
   distanceMiles: number;
 }
 
-/** Unified row for the toggled list — one list at a time, never side-by-side. */
-export type DateListItem =
-  | ({ kind: "food" } & FoodPlace)
-  | ({ kind: "activity" } & Activity);
-
 /** Result of a Dice Roll — one stale cuisine + one stale activity. PRD §4.12. */
 export interface DiceRoll {
   food: FoodPlace | null;

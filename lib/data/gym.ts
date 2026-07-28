@@ -5,7 +5,6 @@
  * 1RM and per-muscle fatigue are DERIVED from the logged sets and feed
  * Bumstead's next suggestion.
  */
-import { differenceInCalendarDays, parseISO } from "date-fns";
 import type {
   Exercise,
   ExerciseSet,
@@ -113,18 +112,4 @@ export async function getFatigue(): Promise<MuscleFatigue[]> {
 export async function getTrackedExercises(): Promise<Exercise[]> {
   const trained = new Set(sets.map((s) => s.exerciseId));
   return exercises.filter((e) => trained.has(e.id));
-}
-
-/** Days since a muscle group was last worked — shown next to the fatigue bar. */
-export async function getDaysSinceWorked(
-  group: MuscleGroup,
-): Promise<number | null> {
-  const ids = exercises.filter((e) => e.muscleGroup === group).map((e) => e.id);
-  const relevant = sets.filter((s) => ids.includes(s.exerciseId));
-  if (relevant.length === 0) return null;
-  return Math.min(
-    ...relevant.map((s) =>
-      differenceInCalendarDays(new Date(), parseISO(s.performedAt)),
-    ),
-  );
 }
