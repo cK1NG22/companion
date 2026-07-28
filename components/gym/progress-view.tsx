@@ -60,7 +60,10 @@ export function ProgressView({
             onValueChange={(v) => v && setExerciseId(v)}
           >
             <SelectTrigger className="h-8 w-[190px]" aria-label="Choose a lift">
-              <SelectValue />
+              {/* Base UI renders the raw value unless given a render fn. */}
+              <SelectValue>
+                {(v) => exercises.find((e) => e.id === v)?.name ?? ""}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {exercises.map((e) => (

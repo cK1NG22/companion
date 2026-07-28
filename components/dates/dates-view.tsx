@@ -148,7 +148,9 @@ export function DatesView({
           {mode === "food" ? (
             <Select value={cuisine} onValueChange={(v) => setCuisine(v ?? "any")}>
               <SelectTrigger className="h-9 w-[170px]" aria-label="Cuisine">
-                <SelectValue />
+                <SelectValue className="capitalize">
+                  {(v) => (v === "any" ? "Any cuisine" : prettyCuisine(String(v)))}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="any">Any cuisine</SelectItem>
@@ -162,7 +164,9 @@ export function DatesView({
           ) : (
             <Select value={category} onValueChange={(v) => setCategory(v ?? "any")}>
               <SelectTrigger className="h-9 w-[170px]" aria-label="Category">
-                <SelectValue />
+                <SelectValue className="capitalize">
+                  {(v) => (v === "any" ? "Any category" : String(v))}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="any">Any category</SelectItem>
@@ -177,7 +181,9 @@ export function DatesView({
 
           <Select value={maxPrice} onValueChange={(v) => setMaxPrice(v ?? "any")}>
             <SelectTrigger className="h-9 w-[120px]" aria-label="Max price">
-              <SelectValue />
+              <SelectValue>
+                {(v) => (v === "any" ? "Any price" : "$".repeat(Number(v)))}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="any">Any price</SelectItem>

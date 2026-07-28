@@ -141,7 +141,13 @@ function BlockForm({
         {/* Base UI's Select emits null when cleared; "none" is our sentinel. */}
         <Select value={goalId} onValueChange={(v) => setGoalId(v ?? "none")}>
           <SelectTrigger id="block-goal">
-            <SelectValue placeholder="No goal" />
+            <SelectValue placeholder="No goal">
+              {(v) =>
+                v === "none"
+                  ? "No goal"
+                  : (goals.find((g) => g.id === v)?.title ?? "No goal")
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="none">No goal</SelectItem>
