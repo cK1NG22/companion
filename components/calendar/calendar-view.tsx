@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -50,10 +50,13 @@ export function CalendarView({
   blocks,
   goals,
   goalIcons,
+  anchor,
 }: {
   blocks: CalendarBlock[];
   goals: Goal[];
   goalIcons: Record<string, IconKey | null>;
+  /** Monday of the week selected by `?w=` — the grid must show THIS week. */
+  anchor: string;
 }) {
   const calendarRef = useRef<FullCalendar>(null);
   const [view, setView] = useState<ViewKey>("timeGridWeek");
@@ -61,6 +64,14 @@ export function CalendarView({
   const [draft, setDraft] = useState<BlockDraft | null>(null);
   const [, startTransition] = useTransition();
   const hourWindow = HOUR_WINDOWS[windowIndex];
+
+  // The page fetches blocks for `anchor`, but FullCalendar keeps its own idea
+  // of "current date" across renders. Without this, stepping the week loads the
+  // right blocks into a grid still showing today — they'd fall outside the
+  // visible range and the week would look empty.
+  useEffect(() => {
+    calendarRef.current?.getApi().gotoDate(anchor);
+  }, [anchor]);
 
   function changeView(next: ViewKey) {
     setView(next);
@@ -156,6 +167,7 @@ export function CalendarView({
           ref={calendarRef}
           plugins={[timeGridPlugin, interactionPlugin]}
           initialView="timeGridWeek"
+          initialDate={anchor}
           views={{
             // 3-day isn't built in — it's a timeGrid with a 3-day duration.
             timeGridThreeDay: { type: "timeGrid", duration: { days: 3 } },

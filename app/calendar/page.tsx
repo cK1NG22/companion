@@ -36,6 +36,7 @@ export default async function CalendarPage(props: {
           blocks={blocks}
           goals={funnel.week}
           goalIcons={goalIcons}
+          anchor={toIsoDate(weekStart(anchor))}
         />
       </PageBody>
     </>

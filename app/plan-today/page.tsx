@@ -1,13 +1,46 @@
+import { format } from "date-fns";
 import { PageBody, PageHeader } from "@/components/shell/page-header";
+import { ScheduleColumn } from "@/components/plan-today/schedule-column";
+import { ToScheduleColumn } from "@/components/plan-today/to-schedule-column";
+import { findOpenWindows, getDayBlocks } from "@/lib/data/calendar";
+import { getFunnel } from "@/lib/data/goals";
+import { getTopThreeFor } from "@/lib/data/rhythm";
+import { getTodos } from "@/lib/data/todos";
+import type { IconKey } from "@/lib/types";
 
-export default function Page() {
+export default async function PlanTodayPage() {
+  const today = new Date();
+
+  const [blocks, windows, topThree, todos, funnel] = await Promise.all([
+    getDayBlocks(today),
+    findOpenWindows(today),
+    getTopThreeFor(today),
+    getTodos(),
+    getFunnel(),
+  ]);
+
+  const goalIcons: Record<string, IconKey | null> = Object.fromEntries(
+    [...funnel.year, ...funnel.month, ...funnel.week].map((g) => [g.id, g.icon]),
+  );
+
   return (
     <>
-      <PageHeader title="Plan Today" subtitle="Turn intention into a scheduled day" />
+      <PageHeader
+        title={`Plan today · ${format(today, "EEEE, MMMM d")}`}
+        subtitle="Turn intention into a scheduled day"
+      />
       <PageBody>
-        <p className="text-sm text-muted-foreground">
-          Built in phase B4.
-        </p>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <ScheduleColumn
+            blocks={blocks}
+            windows={windows}
+            goalIcons={goalIcons}
+          />
+          <ToScheduleColumn
+            topThree={topThree}
+            todos={todos.filter((t) => !t.done)}
+          />
+        </div>
       </PageBody>
     </>
   );
