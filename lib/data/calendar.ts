@@ -8,7 +8,7 @@ import { addMinutes, parseISO } from "date-fns";
 import type { CalendarBlock, OpenWindow } from "../types";
 import { blocksInWeek } from "../rollup";
 import { toIsoDate } from "../week";
-import { computeOpenWindows, toLocalIso } from "../windows";
+import { computeOpenWindows, overlapsDay, toLocalIso } from "../windows";
 import { nextId, store } from "../mock/store";
 
 export { toLocalIso };
@@ -24,7 +24,7 @@ export async function getWeekBlocks(anchor: Date): Promise<CalendarBlock[]> {
 export async function getDayBlocks(day: Date): Promise<CalendarBlock[]> {
   const iso = toIsoDate(day);
   return blocks
-    .filter((b) => b.start.slice(0, 10) === iso)
+    .filter((b) => overlapsDay(b, iso))
     .sort((a, b) => (a.start < b.start ? -1 : 1));
 }
 
@@ -83,11 +83,15 @@ export async function findOpenWindows(
   dayStartHour = 6,
   dayEndHour = 23,
 ): Promise<OpenWindow[]> {
+  const now = new Date();
+  // Only today's windows are clipped to "from now on"; other days show in full.
+  const notBefore = toIsoDate(day) === toIsoDate(now) ? now : undefined;
   return computeOpenWindows(
     await getDayBlocks(day),
     toIsoDate(day),
     dayStartHour,
     dayEndHour,
+    notBefore,
   );
 }
 

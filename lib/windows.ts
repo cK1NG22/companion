@@ -9,6 +9,17 @@ import type { CalendarBlock, OpenWindow } from "./types";
 export const toLocalIso = (d: Date): string =>
   format(d, "yyyy-MM-dd'T'HH:mm:ss");
 
+/**
+ * Does this block occupy any part of `dayIso`?
+ *
+ * Overlap, not "starts on this date" — an overnight block (10 PM–7 AM) belongs
+ * to both days. Timestamps are local-naive and fixed-width, so lexicographic
+ * comparison is chronological.
+ */
+export function overlapsDay(block: CalendarBlock, dayIso: string): boolean {
+  return block.start <= `${dayIso}T23:59:59` && block.end > `${dayIso}T00:00:00`;
+}
+
 /** Gaps shorter than this are not schedulable time; don't offer them. */
 export const MIN_WINDOW_MINUTES = 15;
 
@@ -23,6 +34,12 @@ export function computeOpenWindows(
   dayIso: string,
   startHour = 6,
   endHour = 23,
+  /**
+   * Ignore time before this instant. Pass `new Date()` when the day is today,
+   * so a free 6–8 AM slot isn't offered at 3 PM — scheduling into it would
+   * create a block in the past.
+   */
+  notBefore?: Date,
 ): OpenWindow[] {
   const bound = (h: number) =>
     parseISO(`${dayIso}T${String(h).padStart(2, "0")}:00:00`);
@@ -30,6 +47,7 @@ export function computeOpenWindows(
   const windows: OpenWindow[] = [];
   const end = bound(endHour);
   let cursor = bound(startHour);
+  if (notBefore && notBefore > cursor) cursor = notBefore;
 
   const push = (from: Date, to: Date) => {
     // Clamp at the day's end. A block starting after `endHour` (say 23:30 when
