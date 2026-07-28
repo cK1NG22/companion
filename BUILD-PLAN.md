@@ -3,7 +3,12 @@
 **Goal:** Ship the Companion app for real: React/Next.js, built UI-first screen by screen against a mock-data seam, then the backend swapped in behind it without rewriting any UI.
 
 **Spec of record:** [`PRD.md`](./PRD.md) · **Visual reference:** [`mockup.html`](./mockup.html)
-Created 2026-07-27 · Owner: Carter · Status: not started
+Created 2026-07-27 · Owner: Carter
+**Status (2026-07-28): Parts A + B COMPLETE** — all 11 routes built on the mock seam,
+47 tests, clean build/lint/typecheck, 10 review rounds, plus axe-core and
+Lighthouse CI accessibility gates (both green on every route). Shipped in draft PR
+[ck22coding/companion#1](https://github.com/ck22coding/companion/pull/1).
+**Part C not started** — it needs Google/Neon credentials.
 
 ---
 
@@ -161,11 +166,11 @@ Rule: **files that change together live together.** A screen's components sit in
 
 ## Part A — Shell & foundations
 
-### Phase A0 — Repo, scaffold, deploy pipeline
+### Phase A0 — Repo, scaffold, deploy pipeline  — **✓ DONE**
 Create the repo (`git init` — the folder isn't one yet), `create-next-app` with TypeScript + Tailwind + App Router, push to GitHub, connect Vercel, ship the default page.
 **Done when:** a live Vercel URL renders. Deploy works before there's anything to deploy — that ordering is deliberate; a broken deploy found in week 4 is expensive.
 
-### Phase A1 — Theme tokens + shadcn
+### Phase A1 — Theme tokens + shadcn  — **✓ DONE**
 `npx shadcn@latest init`, then translate the mockup's `:root` block into shadcn's token names in `globals.css` — both light and dark. Install the full component list from §3 in one command. Wire `next-themes`.
 
 | Mockup | shadcn |
@@ -179,12 +184,12 @@ Create the repo (`git init` — the folder isn't one yet), `create-next-app` wit
 
 **Done when:** a scratch page shows a Button, Card, Dialog and Badge that look like the mockup in both light and dark.
 
-### Phase A2 — Types + the data seam
+### Phase A2 — Types + the data seam  — **✓ DONE**
 Write `lib/types.ts` from PRD §3 (Goal, KeyIndicator w/ `unit: 'hours'|'count'`, CalendarBlock, Habit, Person, Todo, MorningSection, NightlyEntry, ScriptureNote, Exercise, Set, FeedbackItem, Activity, PlaceHistory). Then `lib/data/*.ts` with every function signature the screens will need, returning fixtures from `lib/mock/`.
 **Done when:** `tsc` passes and `getKeyIndicators()` returns believable fake data in a Node script.
 **This is the phase that makes the whole plan work — don't rush it.**
 
-### Phase A3 — App shell + routing + custom primitives
+### Phase A3 — App shell + routing + custom primitives  — **✓ DONE**
 shadcn `sidebar` styled navy, the 9 nav items + "Daily rhythm" group label, avatar footer, all routes stubbed with a heading, feedback bubble as a non-functional floating button. Build the six hand-written primitives from §3.
 **Done when:** every sidebar item navigates, mobile collapses to a sheet, `/browse` click-through of all 11 routes is clean.
 
@@ -196,16 +201,16 @@ Order is by dependency and daily value: **Home and Goals first** (they define th
 
 | Phase | Screen | PRD | Notes / risk |
 |---|---|---|---|
-| **B1** | **Home** | §4.1, §4.1a | Purpose statement (serif) + KI tiles + `TriStateBar` + allocation pop-up + habit grid (Required / Standards of Excellence / Weekly) + week stepper + the two flow buttons. Both `unit` behaviors: hours → grouped-by-name breakdown; count → item list. No captions under tiles, no color legend. |
-| **B2** | **Goals** | §4.2 | The Goals→Plans→Inputs funnel, Edit mode, `popover` icon picker, ↑ parent chips, outreach card, to-do list w/ duration + Schedule. |
-| **B3** | **Calendar** | §4.3 | ⚠️ **Highest risk phase.** FullCalendar integration + CSS reconciliation. Do this before the easy screens so surprises land early. |
-| **B4** | **Weekly Planning** + **Plan Today** | §4.10, §4.7 | Two flows, no sidebar tab — reached from Home. Share the `Stepper`. Top 3 flows Nightly → Plan Today. |
-| **B5** | **Morning** + **Nightly Review** | §4.8, §4.9 | dnd-kit reordering is the only new tech. Morning is **time-based** — the sidebar tab appears each morning, hides once marked done, returns next day; ends with the "Next: Scripture → Plan the day" cue. Nightly: locked 5-question order + **Confirm & log hours**. |
-| **B6** | **Scripture** | §4.5 | Smallest screen. Good one to hand off / move fast on. |
-| **B7** | **People** | §4.4 | Staleness sort, exclusion switches, contact search, "synced 2h ago". |
-| **B8** | **Gym** | §4.6 | First use of `chart`. Write `1RM.ts` + `fatigue.ts` as pure functions **with Vitest tests** — this is real math, it gets a real check. |
-| **B9** | **Dates** | §4.12 | ⚠️ Mostly meaningless without live data. Build against fixtures **shaped exactly like the Google Places API response** so Part C is a URL swap. All three levels: list → detail popup → explore. Plus Dice Roll and the pairing prompt. |
-| **B10** | **Feedback bubble** | §4.11 | Make the bubble real (composer, two modes, queue list). Ship it early-ish if it's cheap — it starts collecting feedback before the runner exists. |
+| **B1** ✓ | **Home** | §4.1, §4.1a | Purpose statement (serif) + KI tiles + `TriStateBar` + allocation pop-up + habit grid (Required / Standards of Excellence / Weekly) + week stepper + the two flow buttons. Both `unit` behaviors: hours → grouped-by-name breakdown; count → item list. No captions under tiles, no color legend. |
+| **B2** ✓ | **Goals** | §4.2 | The Goals→Plans→Inputs funnel, Edit mode, `popover` icon picker, ↑ parent chips, outreach card, to-do list w/ duration + Schedule. |
+| **B3** ✓ | **Calendar** | §4.3 | ⚠️ **Highest risk phase.** FullCalendar integration + CSS reconciliation. Do this before the easy screens so surprises land early. |
+| **B4** ✓ | **Weekly Planning** + **Plan Today** | §4.10, §4.7 | Two flows, no sidebar tab — reached from Home. Share the `Stepper`. Top 3 flows Nightly → Plan Today. |
+| **B5** ✓ | **Morning** + **Nightly Review** | §4.8, §4.9 | dnd-kit reordering is the only new tech. Morning is **time-based** — the sidebar tab appears each morning, hides once marked done, returns next day; ends with the "Next: Scripture → Plan the day" cue. Nightly: locked 5-question order + **Confirm & log hours**. |
+| **B6** ✓ | **Scripture** | §4.5 | Smallest screen. Good one to hand off / move fast on. |
+| **B7** ✓ | **People** | §4.4 | Staleness sort, exclusion switches, contact search, "synced 2h ago". |
+| **B8** ✓ | **Gym** | §4.6 | First use of `chart`. Write `1RM.ts` + `fatigue.ts` as pure functions **with Vitest tests** — this is real math, it gets a real check. |
+| **B9** ✓ | **Dates** | §4.12 | ⚠️ Mostly meaningless without live data. Build against fixtures **shaped exactly like the Google Places API response** so Part C is a URL swap. All three levels: list → detail popup → explore. Plus Dice Roll and the pairing prompt. |
+| **B10** ✓ | **Feedback bubble** | §4.11 | Make the bubble real (composer, two modes, queue list). Ship it early-ish if it's cheap — it starts collecting feedback before the runner exists. |
 
 **Done when (each):** the screen matches `mockup.html` side by side, works at phone width, works in dark mode, and every interaction does something visible. Verify with `/browse` against the Vercel preview, not just locally.
 
@@ -256,11 +261,38 @@ Named here so they don't get quietly rebuilt:
 
 ---
 
+## 8b. Deviations from this plan (recorded 2026-07-28)
+
+Three things went differently than planned; all are live in the shipped code:
+
+1. **shadcn here wraps Base UI, not Radix.** The installed `base-nova` style uses
+   `@base-ui/react`. `asChild` → `render={<El/>}`, `TooltipProvider` takes `delay`,
+   `ToggleGroup` is array-valued, `Select.Value` needs a render fn to show a label.
+   Documented in `AGENTS.md` so reviewers don't "fix" correct code backwards.
+2. **FullCalendar pinned to 6.1.21 across the board.** `core`/`react` had drifted to
+   7.x while `timegrid`/`daygrid`/`interaction` have **no v7 release** — the split
+   would have broken at runtime. `daygrid` was later removed entirely (unused).
+3. **No react-hook-form.** shadcn's `form` component no longer exists in the registry,
+   and the forms here are 2–4 fields. Server Actions + a zod parse on the server
+   cover it; validation still happens at the trust boundary.
+
+Also added beyond plan:
+
+- `await connection()` in the root layout. Routes were being statically
+  prerendered, which baked the **build date** into "today's schedule".
+- **Two accessibility gates** (`npm run test:a11y`, `npm run test:lh`) — axe-core
+  and Lighthouse CI over all 11 routes. The plan called for Vitest on pure logic
+  only; these are borrowed conformance suites that test the rendered HTML against
+  WCAG instead. First run found 5 root causes, including two palette tokens below
+  AA contrast that ten review rounds had missed. See `AGENTS.md` for what they
+  cover and — importantly — what they don't (dark mode, opened dialogs).
+
 ## 8. Open decisions
 
 Neither blocks Phase A0 — both are answerable by the time they're needed.
 
-1. **Calendar library** — recommending FullCalendar on the mapping in §4. If its CSS proves hostile in B3, the fallback is Schedule-X (same shape, MIT), not a custom build.
+1. ~~**Calendar library**~~ — **RESOLVED**: FullCalendar 6.1.21. Its CSS was not
+   hostile; v6 exposes CSS variables, so theming was a ~90-line remap, not a fight.
 2. **Google Calendar conflict rule** — when a block is edited in both Google and Companion, which wins? Decide in C3.
 
 ---
