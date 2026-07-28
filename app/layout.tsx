@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { connection } from "next/server";
 import "./globals.css";
 import { AppSidebar } from "@/components/shell/app-sidebar";
 import { FeedbackBubble } from "@/components/shell/feedback-bubble";
@@ -24,6 +25,12 @@ export const viewport: Viewport = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  // Every screen in this app is time-sensitive personal data — "today's
+  // schedule", "this week", "days since contact". Without a request-time API
+  // the routes prerender at BUILD time and freeze whatever date that was.
+  // Marking the layout request-time makes the whole tree dynamic, which is
+  // one line instead of the same call in ten pages. Nothing here is cacheable.
+  await connection();
   const morningDone = await isMorningDone();
   return (
     <html lang="en" className="h-full antialiased" suppressHydrationWarning>

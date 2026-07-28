@@ -4,19 +4,14 @@
  * Blocks are the input surface: creating one is how "Planned" gets filled.
  * Confirming a block's real duration at night is how "Done" gets filled.
  */
-import { addMinutes, differenceInMinutes, format, parseISO } from "date-fns";
+import { addMinutes, parseISO } from "date-fns";
 import type { CalendarBlock, OpenWindow } from "../types";
 import { blocksInWeek } from "../rollup";
 import { toIsoDate } from "../week";
+import { computeOpenWindows, toLocalIso } from "../windows";
 import { nextId, store } from "../mock/store";
 
-/**
- * All timestamps in this app are LOCAL-NAIVE ISO ("2026-07-13T09:00:00") —
- * never UTC. `toISOString()` would shift them by the timezone offset and make
- * a 9am block render at 3am. Use this everywhere a Date becomes a timestamp.
- */
-export const toLocalIso = (d: Date): string =>
-  format(d, "yyyy-MM-dd'T'HH:mm:ss");
+export { toLocalIso };
 
 const blocks = store.blocks;
 
@@ -69,6 +64,13 @@ export async function updateBlock(
 export async function deleteBlock(id: string): Promise<void> {
   const i = blocks.findIndex((b) => b.id === id);
   if (i >= 0) blocks.splice(i, 1);
+  // A to-do that was scheduled into this block still points at it. Left
+  // dangling, the UI keeps showing "On cal" with a disabled button, so the
+  // to-do could never be rescheduled. Cleared here rather than in todos.ts so
+  // there's no import cycle — both modules share the store.
+  for (const todo of store.todos) {
+    if (todo.scheduledBlockId === id) todo.scheduledBlockId = null;
+  }
 }
 
 /**
@@ -81,35 +83,12 @@ export async function findOpenWindows(
   dayStartHour = 6,
   dayEndHour = 23,
 ): Promise<OpenWindow[]> {
-  const iso = toIsoDate(day);
-  const dayBlocks = await getDayBlocks(day);
-  const bound = (h: number) =>
-    parseISO(`${iso}T${String(h).padStart(2, "0")}:00:00`);
-
-  const windows: OpenWindow[] = [];
-  let cursor = bound(dayStartHour);
-  const end = bound(dayEndHour);
-
-  for (const b of dayBlocks) {
-    const s = parseISO(b.start);
-    const e = parseISO(b.end);
-    if (s > cursor) push(cursor, s);
-    if (e > cursor) cursor = e;
-  }
-  if (cursor < end) push(cursor, end);
-
-  function push(from: Date, to: Date) {
-    const minutes = differenceInMinutes(to, from);
-    // Sub-15-minute slivers are not schedulable time; don't offer them.
-    if (minutes >= 15) {
-      windows.push({
-        start: toLocalIso(from),
-        end: toLocalIso(to),
-        minutes,
-      });
-    }
-  }
-  return windows;
+  return computeOpenWindows(
+    await getDayBlocks(day),
+    toIsoDate(day),
+    dayStartHour,
+    dayEndHour,
+  );
 }
 
 /** The first window that fits, or null when the day is full. */

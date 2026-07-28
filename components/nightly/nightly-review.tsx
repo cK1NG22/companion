@@ -128,6 +128,18 @@ export function NightlyReview({
 }
 
 /**
+ * Minutes as typed. Returns null for anything that is not a non-negative
+ * whole number — `Number("") || 0` and `Number("abc") || 0` would both coerce
+ * to 0 and silently erase real logged time from the Home rollups.
+ */
+function parseMinutes(raw: string): number | null {
+  const trimmed = raw.trim();
+  if (trimmed === "") return null;
+  const n = Number(trimmed);
+  return Number.isInteger(n) && n >= 0 && n <= 1440 ? n : null;
+}
+
+/**
  * "Confirm & log hours" (PRD §4.9). Adjust today's blocks to match reality,
  * then one button writes the actual durations into Done.
  */
@@ -148,15 +160,26 @@ function ConfirmHoursCard({
   );
   const [pending, startTransition] = useTransition();
 
+  const parsed = blocks.map((b) => ({
+    block: b,
+    minutes: parseMinutes(minutes[b.id] ?? ""),
+  }));
+  const invalid = parsed.filter((p) => p.minutes === null);
   const totalHours =
-    blocks.reduce((sum, b) => sum + (Number(minutes[b.id]) || 0), 0) / 60;
+    parsed.reduce((sum, p) => sum + (p.minutes ?? 0), 0) / 60;
 
   function confirm() {
+    if (invalid.length > 0) {
+      toast.error(
+        `Check the minutes for ${invalid[0].block.name} — whole minutes only.`,
+      );
+      return;
+    }
     startTransition(async () => {
       await confirmHoursAction({
-        entries: blocks.map((b) => ({
-          blockId: b.id,
-          minutes: Number(minutes[b.id]) || 0,
+        entries: parsed.map((p) => ({
+          blockId: p.block.id,
+          minutes: p.minutes as number,
         })),
       });
       toast.success("Hours logged. Home now shows them as done.");
@@ -192,7 +215,8 @@ function ConfirmHoursCard({
               }
               inputMode="numeric"
               aria-label={`Actual minutes for ${b.name}`}
-              className="h-8 w-16 shrink-0 text-sm tabular-nums"
+              aria-invalid={parseMinutes(minutes[b.id] ?? "") === null}
+              className="h-8 w-16 shrink-0 text-sm tabular-nums aria-invalid:border-warm"
             />
           </li>
         ))}
@@ -213,7 +237,7 @@ function ConfirmHoursCard({
         <Button
           className="ml-auto"
           onClick={confirm}
-          disabled={pending || blocks.length === 0}
+          disabled={pending || blocks.length === 0 || invalid.length > 0}
         >
           <Check className="size-4" /> Confirm &amp; log hours
         </Button>
