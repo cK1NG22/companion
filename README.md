@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Companion
 
-## Getting Started
+A personal calendar, scheduler, and goal-tracking app modelled on the
+Preach My Gospel planner. Runs the whole week as **Goal → Plan → Act → Account**,
+with people (not tasks) as a first-class unit of progress.
 
-First, run the development server:
+Single user. Spec of record: [`PRD.md`](./PRD.md) · Phase plan:
+[`BUILD-PLAN.md`](./BUILD-PLAN.md) · Visual reference: `mockup.html`.
+
+## Run it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev          # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+No environment variables are needed yet — every screen runs on mock fixtures.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build        # production build
+npm run lint
+npm run typecheck
+npm test             # pure logic: week math, rollups, strength model, geo
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## How it's put together
 
-## Learn More
+```
+app/                 one route per screen; Server Components by default
+components/ui/       shadcn/ui — GENERATED, never hand-edited
+components/<screen>/ that screen's own pieces
+lib/data/            ★ the seam — typed async functions the screens call
+lib/mock/            fixtures behind the seam; deleted when the DB lands
+lib/*.ts             pure math (week, rollup, strength, geo) — unit-tested
+```
 
-To learn more about Next.js, take a look at the following resources:
+**The seam is the whole design.** Screens import `lib/data/*` and never learn
+whether the answer came from a fixture or Postgres. Swapping in the database
+replaces those function *bodies*; signatures and types don't move, so no screen
+gets rewritten.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Pure business math lives in `lib/*.ts` as plain functions, not inside
+components, which is why it can be tested without a browser.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Stack
 
-## Deploy on Vercel
+Next 16 · React 19 · Tailwind 4 · shadcn/ui (**on Base UI, not Radix** — see
+`AGENTS.md`) · FullCalendar 6 · dnd-kit · Recharts · date-fns · zod.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Status
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Parts A and B are done: all 12 routes render on mock data.
+Part C — Neon/Drizzle, Google OAuth, Calendar sync, journal appends, the
+iMessage agent, live Google Places, the Bumstead hand-off, and the feedback
+runner — is not built yet; it needs credentials.
+
+Conventions and protected paths: [`AGENTS.md`](./AGENTS.md).
