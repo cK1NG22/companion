@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createBlock, endFor, firstWindowFitting } from "@/lib/data/calendar";
 import { getFunnel } from "@/lib/data/goals";
+import { rollTheDice, searchActivities, searchFood } from "@/lib/data/dates";
+import type { Activity, DiceRoll, FoodPlace } from "@/lib/types";
 
 const PlaceSchema = z.object({
   name: z.string().trim().min(1).max(200),
@@ -58,4 +60,46 @@ export async function scheduleDateAction(input: unknown): Promise<DateResult> {
         ? `Scheduled ${places[0].name} + ${places[1].name}.`
         : `Scheduled ${places[0].name}.`,
   };
+}
+
+const CoordsSchema = z.object({
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180),
+});
+
+/**
+ * Explore the OTHER type near an anchor (PRD §4.12 level 3).
+ *
+ * This must query from the anchor's coordinates, not re-sort the list that was
+ * loaded around home — otherwise an activity an hour away can only ever show
+ * restaurants near the house.
+ */
+export async function exploreNearAction(
+  input: unknown,
+): Promise<{ food: FoodPlace[] } | { activities: Activity[] } | null> {
+  const parsed = CoordsSchema.extend({
+    want: z.enum(["food", "activity"]),
+  }).safeParse(input);
+  if (!parsed.success) return null;
+
+  const { lat, lng, want } = parsed.data;
+  return want === "food"
+    ? { food: await searchFood({ lat, lng }, { radiusMiles: 25 }) }
+    : { activities: await searchActivities({ lat, lng }, { radiusMiles: 25 }) };
+}
+
+const RollSchema = CoordsSchema.extend({
+  excludePlaceId: z.string().optional(),
+  excludeActivityId: z.string().optional(),
+});
+
+/** Dice Roll, server-side so it uses the real novelty filter (PRD §4.12). */
+export async function rollDiceAction(input: unknown): Promise<DiceRoll | null> {
+  const parsed = RollSchema.safeParse(input);
+  if (!parsed.success) return null;
+  const { lat, lng, excludePlaceId, excludeActivityId } = parsed.data;
+  return rollTheDice(
+    { lat, lng },
+    { placeId: excludePlaceId, activityId: excludeActivityId },
+  );
 }

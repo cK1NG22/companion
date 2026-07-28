@@ -94,17 +94,34 @@ export async function getActivityCategories(): Promise<string[]> {
  * rather than erroring — an empty card is a worse answer than a repeat.
  * Never writes last_done; only a real date does that.
  */
-export async function rollTheDice(anchor: LatLng): Promise<DiceRoll> {
+export async function rollTheDice(
+  anchor: LatLng,
+  /** Ids from the previous roll, so "Re-roll" actually lands somewhere new. */
+  exclude: { placeId?: string; activityId?: string } = {},
+): Promise<DiceRoll> {
   const food = await searchFood(anchor, { radiusMiles: 25 });
   const activities = await searchActivities(anchor, { radiusMiles: 40 });
 
-  const staleFood = food.filter((f) => noveltyRank(f.lastDone) === 0);
-  const staleActivities = activities.filter(
-    (a) => noveltyRank(a.lastDone) === 0,
-  );
-
   return {
-    food: (staleFood.length ? staleFood : food)[0] ?? null,
-    activity: (staleActivities.length ? staleActivities : activities)[0] ?? null,
+    food: pick(
+      food.filter((f) => f.placeId !== exclude.placeId),
+      (f) => f.lastDone,
+    ),
+    activity: pick(
+      activities.filter((a) => a.id !== exclude.activityId),
+      (a) => a.lastDone,
+    ),
   };
+}
+
+/**
+ * Prefer something genuinely novel; if the stale pool is empty, drop the
+ * novelty filter for this roll rather than returning nothing (PRD §4.12).
+ * Random within the pool so re-rolling explores instead of repeating.
+ */
+function pick<T>(pool: T[], lastDoneOf: (item: T) => string | null): T | null {
+  if (pool.length === 0) return null;
+  const stale = pool.filter((item) => noveltyRank(lastDoneOf(item)) === 0);
+  const candidates = stale.length > 0 ? stale : pool;
+  return candidates[Math.floor(Math.random() * candidates.length)] ?? null;
 }

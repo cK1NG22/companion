@@ -26,7 +26,11 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ResponsiveModal } from "@/components/common/responsive-modal";
 import { cn } from "@/lib/utils";
 import { appleMapsUrl, distanceMiles, mapsEmbedUrl } from "@/lib/geo";
-import { scheduleDateAction } from "@/lib/actions/dates";
+import {
+  exploreNearAction,
+  rollDiceAction,
+  scheduleDateAction,
+} from "@/lib/actions/dates";
 import type { Activity, DateMode, DiceRoll, FoodPlace } from "@/lib/types";
 
 type Row =
@@ -65,12 +69,15 @@ export function DatesView({
   activities,
   cuisines,
   categories,
+  home,
   mapsKey,
 }: {
   food: FoodPlace[];
   activities: Activity[];
   cuisines: readonly string[];
   categories: string[];
+  /** Where the default lists were centred, and the Dice Roll origin. */
+  home: { lat: number; lng: number };
   mapsKey?: string;
 }) {
   const [mode, setMode] = useState<DateMode>("food");
@@ -81,9 +88,12 @@ export function DatesView({
   /** Set when the user crossed over from the other type — enables pairing. */
   const [anchorRow, setAnchorRow] = useState<Row | null>(null);
   const [dice, setDice] = useState<DiceRoll | null>(null);
+  /** Results of the cross-over query, centred on the anchor — not on home. */
+  const [exploreRows, setExploreRows] = useState<Row[] | null>(null);
   // Read the clock once per mount. Calling Date.now() during render would make
   // the component non-idempotent.
   const [now] = useState(() => Date.now());
+  const [rolling, startRolling] = useTransition();
 
   const allFood: Row[] = useMemo(
     () => food.map((f) => ({ kind: "food" as const, ...f })),
@@ -97,16 +107,16 @@ export function DatesView({
   /** In Explore mode the list is the OTHER type, ranked from the anchor. */
   const rows = useMemo(() => {
     if (anchorRow) {
-      const other = anchorRow.kind === "food" ? allActivities : allFood;
-      return [...other]
-        .map((r) => ({
-          ...r,
-          distanceMiles: distanceMiles(
-            { lat: anchorRow.lat, lng: anchorRow.lng },
-            { lat: r.lat, lng: r.lng },
-          ),
-        }))
-        .sort((a, b) => a.distanceMiles - b.distanceMiles);
+      // Must come from a query centred on the anchor. Re-sorting the
+      // home-centred list would mean an activity an hour away could only ever
+      // show restaurants near the house.
+      return (exploreRows ?? []).map((r) => ({
+        ...r,
+        distanceMiles: distanceMiles(
+          { lat: anchorRow.lat, lng: anchorRow.lng },
+          { lat: r.lat, lng: r.lng },
+        ),
+      }));
     }
 
     const base = mode === "food" ? allFood : allActivities;
@@ -117,13 +127,50 @@ export function DatesView({
         return false;
       return true;
     });
-  }, [anchorRow, mode, allFood, allActivities, cuisine, category, maxPrice]);
+  }, [anchorRow, exploreRows, mode, allFood, allActivities, cuisine, category, maxPrice]);
+
+  /** Server-side so the real novelty filter runs, and so re-rolling differs. */
+  function roll() {
+    startRolling(async () => {
+      const next = await rollDiceAction({
+        ...home,
+        excludePlaceId: dice?.food?.placeId,
+        excludeActivityId: dice?.activity?.id,
+      });
+      if (next) setDice(next);
+    });
+  }
+
+  function explore(row: Row) {
+    setAnchorRow(row);
+    setExploreRows(null);
+    startRolling(async () => {
+      const result = await exploreNearAction({
+        lat: row.lat,
+        lng: row.lng,
+        want: row.kind === "food" ? "activity" : "food",
+      });
+      if (!result) return;
+      setExploreRows(
+        "food" in result
+          ? result.food.map((f) => ({ kind: "food" as const, ...f }))
+          : result.activities.map((a) => ({ kind: "activity" as const, ...a })),
+      );
+    });
+  }
 
   return (
     <div className="grid gap-4">
       {anchorRow ? (
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => setAnchorRow(null)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setAnchorRow(null);
+              setExploreRows(null);
+            }}
+          >
             <ArrowLeft className="size-3.5" /> Back
           </Button>
           <p className="text-sm text-muted-foreground">
@@ -197,15 +244,8 @@ export function DatesView({
           <Button
             variant="outline"
             className="ml-auto"
-            onClick={() => {
-              const f = allFood.find((r) => !r.lastDone) ?? allFood[0] ?? null;
-              const a =
-                allActivities.find((r) => !r.lastDone) ?? allActivities[0] ?? null;
-              setDice({
-                food: f ? (f as FoodPlace) : null,
-                activity: a ? (a as Activity) : null,
-              });
-            }}
+            disabled={rolling}
+            onClick={() => roll()}
           >
             <Dice5 className="size-4" /> Dice roll
           </Button>
@@ -213,11 +253,7 @@ export function DatesView({
       )}
 
       {dice ? (
-        <DiceCard
-          roll={dice}
-          onClose={() => setDice(null)}
-          onReroll={() => setDice({ ...dice })}
-        />
+        <DiceCard roll={dice} onClose={() => setDice(null)} onReroll={roll} />
       ) : null}
 
       <Card className="gap-0 p-0 shadow-card">
@@ -274,7 +310,7 @@ export function DatesView({
         mapsKey={mapsKey}
         onClose={() => setDetail(null)}
         onExplore={(row) => {
-          setAnchorRow(row);
+          explore(row);
           setDetail(null);
         }}
       />

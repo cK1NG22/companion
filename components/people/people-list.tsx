@@ -41,9 +41,13 @@ const initials = (name: string) =>
  */
 export function PeopleList({
   people,
+  allPeople,
   lastSyncedAt,
 }: {
+  /** Default list — excluded people are already filtered out. */
   people: Person[];
+  /** Everyone, including excluded, so search can toggle someone back on. */
+  allPeople: Person[];
   lastSyncedAt: string;
 }) {
   const [query, setQuery] = useState("");
@@ -51,9 +55,10 @@ export function PeopleList({
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
+    // Searching widens the pool to everyone; the resting list does not.
     if (!q) return people;
-    return people.filter((p) => p.name.toLowerCase().includes(q));
-  }, [people, query]);
+    return allPeople.filter((p) => p.name.toLowerCase().includes(q));
+  }, [people, allPeople, query]);
 
   const synced = formatDistanceToNowStrict(parseISO(lastSyncedAt), {
     addSuffix: true,

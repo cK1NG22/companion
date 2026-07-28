@@ -3,8 +3,10 @@ import { PeopleList } from "@/components/people/people-list";
 import { getLastSyncedAt, getPeople } from "@/lib/data/people";
 
 export default async function PeoplePage() {
-  // Include excluded people so they can be found and toggled back on.
-  const [people, lastSyncedAt] = await Promise.all([
+  const [people, allPeople, lastSyncedAt] = await Promise.all([
+    // The default list hides excluded people...
+    getPeople(false),
+    // ...but search reaches everyone, so someone can be toggled back on.
     getPeople(true),
     getLastSyncedAt(),
   ]);
@@ -16,7 +18,11 @@ export default async function PeoplePage() {
         subtitle="Sorted by days since last contact — email, text, or meeting"
       />
       <PageBody>
-        <PeopleList people={people} lastSyncedAt={lastSyncedAt} />
+        <PeopleList
+          people={people}
+          allPeople={allPeople}
+          lastSyncedAt={lastSyncedAt}
+        />
       </PageBody>
     </>
   );

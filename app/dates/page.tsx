@@ -25,6 +25,7 @@ export default async function DatesPage() {
           activities={activities}
           cuisines={CUISINE_OPTIONS}
           categories={categories}
+          home={{ lat: home.lat, lng: home.lng }}
           // Public, referrer-restricted embed key. Absent in dev — the popup
           // degrades to a note rather than a broken iframe.
           mapsKey={process.env.NEXT_PUBLIC_MAPS_EMBED_KEY}
