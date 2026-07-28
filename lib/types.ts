@@ -394,12 +394,6 @@ export interface DiceRoll {
 // Misc
 // ---------------------------------------------------------------------------
 
-/** A single long-lived serif block shown on Home. */
-export interface PurposeStatement {
-  text: string;
-  updatedAt: IsoDateTime;
-}
-
 export interface HomeLocation {
   lat: number;
   lng: number;

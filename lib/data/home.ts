@@ -5,7 +5,12 @@
  * Part C replaces the bodies with Drizzle queries; the signatures do not change.
  */
 import type { Allocation, HabitGrid, HabitRow, KeyIndicator } from "../types";
-import { blocksInWeek, computeAllocation, computeKeyIndicator } from "../rollup";
+import {
+  blocksInWeek,
+  computeAllocation,
+  computeKeyIndicator,
+  todoItemsInWeek,
+} from "../rollup";
 import { toIsoDate, weekStart } from "../week";
 import { MOCK_BLOCKS, MOCK_TODO_COUNT_ITEMS } from "../mock/calendar";
 import {
@@ -28,9 +33,10 @@ export async function getPurposeStatement(): Promise<string> {
  */
 export async function getKeyIndicators(anchor: Date): Promise<KeyIndicator[]> {
   const weekBlocks = blocksInWeek(MOCK_BLOCKS, anchor);
+  const weekTodos = todoItemsInWeek(MOCK_TODO_COUNT_ITEMS, anchor);
   return MOCK_GOALS.filter((g) => g.tier === "week")
     .sort((a, b) => a.sortOrder - b.sortOrder)
-    .map((g) => computeKeyIndicator(g, weekBlocks, MOCK_TODO_COUNT_ITEMS));
+    .map((g) => computeKeyIndicator(g, weekBlocks, weekTodos));
 }
 
 /** The tile pop-up: grouped breakdown for `hours`, item list for `count`. */
@@ -41,13 +47,15 @@ export async function getAllocation(
   const goal = MOCK_GOALS.find((g) => g.id === goalId);
   if (!goal) return null;
   const weekBlocks = blocksInWeek(MOCK_BLOCKS, anchor);
-  return computeAllocation(goal, weekBlocks, MOCK_TODO_COUNT_ITEMS);
+  const weekTodos = todoItemsInWeek(MOCK_TODO_COUNT_ITEMS, anchor);
+  return computeAllocation(goal, weekBlocks, weekTodos);
 }
 
 export async function getHabitGrid(anchor: Date): Promise<HabitGrid> {
-  const rows: HabitRow[] = MOCK_HABITS.sort(
-    (a, b) => a.sortOrder - b.sortOrder,
-  ).map((habit) => ({
+  // Copy before sorting — Array.sort mutates, and this is a shared fixture.
+  const rows: HabitRow[] = [...MOCK_HABITS]
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((habit) => ({
     habit,
     days: habitState[habit.id] ?? Array(7).fill(false),
   }));

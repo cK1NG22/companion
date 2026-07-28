@@ -3,6 +3,7 @@ import {
   blocksInWeek,
   computeAllocation,
   computeKeyIndicator,
+  todoItemsInWeek,
   type TodoCountItem,
 } from "./rollup";
 import type { CalendarBlock, Goal } from "./types";
@@ -87,6 +88,28 @@ describe("hours unit", () => {
       { label: "Client work", planned: 2, done: 0 },
     ]);
     expect(alloc.totalPlanned).toBe(7.5);
+  });
+});
+
+// Regression: to-do counts were scoped to the viewed week while blocks were,
+// so stepping to another week still counted this week's checked-off to-dos.
+describe("todoItemsInWeek", () => {
+  const items: TodoCountItem[] = [
+    { goalId: "w2", label: "prev Sunday", date: "2026-07-12" },
+    { goalId: "w2", label: "Monday", date: "2026-07-13" },
+    { goalId: "w2", label: "Sunday", date: "2026-07-19" },
+    { goalId: "w2", label: "next Monday", date: "2026-07-20" },
+  ];
+
+  it("keeps only the Monday–Sunday window, inclusive at both ends", () => {
+    expect(todoItemsInWeek(items, MON).map((t) => t.label)).toEqual([
+      "Monday",
+      "Sunday",
+    ]);
+  });
+
+  it("returns nothing for a week with no to-dos", () => {
+    expect(todoItemsInWeek(items, new Date(2026, 7, 10))).toEqual([]);
   });
 });
 

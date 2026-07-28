@@ -6,7 +6,7 @@ import type {
   Goal,
   KeyIndicator,
 } from "./types";
-import { weekDays } from "./week";
+import { toIsoDate, weekDays } from "./week";
 
 /** A `count` contribution that came from a checked-off to-do, not the calendar. */
 export interface TodoCountItem {
@@ -33,6 +33,22 @@ export function blocksInWeek(
   return blocks.filter((b) =>
     isWithinInterval(parseISO(b.start), { start, end }),
   );
+}
+
+/**
+ * To-do contributions that fall inside the Monday–Sunday week containing
+ * `anchor`. Counts must be scoped to the viewed week exactly like blocks are —
+ * without this, stepping to another week still counts this week's to-dos.
+ */
+export function todoItemsInWeek(
+  items: TodoCountItem[],
+  anchor: Date,
+): TodoCountItem[] {
+  const days = weekDays(anchor);
+  const first = toIsoDate(days[0]);
+  const last = toIsoDate(days[6]);
+  // Dates are "YYYY-MM-DD", so lexicographic comparison is chronological.
+  return items.filter((t) => t.date >= first && t.date <= last);
 }
 
 /**
