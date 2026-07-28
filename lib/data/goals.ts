@@ -2,10 +2,9 @@
  * DATA SEAM — Goals funnel (PRD §4.2): Goals (year) → Plans (month) → Inputs (week).
  */
 import type { Goal, GoalTier, IconKey, KeyIndicatorUnit } from "../types";
-import { MOCK_GOALS } from "../mock/planner";
+import { nextId, store } from "../mock/store";
 
-const goals: Goal[] = structuredClone(MOCK_GOALS);
-let nextId = 1000;
+const goals = store.goals;
 
 export interface Funnel {
   year: Goal[];
@@ -43,7 +42,7 @@ export interface NewGoalInput {
 export async function createGoal(input: NewGoalInput): Promise<Goal> {
   const siblings = goals.filter((g) => g.tier === input.tier);
   const goal: Goal = {
-    id: `g${nextId++}`,
+    id: nextId("g"),
     title: input.title,
     tier: input.tier,
     parentId: input.parentId ?? null,

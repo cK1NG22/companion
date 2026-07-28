@@ -230,6 +230,7 @@ export const MOCK_TODOS: Todo[] = [
     done: false,
     scheduledBlockId: null,
     createdAt: `${mockDay(0)}T08:00:00`,
+    completedAt: null,
   },
   {
     id: "t2",
@@ -240,6 +241,7 @@ export const MOCK_TODOS: Todo[] = [
     done: false,
     scheduledBlockId: null,
     createdAt: `${mockDay(1)}T09:00:00`,
+    completedAt: null,
   },
   {
     id: "t3",
@@ -250,6 +252,7 @@ export const MOCK_TODOS: Todo[] = [
     done: true,
     scheduledBlockId: null,
     createdAt: `${mockDay(1)}T11:00:00`,
+    completedAt: `${mockDay(1)}T15:00:00`,
   },
   {
     id: "t4",
@@ -260,6 +263,7 @@ export const MOCK_TODOS: Todo[] = [
     done: false,
     scheduledBlockId: null,
     createdAt: `${mockDay(2)}T14:00:00`,
+    completedAt: null,
   },
   {
     id: "t5",
@@ -270,6 +274,7 @@ export const MOCK_TODOS: Todo[] = [
     done: true,
     scheduledBlockId: null,
     createdAt: `${mockDay(2)}T16:30:00`,
+    completedAt: `${mockDay(2)}T17:00:00`,
   },
 ];
 

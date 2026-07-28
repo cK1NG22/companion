@@ -1,0 +1,105 @@
+/**
+ * FullCalendar v6 → Companion tokens.
+ *
+ * v6 injects its own stylesheet and exposes CSS variables, so this is a
+ * remapping rather than a fight with its defaults. Scoped to .companion-calendar
+ * so nothing here leaks into the rest of the app.
+ */
+.companion-calendar {
+  --fc-border-color: var(--border);
+  --fc-page-bg-color: var(--background);
+  --fc-neutral-bg-color: var(--muted);
+  --fc-today-bg-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  /* The now-line is the muted clay reserved for "behind / overdue / now". */
+  --fc-now-indicator-color: var(--warm);
+  --fc-event-bg-color: var(--accent);
+  --fc-event-border-color: color-mix(in srgb, var(--primary) 22%, transparent);
+  --fc-event-text-color: var(--foreground);
+  --fc-small-font-size: 11px;
+
+  font-size: 13px;
+}
+
+.companion-calendar .fc-theme-standard td,
+.companion-calendar .fc-theme-standard th,
+.companion-calendar .fc-theme-standard .fc-scrollgrid {
+  border-color: var(--border);
+}
+
+/* Column headers: "Mon 27" — quiet, uppercase, like the mockup. */
+.companion-calendar .fc-col-header-cell {
+  padding: 6px 0;
+  font-weight: 500;
+}
+.companion-calendar .fc-col-header-cell-cushion {
+  padding: 4px 6px;
+  color: var(--muted-foreground);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.companion-calendar .fc-day-today .fc-col-header-cell-cushion {
+  color: var(--warm);
+}
+
+/* Hour gutter */
+.companion-calendar .fc-timegrid-slot-label-cushion {
+  padding: 0 8px;
+  color: var(--faint);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.companion-calendar .fc-timegrid-slot {
+  height: 2.6em;
+}
+/* Half-hour lines are noise at this density — only the hour reads. */
+.companion-calendar .fc-timegrid-slot-minor {
+  border-top-style: none;
+}
+
+/* Blocks */
+.companion-calendar .fc-timegrid-event {
+  border-radius: 7px;
+  border-left: 3px solid var(--primary);
+  box-shadow: none;
+  padding: 1px 0;
+}
+.companion-calendar .fc-event {
+  cursor: pointer;
+}
+.companion-calendar .fc-event:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+
+/*
+ * Past = grey (Notion behaviour, PRD §4.3). Applied by eventClassNames when a
+ * block's end time is already behind us.
+ */
+.companion-calendar .fc-event.is-past {
+  opacity: 0.45;
+  filter: saturate(0.35);
+}
+
+/* Google-sourced events read as borrowed, not planned by Companion. */
+.companion-calendar .fc-event.is-google {
+  border-left-style: dashed;
+}
+
+.companion-calendar .fc-timegrid-now-indicator-arrow {
+  border-width: 5px 0 5px 6px;
+}
+.companion-calendar .fc-timegrid-now-indicator-line {
+  border-width: 1.5px 0 0;
+}
+
+/* The built-in toolbar is replaced by our own header controls. */
+.companion-calendar .fc-header-toolbar {
+  display: none;
+}
+
+/* Selection ghost while dragging out a new block */
+.companion-calendar .fc-highlight {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+}

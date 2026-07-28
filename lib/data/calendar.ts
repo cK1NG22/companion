@@ -5,6 +5,10 @@
  * Confirming a block's real duration at night is how "Done" gets filled.
  */
 import { addMinutes, differenceInMinutes, format, parseISO } from "date-fns";
+import type { CalendarBlock, OpenWindow } from "../types";
+import { blocksInWeek } from "../rollup";
+import { toIsoDate } from "../week";
+import { nextId, store } from "../mock/store";
 
 /**
  * All timestamps in this app are LOCAL-NAIVE ISO ("2026-07-13T09:00:00") —
@@ -13,13 +17,8 @@ import { addMinutes, differenceInMinutes, format, parseISO } from "date-fns";
  */
 export const toLocalIso = (d: Date): string =>
   format(d, "yyyy-MM-dd'T'HH:mm:ss");
-import type { CalendarBlock, OpenWindow } from "../types";
-import { blocksInWeek } from "../rollup";
-import { toIsoDate } from "../week";
-import { MOCK_BLOCKS } from "../mock/calendar";
 
-const blocks: CalendarBlock[] = structuredClone(MOCK_BLOCKS);
-let nextId = 5000;
+const blocks = store.blocks;
 
 export async function getWeekBlocks(anchor: Date): Promise<CalendarBlock[]> {
   return blocksInWeek(blocks, anchor).sort((a, b) =>
@@ -44,7 +43,7 @@ export interface NewBlockInput {
 
 export async function createBlock(input: NewBlockInput): Promise<CalendarBlock> {
   const block: CalendarBlock = {
-    id: `b${nextId++}`,
+    id: nextId("b"),
     name: input.name,
     start: input.start,
     end: input.end,

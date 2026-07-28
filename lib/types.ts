@@ -179,6 +179,12 @@ export interface Todo {
   /** Set when "Schedule" turned this into a calendar block. */
   scheduledBlockId: string | null;
   createdAt: IsoDateTime;
+  /**
+   * When it was checked off. A completed to-do contributes to a `count` key
+   * indicator (PRD §4.1a), and that contribution has to be attributable to a
+   * week — so the completion needs its own timestamp, not `createdAt`.
+   */
+  completedAt: IsoDateTime | null;
 }
 
 // ---------------------------------------------------------------------------

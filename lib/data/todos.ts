@@ -6,17 +6,34 @@
  * sanctioned exception to "the calendar is the only input surface" (PRD §4.1a).
  */
 import type { Todo } from "../types";
-import { MOCK_TODOS } from "../mock/planner";
-import { createBlock, endFor, firstWindowFitting } from "./calendar";
+import type { TodoCountItem } from "../rollup";
+import { nextId, store } from "../mock/store";
+import { createBlock, endFor, firstWindowFitting, toLocalIso } from "./calendar";
 
-const todos: Todo[] = structuredClone(MOCK_TODOS);
-let nextId = 9000;
+const todos = store.todos;
 
 export async function getTodos(): Promise<Todo[]> {
   return [...todos].sort((a, b) => {
     if (a.done !== b.done) return a.done ? 1 : -1;
     return a.createdAt < b.createdAt ? -1 : 1;
   });
+}
+
+/**
+ * The `count` contributions that come from to-dos rather than the calendar.
+ *
+ * DERIVED, never stored separately — a duplicate list would drift the moment
+ * anything was checked or unchecked. Dated by completion, so the contribution
+ * lands in the week the act happened.
+ */
+export function getCountContributions(): TodoCountItem[] {
+  return todos
+    .filter((t) => t.done && t.goalId !== null && t.completedAt !== null)
+    .map((t) => ({
+      goalId: t.goalId as string,
+      label: t.name,
+      date: (t.completedAt as string).slice(0, 10),
+    }));
 }
 
 export interface NewTodoInput {
@@ -28,14 +45,15 @@ export interface NewTodoInput {
 
 export async function addTodo(input: NewTodoInput): Promise<Todo> {
   const todo: Todo = {
-    id: `t${nextId++}`,
+    id: nextId("t"),
     name: input.name,
     notes: input.notes ?? null,
     durationMinutes: input.durationMinutes ?? null,
     goalId: input.goalId ?? null,
     done: false,
     scheduledBlockId: null,
-    createdAt: new Date().toISOString(),
+    createdAt: toLocalIso(new Date()),
+    completedAt: null,
   };
   todos.push(todo);
   return todo;
@@ -43,7 +61,10 @@ export async function addTodo(input: NewTodoInput): Promise<Todo> {
 
 export async function toggleTodo(id: string): Promise<void> {
   const todo = todos.find((t) => t.id === id);
-  if (todo) todo.done = !todo.done;
+  if (!todo) return;
+  todo.done = !todo.done;
+  // Stamp on completion, clear on un-completion, so the count rollup can date it.
+  todo.completedAt = todo.done ? toLocalIso(new Date()) : null;
 }
 
 export async function deleteTodo(id: string): Promise<void> {

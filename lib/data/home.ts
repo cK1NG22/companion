@@ -3,6 +3,9 @@
  *
  * Screens import these functions and never learn where the data came from.
  * Part C replaces the bodies with Drizzle queries; the signatures do not change.
+ *
+ * Everything here is DERIVED from the shared store — goals, blocks and
+ * checked-off to-dos. Nothing on this page is a stored total (PRD §1).
  */
 import type { Allocation, HabitGrid, HabitRow, KeyIndicator } from "../types";
 import {
@@ -12,47 +15,31 @@ import {
   todoItemsInWeek,
 } from "../rollup";
 import { toIsoDate, weekStart } from "../week";
-import { MOCK_BLOCKS, MOCK_TODO_COUNT_ITEMS } from "../mock/calendar";
-import {
-  MOCK_GOALS,
-  MOCK_HABITS,
-  MOCK_HABIT_CHECKS,
-  MOCK_PURPOSE,
-  MOCK_WEEK_START,
-} from "../mock/planner";
-
-/**
- * In-memory habit state so the grid is genuinely clickable before the DB exists.
- *
- * Keyed by week FIRST: `{ "2026-07-27": { h1: [true, …] } }`. The grid is
- * week-addressed via the `?w=` stepper, so a flat habit→days map would make
- * every week share one row — toggling Wednesday in March would tick Wednesday
- * in July. In Part C this becomes `habit_entries(habit_id, date)`.
- */
-const habitState: Record<string, Record<string, boolean[]>> = {
-  [MOCK_WEEK_START]: structuredClone(MOCK_HABIT_CHECKS),
-};
+import { MOCK_HABITS } from "../mock/planner";
+import { store } from "../mock/store";
+import { getCountContributions } from "./todos";
 
 /** Weeks other than the seeded one start empty rather than undefined. */
 function weekState(weekStartIso: string): Record<string, boolean[]> {
-  habitState[weekStartIso] ??= Object.fromEntries(
+  store.habitChecks[weekStartIso] ??= Object.fromEntries(
     MOCK_HABITS.map((h) => [h.id, Array(7).fill(false) as boolean[]]),
   );
-  return habitState[weekStartIso];
+  return store.habitChecks[weekStartIso];
 }
 
 export async function getPurposeStatement(): Promise<string> {
-  return MOCK_PURPOSE;
+  return store.purpose;
 }
 
 /**
  * The "this week at a glance" tiles. These ARE the weekly Inputs from the Goals
- * funnel — setting a weekly input in Goals is what populates a tile here.
+ * funnel — creating or editing an Input on Goals changes these tiles.
  */
 export async function getKeyIndicators(anchor: Date): Promise<KeyIndicator[]> {
-  const weekBlocks = blocksInWeek(MOCK_BLOCKS, anchor);
-  const weekTodos = todoItemsInWeek(MOCK_TODO_COUNT_ITEMS, anchor);
-  return MOCK_GOALS.filter((g) => g.tier === "week")
+  const weekBlocks = blocksInWeek(store.blocks, anchor);
+  const weekTodos = todoItemsInWeek(getCountContributions(), anchor);
+  return store.goals
+    .filter((g) => g.tier === "week")
     .sort((a, b) => a.sortOrder - b.sortOrder)
     .map((g) => computeKeyIndicator(g, weekBlocks, weekTodos));
 }
@@ -62,10 +49,10 @@ export async function getAllocation(
   goalId: string,
   anchor: Date,
 ): Promise<Allocation | null> {
-  const goal = MOCK_GOALS.find((g) => g.id === goalId);
+  const goal = store.goals.find((g) => g.id === goalId);
   if (!goal) return null;
-  const weekBlocks = blocksInWeek(MOCK_BLOCKS, anchor);
-  const weekTodos = todoItemsInWeek(MOCK_TODO_COUNT_ITEMS, anchor);
+  const weekBlocks = blocksInWeek(store.blocks, anchor);
+  const weekTodos = todoItemsInWeek(getCountContributions(), anchor);
   return computeAllocation(goal, weekBlocks, weekTodos);
 }
 

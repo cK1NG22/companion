@@ -93,13 +93,3 @@ export const MOCK_BLOCKS: CalendarBlock[] = [
   block(6, 9, 3, "Church", null),
   block(6, 19, 1, "Weekly planning", null),
 ];
-
-/**
- * Unscheduled `count` contributions from checked-off to-dos.
- * PRD §4.1a — the one sanctioned exception to "the calendar is the only input":
- * some outreach conversations happen without ever being scheduled.
- */
-export const MOCK_TODO_COUNT_ITEMS: { goalId: string; label: string; date: string }[] = [
-  { goalId: "w2", label: "Follow up with Adam on the pilot", date: mockDay(1) },
-  { goalId: "w2", label: "Text Ben — check in", date: mockDay(2) },
-];
