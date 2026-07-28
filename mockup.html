@@ -1,0 +1,1848 @@
+<style>
+  :root{
+    --ground:#ffffff;
+    --surface:#f5f6f8;
+    --surface-2:#eceff4;
+    --ink:#12151c;
+    --muted:#5b6472;
+    --faint:#8b93a1;
+    --line:#e2e5ea;
+    --navy:#1b2b52;
+    --navy-2:#2f4478;
+    --navy-soft:#e9edf6;
+    --warm:#9a4a3c;
+    --warm-soft:#f3e7e4;
+    --good:#2f5d4a;
+    --sidebar:#1b2b52;
+    --sidebar-ink:rgba(255,255,255,.66);
+    --sidebar-ink-active:#ffffff;
+    --sidebar-line:rgba(255,255,255,.12);
+    --radius:10px;
+    --radius-sm:7px;
+    --shadow:0 1px 2px rgba(18,21,28,.05), 0 3px 12px rgba(18,21,28,.05);
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#0e1117; --surface:#161b24; --surface-2:#1d2532;
+      --ink:#e8ebf0; --muted:#9aa3b2; --faint:#697285; --line:#262d3a;
+      --navy:#3a5088; --navy-2:#8aa2d8; --navy-soft:#1a2540;
+      --warm:#cf8878; --warm-soft:#2a1f1c; --good:#7fb79e;
+      --sidebar:#141a27; --sidebar-ink:rgba(255,255,255,.60);
+      --sidebar-ink-active:#ffffff; --sidebar-line:rgba(255,255,255,.09);
+      --shadow:0 1px 2px rgba(0,0,0,.35), 0 3px 12px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"]{
+    --ground:#ffffff; --surface:#f5f6f8; --surface-2:#eceff4;
+    --ink:#12151c; --muted:#5b6472; --faint:#8b93a1; --line:#e2e5ea;
+    --navy:#1b2b52; --navy-2:#2f4478; --navy-soft:#e9edf6;
+    --warm:#9a4a3c; --warm-soft:#f3e7e4; --good:#2f5d4a;
+    --sidebar:#1b2b52; --sidebar-ink:rgba(255,255,255,.66);
+    --sidebar-ink-active:#ffffff; --sidebar-line:rgba(255,255,255,.12);
+    --shadow:0 1px 2px rgba(18,21,28,.05), 0 3px 12px rgba(18,21,28,.05);
+  }
+  :root[data-theme="dark"]{
+    --ground:#0e1117; --surface:#161b24; --surface-2:#1d2532;
+    --ink:#e8ebf0; --muted:#9aa3b2; --faint:#697285; --line:#262d3a;
+    --navy:#3a5088; --navy-2:#8aa2d8; --navy-soft:#1a2540;
+    --warm:#cf8878; --warm-soft:#2a1f1c; --good:#7fb79e;
+    --sidebar:#141a27; --sidebar-ink:rgba(255,255,255,.60);
+    --sidebar-ink-active:#ffffff; --sidebar-line:rgba(255,255,255,.09);
+    --shadow:0 1px 2px rgba(0,0,0,.35), 0 3px 12px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0}
+  .app{
+    font-family:var(--sans);
+    color:var(--ink);
+    background:var(--surface);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .mock-banner{
+    background:var(--ink);
+    color:var(--ground);
+    font-size:12px;
+    letter-spacing:.02em;
+    padding:7px 20px;
+    display:flex;gap:14px;align-items:center;justify-content:center;
+    flex-wrap:wrap;
+  }
+  .mock-banner b{font-weight:600}
+  .mock-banner span{opacity:.7}
+
+  .shell{display:grid;grid-template-columns:236px 1fr;min-height:calc(100vh - 32px)}
+  @media (max-width:820px){.shell{grid-template-columns:1fr}}
+
+  /* Sidebar */
+  .side{
+    background:var(--sidebar);
+    color:var(--sidebar-ink);
+    padding:22px 14px;
+    display:flex;flex-direction:column;gap:4px;
+    position:sticky;top:0;align-self:start;height:calc(100vh - 32px);
+  }
+  @media (max-width:820px){.side{position:static;height:auto}}
+  .brand{display:flex;align-items:baseline;gap:9px;padding:4px 10px 18px}
+  .brand .mark{
+    width:26px;height:26px;border-radius:7px;flex:0 0 auto;
+    background:var(--ground);color:var(--navy);
+    display:grid;place-items:center;font-weight:700;font-size:14px;
+    font-family:var(--serif);
+  }
+  .brand h1{font-size:17px;margin:0;color:#fff;font-weight:600;letter-spacing:-.01em}
+  .brand small{display:block;color:var(--sidebar-ink);font-size:11px;font-weight:400;letter-spacing:.04em;text-transform:uppercase}
+  .nav{display:flex;flex-direction:column;gap:2px;margin-top:6px}
+  .nav-label{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--sidebar-ink);opacity:.6;padding:12px 12px 5px}
+  .nav button{
+    all:unset;cursor:pointer;
+    display:flex;align-items:center;gap:11px;
+    padding:9px 12px;border-radius:var(--radius-sm);
+    color:var(--sidebar-ink);font-size:14px;
+    transition:background .12s,color .12s;
+  }
+  .nav button .ic{width:16px;height:16px;flex:0 0 auto;opacity:.85}
+  .nav button:hover{background:rgba(255,255,255,.06);color:#fff}
+  .nav button.active{background:rgba(255,255,255,.11);color:var(--sidebar-ink-active);font-weight:500}
+  .nav button:focus-visible{outline:2px solid #fff;outline-offset:-2px}
+  .side-foot{margin-top:auto;padding:12px 12px 2px;border-top:1px solid var(--sidebar-line);display:flex;align-items:center;gap:10px}
+  .avatar{width:28px;height:28px;border-radius:50%;background:var(--navy-2);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:600}
+  .side-foot .who{font-size:13px;color:#fff}
+  .side-foot .who small{display:block;color:var(--sidebar-ink);font-size:11px}
+
+  /* Workspace */
+  .work{background:var(--ground);min-width:0}
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:18px 30px;border-bottom:1px solid var(--line);position:sticky;top:0;
+    background:color-mix(in srgb,var(--ground) 88%, transparent);backdrop-filter:blur(6px);z-index:5;
+  }
+  .topbar .h{display:flex;flex-direction:column;gap:2px}
+  .topbar h2{margin:0;font-size:19px;font-weight:600;letter-spacing:-.01em}
+  .topbar .sub{color:var(--muted);font-size:13px}
+  .topbar .actions{display:flex;gap:8px;align-items:center}
+  .content{padding:26px 30px 60px;max-width:1080px}
+  .screen{display:none;animation:fade .18s ease}
+  .screen.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.screen,.screen.active{animation:none}}
+
+  /* Primitives */
+  .btn{all:unset;cursor:pointer;font-family:var(--sans);font-size:13px;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--line);color:var(--ink);background:var(--ground);transition:background .12s,border-color .12s}
+  .btn:hover{background:var(--surface)}
+  .btn:focus-visible{outline:2px solid var(--navy-2);outline-offset:1px}
+  .btn.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .btn.primary:hover{background:var(--navy-2)}
+  .grid{display:grid;gap:16px}
+  .cols-2{grid-template-columns:1fr 1fr}
+  .cols-3{grid-template-columns:repeat(3,1fr)}
+  @media (max-width:760px){.cols-2,.cols-3{grid-template-columns:1fr}}
+  .card{background:var(--ground);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+  .card.flat{box-shadow:none;background:var(--surface)}
+  .card h3{margin:0 0 2px;font-size:14px;font-weight:600}
+  .card .eyebrow{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin:0 0 12px;font-weight:600}
+  .muted{color:var(--muted)}
+  .faint{color:var(--faint)}
+  .divider{height:1px;background:var(--line);margin:14px 0;border:0}
+
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;padding:3px 9px;border-radius:999px;background:var(--navy-soft);color:var(--navy-2);font-weight:600;letter-spacing:.01em}
+  .pill.warm{background:var(--warm-soft);color:var(--warm)}
+  .pill.plain{background:var(--surface-2);color:var(--muted)}
+  .dot{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
+
+  /* Purpose statement */
+  .purpose{border-left:3px solid var(--navy);background:var(--surface);padding:16px 20px;border-radius:0 var(--radius) var(--radius) 0}
+  .purpose .lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--navy-2);font-weight:600;margin-bottom:6px}
+  .purpose p{margin:0;font-family:var(--serif);font-size:18px;line-height:1.5;color:var(--ink);text-wrap:balance}
+
+  /* Stat tiles */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media (max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--ground);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+  .stat .k{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px}
+  .stat .v{font-size:22px;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.02em;display:flex;align-items:baseline;gap:4px}
+  .stat .v span{font-size:13px;color:var(--faint);font-weight:500}
+  .bar{height:5px;border-radius:3px;background:var(--surface-2);margin-top:10px;overflow:hidden}
+  .bar > i{display:block;height:100%;background:var(--navy);border-radius:3px}
+
+  /* planned (light) vs done (solid) */
+  .bar2{position:relative;height:6px;border-radius:3px;background:var(--surface-2);margin-top:10px;overflow:hidden}
+  .bar2 > i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
+  .bar2 > i.plan{background:color-mix(in srgb,var(--navy) 26%,transparent)}
+  .bar2 > i.done{background:var(--navy)}
+  .bar2.warm > i.plan{background:color-mix(in srgb,var(--warm) 30%,transparent)}
+  .bar2.warm > i.done{background:var(--warm)}
+  .stat .meta{font-size:11px;color:var(--faint);margin-top:8px;display:flex;justify-content:space-between;gap:8px;font-variant-numeric:tabular-nums}
+  .legend2{display:flex;gap:18px;margin:14px 2px 0;font-size:12px;color:var(--muted);flex-wrap:wrap;align-items:center}
+  .legend2 span{display:inline-flex;align-items:center;gap:8px}
+  .legend2 .sw{width:22px;height:8px;border-radius:3px;display:inline-block}
+  .legend2 .sw.plan{background:color-mix(in srgb,var(--navy) 26%,transparent)}
+  .legend2 .sw.done{background:var(--navy)}
+  .tr2{position:relative;display:inline-block;vertical-align:middle;width:120px;height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+  .tr2 > i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
+  .tr2 > i.plan{background:color-mix(in srgb,var(--navy) 26%,transparent)}
+  .tr2 > i.done{background:var(--navy)}
+  .tr2.warm > i.plan{background:color-mix(in srgb,var(--warm) 30%,transparent)}
+  .tr2.warm > i.done{background:var(--warm)}
+
+  /* time allocation */
+  .alloc{display:flex;flex-direction:column;gap:0}
+  .alloc .a{display:flex;align-items:center;gap:14px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .alloc .a:last-child{border-bottom:0}
+  .alloc .a .nm{flex:1;font-size:14px;font-weight:500}
+  .alloc .a .nm small{display:block;color:var(--faint);font-size:12px;font-weight:400}
+  .alloc .a .hrs{width:74px;text-align:right;font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);flex:0 0 auto}
+  .alloc .a .hrs b{font-weight:650;color:var(--ink)}
+  .alloc-foot{display:flex;justify-content:space-between;align-items:center;padding-top:13px;margin-top:2px;border-top:2px solid var(--line);font-size:13px}
+  .alloc-foot b{font-variant-numeric:tabular-nums}
+  @media (max-width:760px){.alloc .a .tr2{display:none}}
+
+  /* goal chips + done marks on calendar */
+  .goalchip{display:inline-flex;align-items:center;font-size:10px;font-weight:700;letter-spacing:.04em;padding:1px 6px;border-radius:4px;background:rgba(255,255,255,.18);color:#fff;text-transform:uppercase;vertical-align:middle}
+  .ev.gcal .goalchip{background:color-mix(in srgb,var(--navy-2) 18%,transparent);color:var(--navy-2)}
+  .ev .dm{position:absolute;top:7px;right:8px;width:15px;height:15px;border-radius:50%;background:rgba(255,255,255,.92);display:grid;place-items:center}
+  .ev.gcal .dm{background:var(--navy-2)}
+  .ev .dm svg{width:9px;height:9px;stroke:var(--navy);stroke-width:3;fill:none}
+  .ev.gcal .dm svg{stroke:#fff}
+
+  /* mockup banner reset button */
+  .mb-btn{all:unset;cursor:pointer;font-size:12px;color:var(--ground);border:1px solid;border-radius:5px;padding:2px 9px;opacity:.7}
+  .mb-btn:hover{opacity:1}
+  .mb-btn:focus-visible{outline:2px solid var(--ground);outline-offset:1px}
+
+  /* clickable stat tiles */
+  .stat{position:relative;cursor:pointer;transition:border-color .12s,box-shadow .12s}
+  .stat:hover{border-color:var(--navy-2);box-shadow:var(--shadow)}
+  .stat:focus-visible{outline:2px solid var(--navy-2);outline-offset:2px}
+  .stat .caret{position:absolute;top:11px;right:13px;color:var(--faint);font-size:17px;line-height:1;transition:transform .12s,color .12s}
+  .stat:hover .caret{transform:translateX(2px);color:var(--navy-2)}
+  .legend2 .sw.tgt{background:var(--surface-2);border:1px solid var(--line)}
+
+  /* allocation pop-up */
+  .modal-back{position:fixed;inset:0;background:rgba(10,14,22,.55);display:none;z-index:60;padding:22px;overflow:auto}
+  .modal-back.open{display:grid;place-items:center}
+  .modal{background:var(--ground);color:var(--ink);border:1px solid var(--line);border-radius:14px;width:100%;max-width:520px;box-shadow:0 24px 70px rgba(0,0,0,.38);max-height:86vh;overflow:auto;animation:pop .16s ease}
+  @media (prefers-reduced-motion:reduce){.modal{animation:none}}
+  @keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .modal-h{position:relative;padding:20px 22px;border-bottom:1px solid var(--line)}
+  .modal-x{all:unset;cursor:pointer;position:absolute;top:13px;right:15px;font-size:20px;line-height:1;color:var(--faint);width:30px;height:30px;display:grid;place-items:center;border-radius:7px}
+  .modal-x:hover{background:var(--surface);color:var(--ink)}
+  .modal-x:focus-visible{outline:2px solid var(--navy-2)}
+  .modal-body{padding:16px 22px 22px}
+
+  /* segmented cadence toggle */
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+  .seg button{all:unset;cursor:pointer;font-size:12.5px;padding:6px 13px;color:var(--muted);transition:background .12s,color .12s}
+  .seg button.on{background:var(--navy);color:#fff}
+  .seg button:focus-visible{outline:2px solid var(--navy-2);outline-offset:-2px}
+  .tier-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .gbadge{width:20px;height:20px;border-radius:6px;background:var(--navy-soft);color:var(--navy-2);display:inline-grid;place-items:center;font-size:11px;font-weight:700;flex:0 0 auto}
+  .refbox{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:14px}
+  .reflabel{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--navy-2);font-weight:600;margin-bottom:4px}
+  .refrow{font-size:12.5px;color:var(--muted)}
+
+  /* to-do (Apple Reminders style) */
+  .todo{display:flex;align-items:flex-start;gap:11px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .todo:last-of-type{border-bottom:0}
+  .todo .rcheck{width:18px;height:18px;border-radius:50%;border:1.6px solid var(--faint);flex:0 0 auto;margin-top:1px}
+  .todo .body{flex:1;min-width:0}
+  .todo .body .tt{font-size:14px;font-weight:500}
+  .todo .body .dd{font-size:12.5px;color:var(--faint)}
+  .todo .sched{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--navy-2);border:1px solid var(--line);padding:5px 10px;border-radius:7px;flex:0 0 auto}
+  .todo .sched svg{width:13px;height:13px}
+  .todo .sched:hover{background:var(--surface)}
+  .todo .sched:focus-visible{outline:2px solid var(--navy-2)}
+  .newtodo{display:flex;flex-direction:column;gap:8px;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)}
+  .ti{border:1px solid var(--line);border-radius:7px;background:var(--surface);padding:9px 12px;font-size:13px;font-family:var(--sans);color:var(--ink)}
+  .ti:focus{outline:2px solid var(--navy-2);background:var(--ground)}
+  .ti::placeholder{color:var(--faint)}
+
+  /* week stepper */
+  .weeknav{display:flex;align-items:center;gap:10px;margin-top:5px}
+  .wk{all:unset;cursor:pointer;width:24px;height:24px;display:grid;place-items:center;border-radius:6px;color:var(--muted);border:1px solid var(--line);font-size:15px;line-height:1}
+  .wk:hover{background:var(--surface);color:var(--ink)}
+  .wk:focus-visible{outline:2px solid var(--navy-2)}
+
+  /* weekly habit grid */
+  .habitwrap{overflow-x:auto}
+  .habits{width:100%;border-collapse:collapse;font-size:13px;min-width:540px}
+  .habits th{font-size:11px;color:var(--faint);font-weight:600;text-align:center;padding:2px 0 10px}
+  .habits th.hn{text-align:left}
+  .habits th.today{color:var(--navy-2)}
+  .habits th .dnum{display:block;font-size:13px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+  .habits th.today .dnum{color:var(--navy-2)}
+  .habits td{text-align:center;padding:8px 0;border-top:1px solid var(--line)}
+  .habits td.hname{text-align:left;font-weight:500;padding-left:2px;white-space:nowrap}
+  .habits tr.grp td{border-top:0}
+  .habits .grplabel{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--navy-2);font-weight:700;text-align:left;padding:14px 0 2px 2px}
+  .hc{width:16px;height:16px;border-radius:50%;display:inline-block;border:1.5px solid var(--line);vertical-align:middle}
+  .hc.on{background:var(--navy);border-color:var(--navy);position:relative}
+  .hc.on::after{content:"";position:absolute;left:4.5px;top:2px;width:3px;height:7px;border:solid #fff;border-width:0 1.6px 1.6px 0;transform:rotate(45deg)}
+
+  /* gym */
+  .liftrow{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .liftrow:last-child{border-bottom:0}
+  .liftrow .ln{flex:1;min-width:0;font-weight:500;font-size:14px}
+  .liftrow .ln small{display:block;color:var(--faint);font-size:12px;font-weight:400}
+  .sets{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .setchip{font-size:12px;padding:3px 8px;border-radius:6px;background:var(--surface-2);color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .setchip.pr{background:var(--navy);color:#fff}
+  .progrow{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .progrow:last-child{border-bottom:0}
+  .progrow .pn{flex:1;font-weight:500;font-size:14px;display:flex;align-items:center}
+  .progrow .pv{font-variant-numeric:tabular-nums;font-size:14px;font-weight:650;width:78px;text-align:right}
+  .progrow .pv small{display:block;font-size:11px;color:var(--faint);font-weight:400}
+
+  /* scripture / daily examination */
+  .reflect .r{padding:14px 0;border-bottom:1px solid var(--line)}
+  .reflect .r:last-child{border-bottom:0}
+  .reflect .rl{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--navy-2);font-weight:700;margin-bottom:5px}
+  .reflect .rt{font-family:var(--serif);font-size:15px;line-height:1.55;color:var(--ink);text-wrap:pretty}
+  .reflect .rt em{color:var(--muted)}
+  .becomes{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13.5px;color:var(--ink)}
+  .becomes span{white-space:nowrap}
+  .qlist{display:flex;flex-direction:column;gap:10px}
+  .qlist .q{display:flex;gap:10px;font-size:14px;align-items:flex-start}
+  .qlist .q .qm{color:var(--navy-2);font-weight:700;flex:0 0 auto}
+
+  /* morning review editor */
+  .mr-head{display:flex;align-items:center;justify-content:space-between}
+  .dots{all:unset;cursor:pointer;color:var(--faint);font-size:20px;line-height:1;padding:2px 9px;border-radius:6px}
+  .dots:hover{background:var(--surface);color:var(--ink)}
+  .dots:focus-visible{outline:2px solid var(--navy-2)}
+  .reflect.editing .r{position:relative;padding:12px 32px 12px 28px;background:var(--surface);border:1px solid var(--line);border-radius:8px;margin-bottom:8px;cursor:grab}
+  .reflect.editing .r .rl,.reflect.editing .r .rt{outline:1px dashed var(--line);border-radius:4px;padding:2px 5px}
+  .reflect.editing .r .rl:focus,.reflect.editing .r .rt:focus{outline:1.5px solid var(--navy-2)}
+  .dragh{position:absolute;left:8px;top:13px;color:var(--faint);cursor:grab;user-select:none;font-size:13px}
+  .delr{all:unset;cursor:pointer;position:absolute;right:7px;top:8px;color:var(--faint);font-size:17px;line-height:1;padding:0 5px;border-radius:5px}
+  .delr:hover{background:var(--warm-soft);color:var(--warm)}
+  .nextrow{display:flex;align-items:center;gap:10px;margin-top:18px;flex-wrap:wrap}
+
+  /* plan today */
+  .sched-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .sched-item:last-child{border-bottom:0}
+  .sched-item .si-b{flex:1;min-width:0}
+  .sched-item .si-b .st{font-size:14px;font-weight:500}
+  .sched-item .si-b .sd{font-size:12px;color:var(--faint)}
+  .dur{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;background:var(--surface-2);padding:3px 8px;border-radius:6px;white-space:nowrap;flex:0 0 auto}
+  .addcal{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#fff;background:var(--navy);padding:6px 11px;border-radius:7px;flex:0 0 auto}
+  .addcal:hover{background:var(--navy-2)}
+  .addcal:focus-visible{outline:2px solid var(--navy-2);outline-offset:1px}
+  .addcal svg{width:13px;height:13px}
+
+  /* gym strength */
+  .strengthrow{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .strengthrow:last-child{border-bottom:0}
+  .strengthrow .sn{flex:1;font-size:14px;font-weight:500}
+  .strengthrow .s1{font-variant-numeric:tabular-nums;font-weight:650;font-size:14px}
+  .readic{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:8px;vertical-align:middle}
+  .readic.fresh{background:var(--good)}
+  .readic.tired{background:var(--warm)}
+
+  /* goals editing */
+  .addgoal{all:unset;cursor:pointer;font-size:13px;color:var(--navy-2);padding:8px 2px 2px;display:none}
+  #goals.editing .addgoal{display:inline-block}
+  #goals.editing .node li{background:var(--surface);border-radius:6px}
+  .goalicon{width:22px;height:22px;border-radius:6px;background:var(--navy-soft);color:var(--navy-2);display:inline-grid;place-items:center;flex:0 0 auto}
+  .goalicon svg{width:13px;height:13px}
+  /* Edit mode: goal icon becomes a [icon ▾] picker trigger */
+  #goals.editing .goalicon{cursor:pointer;width:auto;min-width:22px;padding:0 13px 0 4px;box-shadow:0 0 0 1px var(--navy-2) inset;position:relative}
+  #goals.editing .goalicon::after{content:'▾';position:absolute;right:3px;top:50%;transform:translateY(-50%);font-size:9px;line-height:1;color:var(--navy-2)}
+  .iconpop{position:fixed;z-index:60;background:var(--ground);border:1px solid var(--line);border-radius:10px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.18);display:grid;grid-template-columns:repeat(3,34px);gap:4px}
+  .iconpop button{all:unset;cursor:pointer;width:34px;height:34px;border-radius:8px;display:grid;place-items:center;color:var(--navy-2)}
+  .iconpop button:hover{background:var(--navy-soft)}
+  .iconpop button svg{width:17px;height:17px}
+  .iconpop button.add{color:var(--faint);font-size:18px}
+
+  /* calendar (Notion-style) */
+  .calbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .vdd{position:relative;display:inline-block}
+  .vdd-btn{all:unset;cursor:pointer;font-size:13px;border:1px solid var(--line);border-radius:7px;padding:8px 12px;display:inline-flex;align-items:center;gap:7px;color:var(--ink)}
+  .vdd-btn:hover{background:var(--surface)}
+  .vdd-btn:focus-visible{outline:2px solid var(--navy-2)}
+  .vdd-menu{position:absolute;top:calc(100% + 5px);left:0;background:var(--ground);border:1px solid var(--line);border-radius:9px;box-shadow:var(--shadow);padding:5px;min-width:184px;z-index:20;display:none}
+  .vdd.open .vdd-menu{display:block}
+  .vdd-menu button{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:6px;font-size:13px;color:var(--ink);width:calc(100% - 20px)}
+  .vdd-menu button:hover{background:var(--surface)}
+  .vdd-menu button.on{color:var(--navy-2);font-weight:600}
+  .calwrap{border:1px solid var(--line);border-radius:var(--radius);overflow:auto;max-height:560px;position:relative}
+  .calgrid{display:grid;grid-template-columns:56px 1fr;position:relative}
+  .caltimes{border-right:1px solid var(--line)}
+  .tspacer{height:31px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--ground);z-index:6}
+  .calhr{height:48px;font-size:11px;color:var(--faint);text-align:right;padding:3px 8px 0;border-bottom:1px solid var(--line);box-sizing:border-box}
+  .caldays{display:flex}
+  .calcol{flex:1;min-width:104px;border-right:1px solid var(--line);position:relative}
+  .calcol:last-child{border-right:0}
+  .colhead{position:sticky;top:0;background:var(--ground);z-index:6;text-align:center;font-size:11px;color:var(--muted);height:31px;line-height:31px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+  .calcol.today .colhead{color:var(--navy-2);font-weight:600}
+  .colbody{position:relative}
+  .hln{height:48px;border-bottom:1px solid var(--line);box-sizing:border-box}
+  .cev{position:absolute;left:4px;right:4px;border-radius:6px;padding:4px 7px;font-size:12px;overflow:hidden;background:var(--navy-soft);border:1px solid color-mix(in srgb,var(--navy-2) 26%,transparent);color:var(--navy-2);display:flex;align-items:flex-start;gap:5px}
+  .cev b{font-weight:600;font-size:12px;color:var(--ink);display:block;line-height:1.25}
+  .cev .cet{font-size:10.5px;color:var(--muted)}
+  .cev .gi{flex:0 0 auto;margin-top:1px}
+  .cev .gi svg{width:13px;height:13px}
+  .cev.past{opacity:.55;filter:grayscale(.9)}
+  .nowline{position:absolute;left:0;right:0;height:0;border-top:2px solid var(--warm);z-index:5}
+  .nowline::before{content:"";position:absolute;left:-3px;top:-4px;width:7px;height:7px;border-radius:50%;background:var(--warm)}
+  .cal-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--muted)}
+  .cal-legend span{display:inline-flex;align-items:center;gap:6px}
+  .cal-legend svg{width:14px;height:14px;color:var(--navy-2)}
+
+  /* generic dialog */
+  .dlg-back{position:fixed;inset:0;background:rgba(10,14,22,.55);display:none;z-index:70;padding:22px;overflow:auto}
+  .dlg-back.open{display:grid;place-items:center}
+  .dlg{background:var(--ground);color:var(--ink);border:1px solid var(--line);border-radius:14px;width:100%;max-width:440px;box-shadow:0 24px 70px rgba(0,0,0,.4);animation:pop .16s ease}
+  @media (prefers-reduced-motion:reduce){.dlg{animation:none}}
+  .dlg-head{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .dlg-head h3{margin:0;font-size:16px}
+  .dlg-body{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+  .dlg-foot{display:flex;justify-content:flex-end;gap:8px;padding:13px 18px;border-top:1px solid var(--line)}
+  .dlg .fld{display:flex;flex-direction:column;gap:5px}
+  .dlg .fld label{font-size:12px;font-weight:600;color:var(--muted)}
+  .dlg .row2{display:flex;gap:8px}
+  .dlg .row2 > .fld{flex:1}
+  .dlg .ti,.dlg .ta{width:100%}
+
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--ground);font-size:13px;padding:10px 16px;border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:95;max-width:90vw}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* feedback bot */
+  .fab{position:fixed;right:22px;bottom:22px;width:52px;height:52px;border-radius:50%;background:var(--navy);color:#fff;border:0;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.28);display:grid;place-items:center;z-index:82}
+  .fab:hover{background:var(--navy-2)}
+  .fab:focus-visible{outline:2px solid var(--navy-2);outline-offset:2px}
+  .fab svg{width:23px;height:23px}
+  .fabpanel{position:fixed;right:22px;bottom:84px;width:322px;max-width:calc(100vw - 44px);background:var(--ground);border:1px solid var(--line);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.32);z-index:82;display:none;overflow:hidden}
+  .fabpanel.open{display:block;animation:pop .16s ease}
+  @media (prefers-reduced-motion:reduce){.fabpanel.open{animation:none}}
+  .fabhead{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;border-bottom:1px solid var(--line)}
+  .fabhead b{font-size:14px}
+  .fabbody{padding:14px 15px}
+  .fq{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--muted);padding:9px 0;border-bottom:1px solid var(--line)}
+  .fq .fqd{width:6px;height:6px;border-radius:50%;background:var(--good);margin-top:5px;flex:0 0 auto}
+  .fq .fqd.date{background:var(--warm)}
+  .fqhead{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-weight:600;margin:14px 0 2px}
+  /* feedback mode toggle */
+  .fabseg{display:flex;gap:4px;background:var(--surface);border-radius:9px;padding:3px;margin-bottom:11px}
+  .fabseg button{all:unset;cursor:pointer;flex:1;text-align:center;font-size:12px;padding:6px 0;border-radius:6px;color:var(--faint)}
+  .fabseg button.on{background:var(--ground);color:var(--ink);font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+
+  /* Dates tab */
+  .proxbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:9px 13px;margin-bottom:14px;font-size:13px}
+  .proxbar .proxlbl{color:var(--muted)}
+  .fsel{font-family:var(--sans);font-size:12.5px;color:var(--ink);background:var(--ground);border:1px solid var(--line);border-radius:7px;padding:6px 9px;cursor:pointer}
+  .fsel:focus{outline:2px solid var(--navy-2)}
+  .xbanner{display:flex;align-items:center;gap:10px;background:var(--navy-soft);border:1px solid color-mix(in srgb,var(--navy-2) 26%,transparent);color:var(--navy-2);border-radius:9px;padding:9px 13px;margin-bottom:14px;font-size:13px;font-weight:500}
+  .xbanner .xclear{all:unset;cursor:pointer;margin-left:auto;font-size:12px;color:var(--navy-2);border:1px solid color-mix(in srgb,var(--navy-2) 30%,transparent);border-radius:6px;padding:3px 9px}
+  .xbanner .xclear:hover{background:var(--ground)}
+  .filterbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+  .filterbar .eyebrow{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);font-weight:600}
+  .didea{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--line);cursor:pointer}
+  .didea:last-child{border-bottom:0}
+  .didea:hover{background:var(--surface)}
+  .didea.recent{opacity:.62}
+  .dicon{width:34px;height:34px;border-radius:9px;background:var(--navy-soft);color:var(--navy-2);display:grid;place-items:center;flex:0 0 auto}
+  .dicon svg{width:17px;height:17px}
+  .didea .db{flex:1;min-width:0}
+  .didea .dt{font-size:14px;font-weight:500}
+  .didea .dm{font-size:12px;color:var(--faint);margin-top:3px}
+  .dcat{display:inline-block;font-size:11px;color:var(--navy-2);background:var(--navy-soft);border-radius:20px;padding:2px 9px;margin-right:6px}
+  .dprice{color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+  .dirlink{color:var(--navy-2);text-decoration:none;border-bottom:1px dotted color-mix(in srgb,var(--navy-2) 45%,transparent);cursor:pointer;margin-left:2px}
+  .ddist{text-align:right;flex:0 0 auto;font-size:12px;min-width:56px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .didea .dlast{text-align:right;flex:0 0 auto;font-size:11.5px;min-width:66px}
+  .didea .dlast .n{font-weight:600;font-size:12px}
+  .didea .dlast .n.fresh{color:var(--warm)}
+  .didea .dlast .src{color:var(--faint)}
+  #dates .sched{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--navy-2);border:1px solid var(--line);padding:5px 10px;border-radius:7px;flex:0 0 auto}
+  #dates .sched svg{width:13px;height:13px}
+  #dates .sched:hover{background:var(--surface)}
+  .dlog{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .dlog:last-child{border-bottom:0}
+  .dlog .dd{color:var(--faint);width:96px;flex:0 0 auto;font-variant-numeric:tabular-nums}
+  .dlog .dp{flex:1}
+  .dlog .dcost{color:var(--faint);flex:0 0 auto}
+  .chev{color:var(--faint);font-size:18px;flex:0 0 auto;margin-left:2px}
+  /* place-detail popup (Google-Maps-style) */
+  .pphotos{display:flex;gap:6px}
+  .pph{flex:1;height:66px;border-radius:8px;background:linear-gradient(135deg,var(--navy-soft),var(--surface-2))}
+  .pmeta{font-size:13px;color:var(--muted)}
+  .pmeta b{color:var(--ink);font-weight:600}
+  .pinfo{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--ink)}
+  .pmap{height:120px;border-radius:9px;border:1px solid var(--line);display:grid;place-items:center;color:var(--faint);font-size:12px;background:repeating-linear-gradient(45deg,var(--surface),var(--surface) 11px,var(--surface-2) 11px,var(--surface-2) 22px)}
+  .prow{display:flex;gap:8px}
+  .prow .btn{flex:1;justify-content:center}
+  /* date schedule dialog */
+  .chk{display:flex;align-items:center;gap:9px;font-size:14px;cursor:pointer}
+  .chk input{width:17px;height:17px;accent-color:var(--navy);cursor:pointer}
+  .ds-notes{white-space:pre-line;font-size:12.5px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:9px 11px;line-height:1.65}
+  /* explore map */
+  .dmap{height:150px;border-radius:10px;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);font-size:13px;margin-bottom:14px;background:repeating-linear-gradient(45deg,var(--surface),var(--surface) 13px,var(--surface-2) 13px,var(--surface-2) 26px)}
+  /* dice roll result */
+  .dice{display:flex;flex-direction:column;gap:12px}
+  .dice .pick{display:flex;align-items:center;gap:13px;border:1px solid var(--line);border-radius:10px;padding:13px 15px;background:var(--surface)}
+  .dice .pick .pk{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--navy-2);font-weight:700}
+  .dice .pick .pv{font-size:15px;font-weight:600;margin-top:2px}
+  .dice .pick .pm{font-size:12px;color:var(--faint);margin-top:1px}
+  .dice .pick .demoji{font-size:24px;flex:0 0 auto}
+
+  /* Lists */
+  .row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:0}
+  .time{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;width:58px;flex:0 0 auto}
+  .tag{font-size:11px;padding:2px 8px;border-radius:5px;background:var(--surface-2);color:var(--muted);font-weight:500;flex:0 0 auto}
+  .tag.plan{background:var(--navy);color:#fff}
+  .check{width:17px;height:17px;border-radius:5px;border:1.5px solid var(--faint);flex:0 0 auto}
+  .check.on{background:var(--navy);border-color:var(--navy);position:relative}
+  .check.on::after{content:"";position:absolute;left:5px;top:2px;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+
+  /* Goal cascade */
+  .cascade{display:flex;flex-direction:column;gap:0}
+  .level{position:relative;padding-left:26px}
+  .level::before{content:"";position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--line)}
+  .level:last-child::before{bottom:auto;height:22px}
+  .node{position:relative;padding:4px 0 20px}
+  .node::before{content:"";position:absolute;left:-22px;top:8px;width:9px;height:9px;border-radius:50%;background:var(--navy);box-shadow:0 0 0 3px var(--ground)}
+  .node .tier{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--navy-2);font-weight:600}
+  .node .big{font-family:var(--serif);font-size:17px;margin:2px 0 0}
+  .node ul{margin:8px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+  .node li{display:flex;gap:9px;align-items:center;font-size:14px}
+
+  /* KI table */
+  .track{height:6px;border-radius:3px;background:var(--surface-2);width:120px;overflow:hidden;display:inline-block;vertical-align:middle}
+  .track > i{display:block;height:100%;background:var(--navy);border-radius:3px}
+  .track.warm > i{background:var(--warm)}
+
+  /* Calendar */
+  .weekstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:20px}
+  .day{border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 8px;text-align:center;background:var(--ground)}
+  .day.today{border-color:var(--navy);background:var(--navy-soft)}
+  .day .dn{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.04em}
+  .day .dd{font-size:17px;font-weight:600;margin-top:3px;font-variant-numeric:tabular-nums}
+  .day.today .dd{color:var(--navy-2)}
+  .day .cnt{margin-top:6px;font-size:11px;color:var(--faint)}
+  .timeline{display:grid;grid-template-columns:56px 1fr;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .hours{border-right:1px solid var(--line)}
+  .hourrow{height:46px;font-size:11px;color:var(--faint);padding:4px 8px;text-align:right;border-bottom:1px solid var(--line)}
+  .track-col{position:relative}
+  .track-col .hline{height:46px;border-bottom:1px solid var(--line)}
+  .ev{position:absolute;left:10px;right:12px;border-radius:7px;padding:6px 10px;font-size:12.5px;overflow:hidden;border:1px solid transparent}
+  .ev.plan{background:var(--navy);color:#fff}
+  .ev.plan .t{color:rgba(255,255,255,.75)}
+  .ev.gcal{background:var(--navy-soft);color:var(--navy-2);border-color:color-mix(in srgb,var(--navy-2) 30%,transparent)}
+  .ev .t{font-size:11px;opacity:.85;font-variant-numeric:tabular-nums}
+  .ev b{font-weight:600}
+  .legend{display:flex;gap:16px;margin:14px 2px 0;font-size:12px;color:var(--muted);flex-wrap:wrap}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .sw{width:14px;height:10px;border-radius:3px;display:inline-block}
+  .sw.plan{background:var(--navy)}
+  .sw.gcal{background:var(--navy-soft);border:1px solid var(--navy-2)}
+
+  /* People */
+  .person{display:flex;align-items:center;gap:14px;padding:14px 4px;border-bottom:1px solid var(--line)}
+  .person:last-child{border-bottom:0}
+  .pav{width:38px;height:38px;border-radius:50%;background:var(--surface-2);color:var(--navy-2);display:grid;place-items:center;font-weight:600;font-size:14px;flex:0 0 auto}
+  .person .info{flex:1;min-width:0}
+  .person .info .nm{font-weight:600;font-size:14px}
+  .person .info .rel{font-size:12px;color:var(--faint)}
+  .person .next{font-size:13px;color:var(--muted);flex:1;min-width:0}
+  .person .next b{color:var(--ink);font-weight:500}
+  .chans{display:flex;gap:6px;color:var(--faint)}
+  .chan{width:22px;height:22px;border-radius:6px;background:var(--surface);display:grid;place-items:center}
+  .chan svg{width:13px;height:13px}
+  .last{width:118px;flex:0 0 auto;text-align:right}
+  .last .n{font-weight:600;font-variant-numeric:tabular-nums;font-size:13px}
+  .last .n.over{color:var(--warm)}
+  .last .src{font-size:11px;color:var(--faint)}
+  @media (max-width:760px){.person .next{display:none}}
+
+  /* Journal / nightly */
+  .field{margin-bottom:18px}
+  .field label{display:block;font-size:13px;font-weight:600;margin-bottom:7px}
+  .field .hint{font-weight:400;color:var(--faint);font-size:12px}
+  .ta{width:100%;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface);padding:12px 14px;font-family:var(--serif);font-size:15px;color:var(--ink);min-height:74px;line-height:1.55}
+  .ta::placeholder{color:var(--faint);font-family:var(--sans);font-size:14px}
+  .ta:focus{outline:2px solid var(--navy-2);outline-offset:0;background:var(--ground)}
+  .savenote{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:var(--radius-sm);padding:10px 13px}
+  .three{display:flex;flex-direction:column;gap:9px}
+  .three .in{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:9px 12px;font-size:14px;color:var(--muted)}
+  .three .n{width:18px;height:18px;border-radius:50%;background:var(--navy-soft);color:var(--navy-2);display:grid;place-items:center;font-size:11px;font-weight:700;flex:0 0 auto}
+
+  .flow{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap}
+  .step{flex:1;min-width:150px;border:1px solid var(--line);border-radius:var(--radius);padding:13px 15px;background:var(--ground)}
+  .step.done{background:var(--navy-soft);border-color:color-mix(in srgb,var(--navy-2) 25%,transparent)}
+  .step .sn{font-size:11px;color:var(--navy-2);font-weight:700;letter-spacing:.06em}
+  .step .st{font-weight:600;font-size:14px;margin-top:3px}
+  .step .sd{font-size:12px;color:var(--muted);margin-top:2px}
+
+  .sectlabel{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);font-weight:600;margin:26px 0 12px}
+</style>
+
+<div class="app">
+  <div class="mock-banner">
+    <b>Companion — interactive mockup</b>
+    <span>Static preview · click the left nav to move between pages</span>
+    <button id="morning-reset" class="mb-btn">↺ bring back morning tab (demo)</button>
+  </div>
+
+  <div class="shell">
+    <!-- SIDEBAR -->
+    <aside class="side">
+      <div class="brand">
+        <div class="mark">C</div>
+        <div>
+          <h1>Companion</h1>
+          <small>Week of Jul 13–19</small>
+        </div>
+      </div>
+      <nav class="nav" id="nav">
+        <button data-s="home" class="active"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 11l8-6 8 6"/><path d="M6 10v9h12v-9"/></svg>Home</button>
+        <button data-s="goals"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.4"/></svg>Goals</button>
+        <button data-s="cal"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Calendar</button>
+        <button data-s="people"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0M16 6.5a3 3 0 0 1 0 5.8M20.5 20a5.2 5.2 0 0 0-4-5"/></svg>People</button>
+        <button data-s="dates"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7-4.5-9.5-9C1 8 2.5 4.5 6 4.5c2 0 3.2 1.2 4 2.3.8-1.1 2-2.3 4-2.3 3.5 0 5 3.5 3.5 6.5C19 15.5 12 20 12 20z"/></svg>Dates</button>
+        <button data-s="scripture"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 6.5C10.3 5.2 7.8 4.7 5 4.7V18c2.8 0 5.3.5 7 1.8 1.7-1.3 4.2-1.8 7-1.8V4.7c-2.8 0-5.3.5-7 1.8z"/><path d="M12 6.5V19.8"/></svg>Scripture</button>
+        <button data-s="gym"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6.5 7v10M9.5 5.5v13M14.5 5.5v13M17.5 7v10M9.5 12h5M3.5 10v4M20.5 10v4"/></svg>Gym</button>
+        <div class="nav-label">Daily rhythm</div>
+        <button data-s="morning" id="tab-morning"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v3M4.5 9l2 1M19.5 9l-2 1M2 18h20M6 18a6 6 0 0 1 12 0"/></svg>Morning Review</button>
+        <button data-s="review"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3 6.6 6.6 0 0 0 21 12.8Z"/></svg>Nightly Review</button>
+      </nav>
+      <div class="side-foot">
+        <div class="avatar">CK</div>
+        <div class="who">Carter<small>Synced with Google</small></div>
+      </div>
+    </aside>
+
+    <!-- WORKSPACE -->
+    <main class="work">
+
+      <!-- ============ TODAY ============ -->
+      <section class="screen active" id="home">
+        <div class="topbar">
+          <div class="h">
+            <h2>Home · Friday, July 17</h2>
+            <div class="weeknav"><button class="wk" id="wk-prev" aria-label="Previous week">‹</button><span class="sub" id="wk-label">week of Jul 13 – 19 · this week</span><button class="wk" id="wk-next" aria-label="Next week">›</button></div>
+          </div>
+          <div class="actions"><button class="btn" data-goto="plan">Plan today</button><button class="btn primary" data-goto="weekly">Weekly planning</button></div>
+        </div>
+        <div class="content">
+          <div class="purpose" style="margin-bottom:22px">
+            <div class="lbl">My purpose</div>
+            <p>Come unto Christ and help my family and others do the same — build with excellence, lead with love, endure with faith.</p>
+          </div>
+
+          <div class="sectlabel">This week at a glance</div>
+          <div class="stats">
+            <div class="stat" role="button" tabindex="0" data-goal="deep">
+              <div class="caret">›</div>
+              <div class="k">Deep work · Sandbox</div>
+              <div class="v">13<span>/ 20 hrs</span></div>
+              <div class="bar2"><i class="plan" style="width:100%"></i><i class="done" style="width:65%"></i></div>
+            </div>
+            <div class="stat" role="button" tabindex="0" data-goal="scripture">
+              <div class="caret">›</div>
+              <div class="k">Scripture study</div>
+              <div class="v">5<span>/ 7 days</span></div>
+              <div class="bar2"><i class="plan" style="width:100%"></i><i class="done" style="width:71%"></i></div>
+            </div>
+            <div class="stat" role="button" tabindex="0" data-goal="workouts">
+              <div class="caret">›</div>
+              <div class="k">Workouts</div>
+              <div class="v">3<span>/ 5</span></div>
+              <div class="bar2 warm"><i class="plan" style="width:80%"></i><i class="done" style="width:60%"></i></div>
+            </div>
+            <div class="stat" role="button" tabindex="0" data-goal="reached">
+              <div class="caret">›</div>
+              <div class="k">Reached out</div>
+              <div class="v">7<span>/ 10</span></div>
+              <div class="bar2"><i class="plan" style="width:100%"></i><i class="done" style="width:70%"></i></div>
+            </div>
+          </div>
+
+          <div class="sectlabel">This week's habits</div>
+          <div class="card" style="padding:14px 16px">
+            <div class="habitwrap">
+              <table class="habits">
+                <thead>
+                  <tr>
+                    <th class="hn">Habit</th>
+                    <th>Mon<span class="dnum">13</span></th>
+                    <th>Tue<span class="dnum">14</span></th>
+                    <th>Wed<span class="dnum">15</span></th>
+                    <th>Thu<span class="dnum">16</span></th>
+                    <th class="today">Fri<span class="dnum">17</span></th>
+                    <th>Sat<span class="dnum">18</span></th>
+                    <th>Sun<span class="dnum">19</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="grp"><td class="grplabel" colspan="8">Required</td></tr>
+                  <tr><td class="hname">Book of Mormon</td><td><i class="hc on"></i></td><td><i class="hc on"></i></td><td><i class="hc on"></i></td><td><i class="hc on"></i></td><td><i class="hc on"></i></td><td><i class="hc"></i></td><td><i class="hc"></i></td></tr>
+                  <tr><td class="hname">Daily plan</td><td><i class="hc on"></i></td><td><i class="hc on"></i></td><td><i class="hc on"></i></td><td><i class="hc on"></i></td><td><i class="hc on"></i></td><td><i class="hc"></i></td><td><i class="hc"></i></td></tr>
+                  <tr><td class="hname">Exercise</td><td><i class="hc"></i></td><td><i class="hc"></i></td><td><i class="hc"></i></td><td><i class="hc on"></i></td><td><i class="hc on"></i></td><td><i class="hc"></i></td><td><i class="hc"></i></td></tr>
+                  <tr class="grp"><td class="grplabel" colspan="8">Standards of Excellence</td></tr>
+                  <tr><td class="hname">Service</td><td><i class="hc on"></i></td><td><i class="hc"></i></td><td><i class="hc"></i></td><td><i class="hc on"></i></td><td><i class="hc on"></i></td><td><i class="hc"></i></td><td><i class="hc"></i></td></tr>
+                  <tr><td class="hname">Reading</td><td><i class="hc on"></i></td><td><i class="hc on"></i></td><td><i class="hc"></i></td><td><i class="hc on"></i></td><td><i class="hc"></i></td><td><i class="hc"></i></td><td><i class="hc"></i></td></tr>
+                  <tr><td class="hname">Outreach</td><td><i class="hc"></i></td><td><i class="hc"></i></td><td><i class="hc"></i></td><td><i class="hc on"></i></td><td><i class="hc"></i></td><td><i class="hc"></i></td><td><i class="hc"></i></td></tr>
+                  <tr class="grp"><td class="grplabel" colspan="8">Weekly</td></tr>
+                  <tr><td class="hname">Date night</td><td></td><td><i class="hc on"></i></td><td></td><td><i class="hc on"></i></td><td></td><td></td><td></td></tr>
+                  <tr><td class="hname">Weekly planning</td><td></td><td></td><td></td><td></td><td></td><td></td><td><i class="hc"></i></td></tr>
+                  <tr><td class="hname">Temple</td><td></td><td></td><td><i class="hc on"></i></td><td></td><td></td><td></td><td></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <p class="muted" style="font-size:13px;margin:12px 2px 0">Your daily disciplines — the same weekly checklist you already keep. Tap a glance tile above for the numbers behind a goal.</p>
+        </div>
+      </section>
+
+      <!-- ============ WEEKLY PLANNING ============ -->
+      <section class="screen" id="weekly">
+        <div class="topbar">
+          <div class="h"><h2>Weekly Planning</h2><div class="sub">Sunday session · Week of Jul 13–19</div></div>
+          <div class="actions"><button class="btn">Save draft</button><button class="btn primary">Finish &amp; schedule week</button></div>
+        </div>
+        <div class="content">
+          <div class="flow">
+            <div class="step done"><div class="sn">STEP 1</div><div class="st">Review last week</div><div class="sd">What moved, what didn't</div></div>
+            <div class="step done"><div class="sn">STEP 2</div><div class="st">Set this week's goals</div><div class="sd">Roll down from the year</div></div>
+            <div class="step"><div class="sn">STEP 3</div><div class="st">Time-block</div><div class="sd">Write blocks to Calendar</div></div>
+          </div>
+
+          <div class="grid cols-2">
+            <div class="card">
+              <p class="eyebrow">1 · Last week's review</p>
+              <div class="row"><span style="flex:1">Scripture study</span><span class="track"><i style="width:86%"></i></span><span class="time" style="width:44px;text-align:right">6/7</span></div>
+              <div class="row"><span style="flex:1">Deep work hours</span><span class="track"><i style="width:90%"></i></span><span class="time" style="width:44px;text-align:right">18/20</span></div>
+              <div class="row"><span style="flex:1">Workouts</span><span class="track warm"><i style="width:40%"></i></span><span class="time" style="width:44px;text-align:right">2/5</span></div>
+              <div class="row"><span style="flex:1">Outreach convos</span><span class="track"><i style="width:80%"></i></span><span class="time" style="width:44px;text-align:right">8/10</span></div>
+              <hr class="divider">
+              <p class="muted" style="font-size:13px;margin:0"><b>Win:</b> Shipped the Optimal campaign. <b>Miss:</b> Only 2 workouts — protect morning gym block this week.</p>
+            </div>
+            <div class="card">
+              <p class="eyebrow">2 · Goals for this week</p>
+              <div class="refbox">
+                <div class="reflabel">This quarter — set your week against these</div>
+                <div class="refrow">100 outreach convos · Study + temple 2×/mo · 5 workouts/wk · Weekly date night</div>
+              </div>
+              <div class="row"><span class="check on"></span><span>Ship Companion Phase 0</span><span class="pill" style="margin-left:auto">Build</span></div>
+              <div class="row"><span class="check"></span><span>5 workouts — protect 6:30a</span><span class="pill" style="margin-left:auto">Health</span></div>
+              <div class="row"><span class="check"></span><span>Temple Saturday morning</span><span class="pill" style="margin-left:auto">Faith</span></div>
+              <div class="row"><span class="check"></span><span>10 outreach conversations</span><span class="pill" style="margin-left:auto">Optimal</span></div>
+              <div class="row"><span class="check"></span><span>Date night Friday w/ wife</span><span class="pill" style="margin-left:auto">Family</span></div>
+              <button class="btn" style="margin-top:14px">+ Add weekly goal</button>
+            </div>
+          </div>
+
+          <div class="sectlabel">3 · Time-block into the week</div>
+          <div class="card flat">
+            <div class="weekstrip" style="margin:0">
+              <div class="day"><div class="dn">Sun</div><div class="dd">13</div><div class="cnt">planning</div></div>
+              <div class="day"><div class="dn">Mon</div><div class="dd">14</div><div class="cnt">4 blocks</div></div>
+              <div class="day"><div class="dn">Tue</div><div class="dd">15</div><div class="cnt">5 blocks</div></div>
+              <div class="day"><div class="dn">Wed</div><div class="dd">16</div><div class="cnt">4 blocks</div></div>
+              <div class="day today"><div class="dn">Thu</div><div class="dd">17</div><div class="cnt">6 blocks</div></div>
+              <div class="day"><div class="dn">Fri</div><div class="dd">18</div><div class="cnt">date night</div></div>
+              <div class="day"><div class="dn">Sat</div><div class="dd">19</div><div class="cnt">temple</div></div>
+            </div>
+            <p class="muted" style="font-size:13px;margin:14px 2px 0">Drag each goal onto a day to create a calendar block — writes straight to Google Calendar.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ GOALS ============ -->
+      <section class="screen" id="goals">
+        <div class="topbar">
+          <div class="h"><h2>Goals</h2><div class="sub">Goals → Plans → Inputs · year becomes month becomes week</div></div>
+          <div class="actions"><button class="btn primary" id="edit-goals">Edit Goals</button></div>
+        </div>
+        <div class="content">
+          <div class="purpose" style="margin-bottom:24px">
+            <div class="lbl">My purpose</div>
+            <p>Come unto Christ and help my family and others do the same — build with excellence, lead with love, endure with faith.</p>
+          </div>
+
+          <div class="refbox" style="margin-bottom:20px"><div class="refrow" style="display:flex;gap:20px;flex-wrap:wrap;font-size:13px"><span><b style="color:var(--ink)">Year = Goals</b> · who I'm becoming</span><span><b style="color:var(--ink)">Month = Plans</b> · the means</span><span><b style="color:var(--ink)">Week = Inputs</b> · key indicators, shown on Home</span></div></div>
+
+          <div class="cascade">
+            <div class="level">
+              <div class="node">
+                <div class="tier">2026 · Goals — who I'm becoming</div>
+                <p class="big">Build Optimal, get strong, and stay close to Christ and my family.</p>
+                <ul>
+                  <li><span class="gbadge">A</span><span style="flex:1">Grow Optimal to $30k MRR</span></li>
+                  <li><span class="gbadge">B</span><span style="flex:1">Daily scripture study &amp; temple worship</span></li>
+                  <li><span class="gbadge">C</span><span style="flex:1">Reach my strength &amp; bodyweight goal</span></li>
+                  <li><span class="gbadge">D</span><span style="flex:1">Be a present, intentional husband &amp; father</span></li>
+                </ul>
+                <button class="addgoal">+ Add a yearly goal</button>
+              </div>
+            </div>
+            <div class="level">
+              <div class="node">
+                <div class="tier">July · Plans — the means</div>
+                <p class="big" style="margin-top:6px">Each plan is a concrete means toward a yearly goal.</p>
+                <ul>
+                  <li><span style="flex:1">Ship Companion for daily use</span><span class="pill plain">↑ A · Optimal</span></li>
+                  <li><span style="flex:1">Run 100 outreach conversations</span><span class="pill plain">↑ A · Optimal</span></li>
+                  <li><span style="flex:1">Network — truly know my brothers &amp; sisters<small style="display:block;color:var(--faint);font-weight:400;font-size:12px;margin-top:3px">Make it actionable: grow my ability to receive personal revelation; a real desire to know people, not add contacts.</small></span><span class="pill plain">↑ B · Faith</span></li>
+                  <li><span style="flex:1">Study 3 Nephi 11–18 + temple 2×</span><span class="pill plain">↑ B · Faith</span></li>
+                  <li><span style="flex:1">Add 20 lb across the big lifts</span><span class="pill plain">↑ C · Health</span></li>
+                  <li><span style="flex:1">Weekly date night + daily kid time</span><span class="pill plain">↑ D · Family</span></li>
+                </ul>
+                <button class="addgoal">+ Add a monthly plan</button>
+              </div>
+            </div>
+            <div class="level">
+              <div class="node">
+                <div class="tier">this week · Inputs — my key indicators</div>
+                <p class="big" style="margin-top:6px">The measurable inputs that feed the plans — these are the tiles on Home.</p>
+                <ul>
+                  <li><span class="goalicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 20h20"/></svg></span><span style="flex:1">Deep work — 20 hrs</span><span class="pill plain">↑ Ship Companion</span></li>
+                  <li><span class="goalicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 4 5a2 2 0 0 1 2-2z"/></svg></span><span style="flex:1">Reached out — 10 people</span><span class="pill plain">↑ 100 conversations</span></li>
+                  <li><span class="goalicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6.5C10.3 5.2 7.8 4.7 5 4.7V18c2.8 0 5.3.5 7 1.8 1.7-1.3 4.2-1.8 7-1.8V4.7c-2.8 0-5.3.5-7 1.8z"/></svg></span><span style="flex:1">Scripture study — 7 days</span><span class="pill plain">↑ Study + temple</span></li>
+                  <li><span class="goalicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6.5 8v8M17.5 8v8M9.5 12h5M4 10v4M20 10v4"/></svg></span><span style="flex:1">Workouts — 5</span><span class="pill plain">↑ Add 20 lb</span></li>
+                </ul>
+                <button class="addgoal">+ Add a weekly input</button>
+              </div>
+            </div>
+          </div>
+          <p class="muted" style="font-size:13px;margin:6px 2px 24px">A monthly <b style="color:var(--ink)">plan</b> (e.g. "Ship Companion") is fed by weekly <b style="color:var(--ink)">inputs</b> (e.g. Deep work hours). Set the parent during planning; you plan a month at a time. Your weekly inputs are exactly the key-indicator tiles on Home.</p>
+
+          <div class="sectlabel">Outreach &amp; to-dos</div>
+          <div class="grid cols-2">
+            <div class="card">
+              <p class="eyebrow">Outreach — going stale</p>
+              <div class="row"><span class="check"></span><div style="flex:1"><b>Grandma</b><div class="faint" style="font-size:12px">Last talked 24 days ago</div></div><span class="pill warm">Overdue</span></div>
+              <div class="row"><span class="check"></span><div style="flex:1"><b>Elder Barlow</b><div class="faint" style="font-size:12px">Mission comp · 41 days ago</div></div><span class="pill warm">Overdue</span></div>
+              <div class="row"><span class="check on"></span><div style="flex:1"><b>Dad</b><div class="faint" style="font-size:12px">Calling at 3:00p today</div></div><span class="pill plain">Planned</span></div>
+              <div class="row"><span class="check"></span><div style="flex:1"><b>Jordan R.</b><div class="faint" style="font-size:12px">Friend · 12 days ago</div></div><span class="pill plain">Soon</span></div>
+            </div>
+            <div class="card">
+              <p class="eyebrow">To-do</p>
+              <div id="todo-items">
+                <div class="todo"><span class="rcheck"></span><div class="body"><div class="tt">Renew temple recommend</div><div class="dd">Ask the bishop's exec sec after church</div></div><span class="dur">15 min</span><button class="sched"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Schedule</button></div>
+                <div class="todo"><span class="rcheck"></span><div class="body"><div class="tt">Book anniversary dinner</div><div class="dd">Somewhere nice — call ahead to reserve</div></div><span class="dur">20 min</span><button class="sched"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Schedule</button></div>
+                <div class="todo"><span class="rcheck"></span><div class="body"><div class="tt">Fix the fence gate</div><div class="dd">Grab a hinge from the hardware store</div></div><span class="dur">45 min</span><button class="sched"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Schedule</button></div>
+              </div>
+              <div class="newtodo" id="newtodo">
+                <input class="ti" id="td-name" placeholder="Reminder name…">
+                <input class="ti" id="td-note" placeholder="Notes / description (optional)…">
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                  <input class="ti" id="td-dur" type="number" min="5" step="5" placeholder="Duration" style="width:110px">
+                  <select class="ti" id="td-unit" style="padding:9px 8px"><option value="min">min</option><option value="hr">hr</option></select>
+                  <button class="btn primary" id="td-add" style="margin-left:auto"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:-2px;margin-right:5px"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Add &amp; schedule</button>
+                </div>
+                <p class="faint" style="font-size:11.5px;margin:2px 0 0">Duration sets how long the event will be when it's scheduled on your calendar.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ CALENDAR ============ -->
+      <section class="screen" id="cal">
+        <div class="topbar">
+          <div class="h"><h2>Calendar</h2><div class="sub">Synced with Google Calendar · Fri, Jul 17</div></div>
+          <div class="actions"><button class="btn">Today</button><button class="btn primary">+ New block</button></div>
+        </div>
+        <div class="content">
+          <div class="calbar">
+            <div class="vdd" id="viewdd">
+              <button class="vdd-btn" id="viewbtn" aria-haspopup="true">Week <span class="faint">▾</span></button>
+              <div class="vdd-menu">
+                <button data-view="day">Day</button>
+                <button data-view="3day">3 days</button>
+                <button data-view="week" class="on">Week</button>
+              </div>
+            </div>
+            <div class="vdd" id="rangedd">
+              <button class="vdd-btn" id="rangebtn" aria-haspopup="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:-2px"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg> View settings</button>
+              <div class="vdd-menu">
+                <button data-range="0,24" class="on">Full day · 12a – 12a</button>
+                <button data-range="6,23">6 AM – 11 PM</button>
+                <button data-range="5,22">5 AM – 10 PM</button>
+                <button data-range="7,19">7 AM – 7 PM</button>
+              </div>
+            </div>
+            <span class="muted" style="font-size:12px;margin-left:auto">Scroll for all 24 hours · grey = already passed</span>
+          </div>
+          <div class="calwrap" id="calwrap"><div id="cal-root"></div></div>
+          <div class="cal-legend">
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6.5C10.3 5.2 7.8 4.7 5 4.7V18c2.8 0 5.3.5 7 1.8 1.7-1.3 4.2-1.8 7-1.8V4.7c-2.8 0-5.3.5-7 1.8z"/></svg> Faith</span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6.5 8v8M17.5 8v8M9.5 12h5M4 10v4M20 10v4"/></svg> Health</span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 20h20"/></svg> Deep work</span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 4 5a2 2 0 0 1 2-2z"/></svg> Outreach</span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7-4.5-9.5-9C1 8 2.5 4.5 6 4.5c2 0 3.2 1.2 4 2.3.8-1.1 2-2.3 4-2.3 3.5 0 5 3.5 3.5 6.5C19 15.5 12 20 12 20z"/></svg> Family</span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 4v2H5V7zM6 9v9M18 9v9M10 9v9M14 9v9M4 21h16"/></svg> Temple</span>
+          </div>
+          <p class="muted" style="font-size:13px;margin:12px 2px 0">Each block shows its goal's <b style="color:var(--ink)">icon</b> instead of a text label — you pick an icon when you create the goal. Grey = time already passed; the clay line marks now.</p>
+        </div>
+      </section>
+
+      <!-- ============ PEOPLE ============ -->
+      <section class="screen" id="people">
+        <div class="topbar">
+          <div class="h"><h2>People</h2><div class="sub">Sorted by who you haven't talked to in a while</div></div>
+          <div class="actions"><button class="btn">All contacts</button><button class="btn primary">Sort: Most stale</button></div>
+        </div>
+        <div class="content">
+          <div class="card" style="padding:6px 18px">
+            <div class="person">
+              <div class="pav">EB</div>
+              <div class="info"><div class="nm">Elder Barlow</div><div class="rel">Mission companion</div></div>
+              <div class="next">Next: <b>Send a message, ask about the baby</b></div>
+              <div class="chans">
+                <span class="chan" title="text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2Z"/></svg></span>
+              </div>
+              <div class="last"><div class="n over">41 days</div><div class="src">last: text</div></div>
+            </div>
+            <div class="person">
+              <div class="pav">GM</div>
+              <div class="info"><div class="nm">Grandma</div><div class="rel">Family</div></div>
+              <div class="next">Next: <b>Call — she likes Sunday afternoons</b></div>
+              <div class="chans">
+                <span class="chan" title="text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2Z"/></svg></span>
+              </div>
+              <div class="last"><div class="n over">24 days</div><div class="src">last: text</div></div>
+            </div>
+            <div class="person">
+              <div class="pav">JR</div>
+              <div class="info"><div class="nm">Jordan R.</div><div class="rel">Friend</div></div>
+              <div class="next">Next: <b>Grab lunch this month</b></div>
+              <div class="chans">
+                <span class="chan" title="email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+                <span class="chan" title="text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2Z"/></svg></span>
+              </div>
+              <div class="last"><div class="n">12 days</div><div class="src">last: email</div></div>
+            </div>
+            <div class="person">
+              <div class="pav">D</div>
+              <div class="info"><div class="nm">Dad (Eric)</div><div class="rel">Family</div></div>
+              <div class="next">Next: <b>Call today at 3:00p</b></div>
+              <div class="chans">
+                <span class="chan" title="calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></span>
+                <span class="chan" title="text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2Z"/></svg></span>
+              </div>
+              <div class="last"><div class="n">3 days</div><div class="src">last: text</div></div>
+            </div>
+            <div class="person">
+              <div class="pav">A</div>
+              <div class="info"><div class="nm">Adam</div><div class="rel">Optimal · co-founder</div></div>
+              <div class="next">Next: <b>Daily standup 8:00a</b></div>
+              <div class="chans">
+                <span class="chan" title="email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+                <span class="chan" title="calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></span>
+              </div>
+              <div class="last"><div class="n">Today</div><div class="src">last: email</div></div>
+            </div>
+          </div>
+          <p class="muted" style="font-size:13px;margin:16px 2px 0">"Days" is the freshest signal across <b>email, texts, and calendar</b>. Texts come from a small helper running on your Mac.</p>
+        </div>
+      </section>
+
+      <!-- ============ DATES ============ -->
+      <section class="screen" id="dates">
+        <div class="topbar">
+          <div class="h"><h2>Date planner</h2><div class="sub">Try something new!</div></div>
+          <div class="actions">
+            <div class="seg" id="date-toggle"><button class="on" data-mode="food">Food</button><button data-mode="act">Activity</button></div>
+            <button class="btn primary" id="dice">🎲 Dice Roll</button>
+          </div>
+        </div>
+        <div class="content">
+
+          <div class="proxbar" id="proxbar">
+            <span class="proxlbl">Near</span>
+            <select class="fsel" id="prox-origin"><option>Home</option><option>My current location</option></select>
+            <span class="proxlbl">within</span>
+            <select class="fsel" id="prox-dist"><option>5 mi</option><option selected>10 mi</option><option>25 mi</option></select>
+            <span class="faint" style="margin-left:auto;font-size:12px">Recently-done sinks to the bottom</span>
+          </div>
+
+          <div class="card" style="margin-bottom:16px">
+            <div class="filterbar" id="date-filterbar">
+              <p class="eyebrow" id="list-eyebrow" style="margin:0;flex:1">Food &amp; Restaurants</p>
+              <span id="food-filters" style="display:flex;gap:8px">
+                <select class="fsel" id="food-cuisine"><option value="">All cuisines</option><option>Indian</option><option>American</option><option>Southwest</option><option>Peruvian</option><option>Thai</option></select>
+                <select class="fsel" id="food-price"><option value="">Any price</option><option value="1">$</option><option value="2">$$</option><option value="3">$$$</option><option value="4">$$$$</option></select>
+              </span>
+              <span id="act-filters" style="display:none;gap:8px">
+                <select class="fsel" id="act-cat"><option value="">All categories</option><option>Active</option><option>Puzzle</option><option>Creative</option><option>Low-key</option><option>Night out</option><option>Culture</option><option>Outdoor</option></select>
+                <select class="fsel" id="act-price"><option value="">Any price</option><option value="0">Free</option><option value="1">$</option><option value="2">$$</option><option value="3">$$$</option></select>
+                <button class="btn" id="act-add">+ Add activity</button>
+              </span>
+            </div>
+            <div id="explore-head" style="display:none">
+              <div class="xbanner"><button class="xclear" id="explore-back">‹ Back</button><span id="explore-title"></span></div>
+              <div class="dmap" id="explore-map"></div>
+            </div>
+            <div id="date-list"></div>
+            <p class="muted" id="date-foot" style="font-size:12.5px;margin:12px 2px 0"></p>
+          </div>
+
+          <div class="card">
+            <p class="eyebrow">Recent dates · <span class="faint" style="text-transform:none;letter-spacing:0;font-weight:400">from your card</span></p>
+            <div class="dlog"><div class="dd">Jul 12</div><div class="dp">Bombay House → drive up the canyon</div><div class="dcost">$58</div></div>
+            <div class="dlog"><div class="dd">Jun 21</div><div class="dp">Temple session + lunch · <span class="faint">Provo City Center</span></div><div class="dcost">$24</div></div>
+            <div class="dlog"><div class="dd">Jun 7</div><div class="dp">Mini golf · <span class="faint">Trafalga</span></div><div class="dcost">$19</div></div>
+            <div class="dlog"><div class="dd">Mar 15</div><div class="dp">Concert — Velour</div><div class="dcost">$36</div></div>
+            <p class="muted" style="font-size:13px;margin:14px 2px 0">Imported from your debit-card expenses — Claude flags date-looking transactions and logs the day, so "last done" stays honest without you tracking anything.</p>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ============ PLAN TODAY ============ -->
+      <section class="screen" id="plan">
+        <div class="topbar">
+          <div class="h"><h2>Plan Today</h2><div class="sub">Friday, July 17 · see the day, then drop in your top 3 and to-dos</div></div>
+          <div class="actions"><button class="btn" data-goto="morning">Morning Review</button><button class="btn primary" data-goto="cal">Open Calendar</button></div>
+        </div>
+        <div class="content">
+          <div class="grid cols-2">
+            <div class="card">
+              <p class="eyebrow">Today's schedule · from Calendar</p>
+              <div class="row"><span class="time">6:00a</span><span class="goalicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6.5C10.3 5.2 7.8 4.7 5 4.7V18c2.8 0 5.3.5 7 1.8 1.7-1.3 4.2-1.8 7-1.8V4.7c-2.8 0-5.3.5-7 1.8z"/></svg></span><span style="flex:1">Scripture study &amp; prayer</span></div>
+              <div class="row"><span class="time">6:45a</span><span class="goalicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6.5 8v8M17.5 8v8M9.5 12h5M4 10v4M20 10v4"/></svg></span><span style="flex:1">Workout — Lehi gym</span></div>
+              <div class="row"><span class="time">9:00a</span><span class="goalicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 20h20"/></svg></span><span style="flex:1">Deep work — Companion</span></div>
+              <div class="row"><span class="time">1:00p</span><span class="goalicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 4 5a2 2 0 0 1 2-2z"/></svg></span><span style="flex:1">Outreach calls</span></div>
+              <div class="row"><span class="time">3:00p</span><span class="goalicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7-4.5-9.5-9C1 8 2.5 4.5 6 4.5c2 0 3.2 1.2 4 2.3.8-1.1 2-2.3 4-2.3 3.5 0 5 3.5 3.5 6.5C19 15.5 12 20 12 20z"/></svg></span><span style="flex:1">Call Dad</span></div>
+              <p class="muted" style="font-size:12.5px;margin:14px 0 0">Open windows today: <b style="color:var(--ink)">10:30–12:00</b>, <b style="color:var(--ink)">4:00–5:30</b>, <b style="color:var(--ink)">7:00–8:30</b>.</p>
+            </div>
+            <div class="card">
+              <p class="eyebrow">Top 3 · carried from last night</p>
+              <div class="sched-item"><span class="n" style="width:18px;height:18px;border-radius:50%;background:var(--navy-soft);color:var(--navy-2);display:grid;place-items:center;font-size:11px;font-weight:700;flex:0 0 auto">1</span><div class="si-b"><div class="st">Ship Companion Phase 0 → deploy</div><div class="sd">Deep work</div></div><span class="dur">90 min</span><button class="addcal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Add</button></div>
+              <div class="sched-item"><span class="n" style="width:18px;height:18px;border-radius:50%;background:var(--navy-soft);color:var(--navy-2);display:grid;place-items:center;font-size:11px;font-weight:700;flex:0 0 auto">2</span><div class="si-b"><div class="st">Protect the 6:45 workout</div><div class="sd">Health · already scheduled</div></div><span class="dur">45 min</span><button class="addcal" style="background:var(--good)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12l5 5L20 6"/></svg>On cal</button></div>
+              <div class="sched-item"><span class="n" style="width:18px;height:18px;border-radius:50%;background:var(--navy-soft);color:var(--navy-2);display:grid;place-items:center;font-size:11px;font-weight:700;flex:0 0 auto">3</span><div class="si-b"><div class="st">Call Grandma before dinner</div><div class="sd">Family</div></div><span class="dur">20 min</span><button class="addcal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Add</button></div>
+              <hr class="divider">
+              <p class="eyebrow" style="margin-bottom:6px">To-dos ready to schedule</p>
+              <div class="sched-item"><span class="rcheck" style="width:16px;height:16px;flex:0 0 auto"></span><div class="si-b"><div class="st">Renew temple recommend</div><div class="sd">Ask the bishop after church</div></div><span class="dur">15 min</span><button class="addcal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Add</button></div>
+              <div class="sched-item"><span class="rcheck" style="width:16px;height:16px;flex:0 0 auto"></span><div class="si-b"><div class="st">Book anniversary dinner</div><div class="sd">Call ahead to reserve</div></div><span class="dur">20 min</span><button class="addcal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Add</button></div>
+            </div>
+          </div>
+          <p class="muted" style="font-size:13px;margin:16px 2px 0">Each item's <b style="color:var(--ink)">duration</b> becomes the length of the calendar block when you add it — drop it into one of today's open windows.</p>
+        </div>
+      </section>
+
+      <!-- ============ SCRIPTURE STUDY ============ -->
+      <section class="screen" id="scripture">
+        <div class="topbar">
+          <div class="h"><h2>Scripture Study</h2><div class="sub">Notes, questions to carry, and what you're reading</div></div>
+          <div class="actions"><button class="btn primary">+ New note</button></div>
+        </div>
+        <div class="content">
+          <div class="grid cols-2">
+            <div class="card">
+              <p class="eyebrow">Questions I'm carrying</p>
+              <div class="qlist">
+                <div class="q"><span class="qm">?</span><span>What does it mean to nourish the seed daily (Alma 32)?</span></div>
+                <div class="q"><span class="qm">?</span><span>How do I "think celestial" in ordinary work?</span></div>
+                <div class="q"><span class="qm">?</span><span>Where is the Lord asking me to be more humble?</span></div>
+              </div>
+              <hr class="divider">
+              <p class="eyebrow" style="margin-bottom:8px">This month's study goal</p>
+              <p class="muted" style="font-size:14px;margin:0">Read 3 Nephi 11–18 slowly — the Savior's visit — and note every invitation He gives.</p>
+            </div>
+            <div class="card">
+              <p class="eyebrow">Currently reading</p>
+              <div class="row"><div style="flex:1"><b>Book of Mormon</b><div class="faint" style="font-size:12px">Alma 32 · today</div></div><span class="pill plain">Scripture</span></div>
+              <div class="row"><div style="flex:1"><b>Jesus the Christ</b><div class="faint" style="font-size:12px">Ch. 7 of 42</div></div><span class="pill plain">Book</span></div>
+              <div class="row"><div style="flex:1"><b>The Infinite Atonement</b><div class="faint" style="font-size:12px">p. 88</div></div><span class="pill plain">Book</span></div>
+              <button class="btn" style="margin-top:12px">+ Add a book</button>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:16px">
+            <p class="eyebrow">Study notes · Alma 32 — Friday, July 17</p>
+            <div class="ta" style="min-height:120px;cursor:text;font-family:var(--serif)">Faith is a seed — it only grows if I plant it and nourish it every day. Alma doesn't promise instant fruit; he promises that if I don't cast it out, it swells and sprouts. Tie it to the build: patience with Companion, patience with people. Where am I casting out the seed by neglect? The morning study is the nourishing — don't skip it.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ GYM ============ -->
+      <section class="screen" id="gym">
+        <div class="topbar">
+          <div class="h"><h2>Gym</h2><div class="sub">Workouts from Claude Bumstead · log your weights · watch progress</div></div>
+          <div class="actions"><button class="btn">History</button><button class="btn primary">Log a set</button></div>
+        </div>
+        <div class="content">
+          <div class="stats" style="margin-bottom:22px">
+            <div class="stat" style="cursor:default"><div class="k">Workouts this week</div><div class="v">3<span>/ 5</span></div><div class="bar2"><i class="plan" style="width:100%"></i><i class="done" style="width:60%"></i></div></div>
+            <div class="stat" style="cursor:default"><div class="k">Weekly volume</div><div class="v">38,400<span>lb</span></div></div>
+            <div class="stat" style="cursor:default"><div class="k">Current streak</div><div class="v">9<span>days</span></div></div>
+            <div class="stat" style="cursor:default"><div class="k">PRs this month</div><div class="v">2</div></div>
+          </div>
+
+          <div class="grid cols-2">
+            <div class="card">
+              <p class="eyebrow">Today · Push day — Bumstead suggests, you log</p>
+              <div class="liftrow"><div class="ln">Bench press<small>Suggested 4 × 8 @ 185</small></div><div class="sets"><span class="setchip">185×8</span><span class="setchip">185×8</span><span class="setchip pr">190×6</span><span class="setchip">185×7</span></div></div>
+              <div class="liftrow"><div class="ln">Incline DB press<small>3 × 10</small></div><div class="sets"><span class="setchip">65×10</span><span class="setchip">65×10</span><span class="setchip">65×9</span></div></div>
+              <div class="liftrow"><div class="ln">Overhead press<small>3 × 8</small></div><div class="sets"><span class="setchip">115×8</span><span class="setchip">115×7</span><span class="setchip">110×8</span></div></div>
+              <div class="liftrow"><div class="ln">Cable fly<small>3 × 12</small></div><div class="sets"><span class="setchip">40×12</span><span class="setchip">40×12</span><span class="setchip">40×11</span></div></div>
+              <div class="liftrow"><div class="ln">Triceps pushdown<small>3 × 15</small></div><div class="sets"><span class="faint" style="font-size:12px">not logged yet</span></div></div>
+              <p class="muted" style="font-size:12.5px;margin:14px 0 0">Reply to Claude Bumstead in Slack with your weights and they land here automatically.</p>
+            </div>
+            <div class="card">
+              <p class="eyebrow">Progress — heaviest set over 8 weeks</p>
+              <div class="progrow"><div class="pn">Bench press <svg viewBox="0 0 90 22" width="90" height="22" fill="none" stroke="var(--navy-2)" stroke-width="1.6" style="margin-left:8px"><polyline points="1,18 22,15 44,12 66,9 89,4"/></svg></div><div class="pv">190<small>+15 lb</small></div></div>
+              <div class="progrow"><div class="pn">Squat <svg viewBox="0 0 90 22" width="90" height="22" fill="none" stroke="var(--navy-2)" stroke-width="1.6" style="margin-left:8px"><polyline points="1,17 22,16 44,11 66,10 89,6"/></svg></div><div class="pv">275<small>+20 lb</small></div></div>
+              <div class="progrow"><div class="pn">Deadlift <svg viewBox="0 0 90 22" width="90" height="22" fill="none" stroke="var(--navy-2)" stroke-width="1.6" style="margin-left:8px"><polyline points="1,16 22,13 44,13 66,8 89,5"/></svg></div><div class="pv">315<small>+25 lb</small></div></div>
+              <div class="progrow"><div class="pn">Overhead press <svg viewBox="0 0 90 22" width="90" height="22" fill="none" stroke="var(--navy-2)" stroke-width="1.6" style="margin-left:8px"><polyline points="1,15 22,14 44,12 66,11 89,9"/></svg></div><div class="pv">115<small>+5 lb</small></div></div>
+              <div class="progrow"><div class="pn">Body weight <svg viewBox="0 0 90 22" width="90" height="22" fill="none" stroke="var(--warm)" stroke-width="1.6" style="margin-left:8px"><polyline points="1,8 22,9 44,10 66,12 89,13"/></svg></div><div class="pv">183<small>−4 lb</small></div></div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:16px">
+            <p class="eyebrow">Strength &amp; readiness · Bumstead is calibrating on your logs</p>
+            <div class="grid cols-2">
+              <div>
+                <div class="reflabel" style="margin-bottom:6px">Estimated 1-rep max <span class="faint" style="text-transform:none;letter-spacing:0;font-weight:400">· Epley, from logged sets</span></div>
+                <div class="strengthrow"><span class="sn">Bench press</span><span class="s1">236 lb</span></div>
+                <div class="strengthrow"><span class="sn">Squat</span><span class="s1">341 lb</span></div>
+                <div class="strengthrow"><span class="sn">Deadlift</span><span class="s1">391 lb</span></div>
+                <div class="strengthrow"><span class="sn">Overhead press</span><span class="s1">141 lb</span></div>
+              </div>
+              <div>
+                <div class="reflabel" style="margin-bottom:6px">Muscle readiness <span class="faint" style="text-transform:none;letter-spacing:0;font-weight:400">· volume ÷ days rest</span></div>
+                <div class="strengthrow"><span class="sn"><span class="readic fresh"></span>Chest</span><span class="s1 faint" style="font-weight:500">fresh · 2d rest</span></div>
+                <div class="strengthrow"><span class="sn"><span class="readic tired"></span>Legs</span><span class="s1 faint" style="font-weight:500">fatigued · worked yesterday</span></div>
+                <div class="strengthrow"><span class="sn"><span class="readic fresh"></span>Back</span><span class="s1 faint" style="font-weight:500">fresh · 3d rest</span></div>
+                <div class="strengthrow"><span class="sn"><span class="readic tired"></span>Shoulders</span><span class="s1 faint" style="font-weight:500">moderate · 1d rest</span></div>
+              </div>
+            </div>
+            <hr class="divider">
+            <p class="muted" style="font-size:13px;margin:0"><b style="color:var(--ink)">Fitness goal:</b> Bench 225 × 1 by October. <span class="faint">Fatigue = set volume (weight × reps) weighed against days of rest per muscle — Bumstead reads it to pick tomorrow's suggested weights. <b>(Planned — see PRD.)</b></span></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ MORNING REVIEW ============ -->
+      <section class="screen" id="morning">
+        <div class="topbar">
+          <div class="h"><h2>Morning Review</h2><div class="sub">Friday, July 17 · read this to begin the day</div></div>
+          <div class="actions"><button class="btn primary" id="morning-done">Done — start the day</button></div>
+        </div>
+        <div class="content" style="max-width:760px">
+          <div class="card" id="mr-card">
+            <div class="mr-head">
+              <p class="eyebrow" style="margin:0">Morning Review</p>
+              <button class="dots" id="mr-edit" aria-label="Edit sections" title="Edit sections">⋮</button>
+            </div>
+            <div class="reflect" id="mr-list">
+              <div class="r"><div class="rl">Humility</div><div class="rt">Are you willing to rely on the Lord for all that you have? <em>(I know that I am nothing — are we not all beggars?)</em></div></div>
+              <div class="r"><div class="rl">Become</div><div class="becomes"><span>Agency ⬆️ → Confidence ⬆️</span><span>Humility / Obedience ⬆️ → Revelation ⬆️</span><span>Learning ⬆️</span><span>Networking ⬆️</span><span>Weight ⬇️</span><span>Distractions ⬇️</span></div></div>
+              <div class="r"><div class="rl">Commitment</div><div class="rt">Am I willing — do I commit — to do things His way (callings), to remember Christ, and to let it be His will? <em>(faith not to be healed)</em></div></div>
+              <div class="r"><div class="rl">Hope in the promise</div><div class="rt">Will I strive to do my duty, uphold my covenants, and obtain the promises offered to me through the priesthood? <em>(all things will work together for my good; renewal of body; the Lord to fight my battles — every day, and never again)</em></div></div>
+              <div class="r"><div class="rl">Prepare</div><div class="rt">How will I prepare for the coming day? <em>(put on the whole armor of God; "get thee hence"; make myself available to the Lord; seek this Jesus; men are agents unto themselves; early to bed, early to rise)</em></div></div>
+              <div class="r"><div class="rl">Gratitude</div><div class="rt">What am I grateful for this morning?</div></div>
+              <div class="r"><div class="rl">Why</div><div class="rt">Become the husband and father I can be.</div></div>
+              <div class="r"><div class="rl">Prayer</div><div class="rt"><em>Wilt thou deliver, that I may be an instrument to save this people; help me to "think celestial."</em></div></div>
+            </div>
+            <button class="btn" id="mr-add" style="margin-top:14px;display:none">+ Add section</button>
+            <p class="faint" id="mr-note" style="font-size:12px;margin:12px 0 0;display:none">Editing — drag ⠿ to reorder, tap any text to rewrite, × to remove, + to add. Works like Google Forms.</p>
+          </div>
+
+          <div class="nextrow">
+            <span class="muted" style="font-size:13px">Next in your morning:</span>
+            <button class="btn" data-goto="scripture">Read scriptures →</button>
+            <button class="btn" data-goto="plan">Plan the day →</button>
+          </div>
+
+          <div class="savenote" style="margin-top:18px">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--navy-2)" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>
+            This tab appears each <b style="color:var(--ink)">morning</b> and hides once you mark it done — back again tomorrow. <b style="color:var(--ink)">Nightly Review</b> stays available all day.
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ NIGHTLY REVIEW ============ -->
+      <section class="screen" id="review">
+        <div class="topbar">
+          <div class="h"><h2>Nightly Review</h2><div class="sub">Thursday, July 17 · a few minutes to close the day</div></div>
+          <div class="actions"><button class="btn primary">Complete review</button></div>
+        </div>
+        <div class="content" style="max-width:720px">
+          <div class="card" style="margin-bottom:20px">
+            <p class="eyebrow">Confirm today's time → logs toward your goals</p>
+            <p class="muted" style="font-size:13px;margin:-4px 0 14px">Adjust today's calendar blocks so they match what actually happened, then confirm to log the hours.</p>
+            <div class="row"><span class="tag plan">Faith</span><span style="flex:1">Scripture study &amp; prayer</span><span class="pill plain">45m</span></div>
+            <div class="row"><span class="tag plan">Health</span><span style="flex:1">Workout — Lehi gym</span><span class="pill warm">skipped</span></div>
+            <div class="row"><span class="tag plan">Deep work</span><span style="flex:1">Companion build · Sandbox</span><span class="pill plain">3h 20m</span></div>
+            <div class="row"><span class="tag plan">Optimal</span><span style="flex:1">Outreach calls</span><span class="pill plain">1h</span></div>
+            <div style="display:flex;gap:10px;margin-top:15px">
+              <button class="btn">Open Calendar</button>
+              <button class="btn primary">Confirm &amp; log hours</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>What am I grateful for?</label>
+            <textarea class="ta" style="min-height:56px" placeholder="Name a few…">A patient wife. Work I actually love. A quiet answer to prayer today.</textarea>
+          </div>
+
+          <div class="field">
+            <label>What happened today?</label>
+            <textarea class="ta" placeholder="The day in your own words…">Good deep-work morning — the Companion scaffold runs. Missed the gym again. Felt the Spirit during study in Alma 32.</textarea>
+          </div>
+
+          <div class="field">
+            <label>How can I repent and improve?</label>
+            <textarea class="ta" style="min-height:56px" placeholder="Where did I fall short — and what will I change?">Was short with the kids at dinner. Tomorrow: phone away 5–7pm and be fully present.</textarea>
+          </div>
+
+          <div class="field">
+            <label>How will I prepare for tomorrow?</label>
+            <textarea class="ta" style="min-height:56px" placeholder="Set tomorrow up to win…">Lay out gym clothes tonight. First block = deploy Phase 0 before opening email.</textarea>
+          </div>
+
+          <div class="field">
+            <label>Top 3 for tomorrow <span class="hint">— carries into tomorrow's Morning Review</span></label>
+            <div class="three">
+              <div class="in"><span class="n">1</span> Ship Companion Phase 0 → deploy</div>
+              <div class="in"><span class="n">2</span> Protect the 6:45 workout</div>
+              <div class="in"><span class="n">3</span> Call Grandma before dinner</div>
+            </div>
+          </div>
+
+          <div class="savenote">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--navy-2)" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+            Tonight's entry appends to your <b style="color:var(--ink)">"Journal 2026"</b> Google Doc — your journal stays in one place.
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ALLOCATION POP-UP (opens from a stat tile) -->
+  <div class="modal-back" id="modal-back" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-h">
+        <button class="modal-x" id="modal-x" aria-label="Close">×</button>
+        <p class="eyebrow" style="margin-bottom:8px">Weekly plan</p>
+        <h3 id="modal-title" style="font-size:17px;margin:0 0 3px">Deep work</h3>
+        <div class="muted" id="modal-sub" style="font-size:13px">Target 20h / week</div>
+        <div class="bar2" id="modal-bar" style="margin-top:14px;height:8px"><i class="plan" style="width:100%"></i><i class="done" style="width:65%"></i></div>
+        <div class="meta" id="modal-meta" style="margin-top:8px"><span id="modal-planned">20h planned</span><span id="modal-done">13h done</span></div>
+      </div>
+      <div class="modal-body">
+        <div class="alloc" id="modal-rows"></div>
+        <p class="faint" style="font-size:12px;margin:15px 0 0;line-height:1.5">Grouped by block name — calendar blocks with the same name are added together. Add a block in <b style="color:var(--muted)">Calendar</b> and assign it to this goal to fill your planned hours.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEEDBACK BOT -->
+  <button class="fab" id="fab" aria-label="Send feedback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2Z"/></svg></button>
+  <div class="fabpanel" id="fabpanel">
+    <div class="fabhead"><b id="fab-title">Improve this app</b><button class="modal-x" id="fab-x" aria-label="Close">×</button></div>
+    <div class="fabbody">
+      <div class="fabseg" id="fab-seg">
+        <button class="on" data-mode="app">Improve app</button>
+        <button data-mode="date">Date idea</button>
+      </div>
+      <p class="faint" id="fab-hint" style="font-size:12px;margin:0 0 9px;line-height:1.5">What would you like to change? Name the tab and the change. Your laptop runner picks these up during the day and makes the edits.</p>
+      <textarea class="ta" id="fab-input" style="min-height:74px;font-family:var(--sans);font-size:13px" placeholder="e.g. On the Calendar tab, make past events fade a bit more…"></textarea>
+      <button class="btn primary" id="fab-send" style="width:100%;justify-content:center;margin-top:9px">Send feedback</button>
+      <div class="fqhead" id="fab-qhead" style="display:none">Queued for your runner</div>
+      <div id="fab-queue"></div>
+    </div>
+  </div>
+
+  <!-- GENERIC DIALOG -->
+  <div class="dlg-back" id="dlg-back" aria-hidden="true">
+    <div class="dlg" role="dialog" aria-modal="true">
+      <div class="dlg-head"><h3 id="dlg-title">Title</h3><button class="modal-x" id="dlg-x" aria-label="Close">×</button></div>
+      <div class="dlg-body" id="dlg-body"></div>
+      <div class="dlg-foot"><button class="btn" id="dlg-cancel">Cancel</button><button class="btn primary" id="dlg-ok">Confirm</button></div>
+    </div>
+  </div>
+
+  <!-- PLACE DETAIL POPUP (Google-Maps-style) -->
+  <div class="dlg-back" id="place-back" aria-hidden="true">
+    <div class="dlg" style="max-width:470px" role="dialog" aria-modal="true">
+      <div class="dlg-head"><h3 id="place-h">Place</h3><button class="modal-x" id="place-x" aria-label="Close">×</button></div>
+      <div class="dlg-body" id="place-body"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</div>
+
+<script>
+  (function(){
+    var nav = document.getElementById('nav');
+    var btns = nav.querySelectorAll('button');
+    var screens = document.querySelectorAll('.screen');
+    function activate(id){
+      btns.forEach(function(x){ x.classList.toggle('active', x.getAttribute('data-s')===id); });
+      screens.forEach(function(s){ s.classList.toggle('active', s.id===id); });
+      window.scrollTo(0,0);
+    }
+    nav.addEventListener('click', function(e){
+      var b = e.target.closest('button');
+      if(b) activate(b.getAttribute('data-s'));
+    });
+    // Morning review is time-based: complete it and its tab hides until tomorrow morning.
+    var tab = document.getElementById('tab-morning');
+    var done = document.getElementById('morning-done');
+    var reset = document.getElementById('morning-reset');
+    if(done) done.addEventListener('click', function(){ if(tab) tab.style.display = 'none'; activate('home'); });
+    if(reset) reset.addEventListener('click', function(){ if(tab) tab.style.display = ''; activate('morning'); });
+
+    // Allocation pop-up — each stat tile opens its goal's planned-vs-done breakdown,
+    // grouped by calendar block name (planned fills light, logged time fills solid).
+    var GOALS = {
+      deep:{title:'Deep work · Sandbox',sub:'Target 20h / week · summed from your calendar blocks',plan:100,done:65,planned:'20h planned',doneLabel:'13h done',unit:'h',rows:[
+        {name:'Companion app build',sub:'Ship Phase 0 → daily-use v1',p:8,d:6},
+        {name:'Velocity model caliper',sub:'Review spec → harness',p:5,d:4},
+        {name:'Loops — starter loop',sub:'One from the source library',p:4,d:2},
+        {name:'Sandbox planning & review',sub:'Build-ideas triage',p:3,d:1}
+      ]},
+      scripture:{title:'Scripture study',sub:'Target 7 days / week',plan:100,done:71,planned:'7 planned',doneLabel:'5 done',unit:'',rows:[
+        {name:'Personal study (a.m.)',sub:'Weekday mornings',p:6,d:5},
+        {name:'Come, Follow Me',sub:'Sunday',p:1,d:0}
+      ]},
+      workouts:{title:'Workouts',sub:'Target 5 / week · 1 still unplanned',plan:80,done:60,planned:'4 planned',doneLabel:'3 done',unit:'',warm:true,rows:[
+        {name:'Lift — Lehi gym',sub:'Push / pull / legs',p:3,d:2},
+        {name:'Run',sub:'Saturday long run',p:1,d:1}
+      ]},
+      reached:{title:'People reached out to',sub:'Target 10 / week',plan:100,done:70,planned:'10 planned',doneLabel:'7 done',unit:'',rows:[
+        {name:'Ministering visits',sub:'Assigned families',p:4,d:3},
+        {name:'Prospecting calls',sub:'Optimal outreach',p:6,d:4}
+      ]}
+    };
+    var mBack = document.getElementById('modal-back');
+    function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+    function pct(d,p){ return p>0 ? Math.round(d/p*100) : 0; }
+    function openGoal(key){
+      var g = GOALS[key]; if(!g) return;
+      document.getElementById('modal-title').textContent = g.title;
+      document.getElementById('modal-sub').textContent = g.sub;
+      var bar = document.getElementById('modal-bar');
+      bar.className = 'bar2' + (g.warm ? ' warm' : '');
+      bar.querySelector('.plan').style.width = g.plan + '%';
+      bar.querySelector('.done').style.width = g.done + '%';
+      document.getElementById('modal-planned').textContent = g.planned;
+      document.getElementById('modal-done').textContent = g.doneLabel;
+      document.getElementById('modal-rows').innerHTML = g.rows.map(function(r){
+        return '<div class="a"><div class="nm">'+esc(r.name)+'<small>'+esc(r.sub)+'</small></div>'
+          + '<span class="tr2'+(g.warm?' warm':'')+'"><i class="plan" style="width:100%"></i><i class="done" style="width:'+pct(r.d,r.p)+'%"></i></span>'
+          + '<div class="hrs"><b>'+r.d+'</b> / '+r.p+g.unit+'</div></div>';
+      }).join('');
+      mBack.classList.add('open'); mBack.setAttribute('aria-hidden','false');
+    }
+    function closeModal(){ mBack.classList.remove('open'); mBack.setAttribute('aria-hidden','true'); }
+    document.querySelectorAll('.stat[data-goal]').forEach(function(t){
+      t.addEventListener('click', function(){ openGoal(t.getAttribute('data-goal')); });
+      t.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openGoal(t.getAttribute('data-goal')); } });
+    });
+    document.getElementById('modal-x').addEventListener('click', closeModal);
+    mBack.addEventListener('click', function(e){ if(e.target === mBack) closeModal(); });
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeModal(); });
+
+    // Buttons that navigate to a screen without a sidebar tab (e.g. Home → Weekly planning).
+    document.querySelectorAll('[data-goto]').forEach(function(el){
+      el.addEventListener('click', function(){ activate(el.getAttribute('data-goto')); });
+    });
+
+    // Home week stepper — browse previous / next weeks (label only in this mockup).
+    var weeks = ['week of Jun 29 – Jul 5','week of Jul 6 – 12','week of Jul 13 – 19','week of Jul 20 – 26','week of Jul 27 – Aug 2'];
+    var wi = 2;
+    var wkLabel = document.getElementById('wk-label');
+    function renderWeek(){ if(wkLabel) wkLabel.textContent = weeks[wi] + (wi === 2 ? ' · this week' : ''); }
+    var wkPrev = document.getElementById('wk-prev'), wkNext = document.getElementById('wk-next');
+    if(wkPrev) wkPrev.addEventListener('click', function(){ if(wi > 0){ wi--; renderWeek(); } });
+    if(wkNext) wkNext.addEventListener('click', function(){ if(wi < weeks.length - 1){ wi++; renderWeek(); } });
+
+    // ---- Morning Review editor (Google-Forms-style: drag to reorder, edit text, add/remove) ----
+    var mrEdit=document.getElementById('mr-edit'), mrList=document.getElementById('mr-list'),
+        mrAdd=document.getElementById('mr-add'), mrNote=document.getElementById('mr-note');
+    var mrEditing=false, dragEl=null;
+    function mrDecorate(r,on){
+      r.setAttribute('draggable', on?'true':'false');
+      var rl=r.querySelector('.rl'), rt=r.querySelector('.rt')||r.querySelector('.becomes');
+      if(rl) rl.contentEditable=on; if(rt) rt.contentEditable=on;
+      var handle=r.querySelector('.dragh'), del=r.querySelector('.delr');
+      if(on){
+        if(!handle){handle=document.createElement('span');handle.className='dragh';handle.textContent='⠿';r.insertBefore(handle,r.firstChild);}
+        if(!del){del=document.createElement('button');del.className='delr';del.setAttribute('aria-label','Delete section');del.textContent='×';del.addEventListener('click',function(){r.remove();});r.appendChild(del);}
+      } else { if(handle)handle.remove(); if(del)del.remove(); }
+    }
+    function mrSetEdit(on){
+      mrEditing=on; mrList.classList.toggle('editing',on);
+      mrAdd.style.display=on?'':'none'; mrNote.style.display=on?'':'none';
+      mrEdit.textContent=on?'✓':'⋮';
+      mrList.querySelectorAll('.r').forEach(function(r){mrDecorate(r,on);});
+    }
+    if(mrEdit) mrEdit.addEventListener('click',function(){mrSetEdit(!mrEditing);});
+    if(mrAdd) mrAdd.addEventListener('click',function(){
+      var r=document.createElement('div'); r.className='r';
+      r.innerHTML='<div class="rl">New section</div><div class="rt">Write your prompt…</div>';
+      mrList.appendChild(r); mrDecorate(r,true);
+    });
+    function mrAfter(y){
+      var els=[].slice.call(mrList.querySelectorAll('.r')); var closest={o:-Infinity,el:null};
+      els.forEach(function(el){ if(el===dragEl) return; var b=el.getBoundingClientRect(); var o=y-b.top-b.height/2; if(o<0&&o>closest.o){closest={o:o,el:el};} });
+      return closest.el;
+    }
+    if(mrList){
+      mrList.addEventListener('dragstart',function(e){var r=e.target.closest('.r'); if(!mrEditing||!r) return; dragEl=r; setTimeout(function(){r.style.opacity='.4';},0);});
+      mrList.addEventListener('dragend',function(){ if(dragEl){dragEl.style.opacity='';dragEl=null;} });
+      mrList.addEventListener('dragover',function(e){ if(!mrEditing||!dragEl) return; e.preventDefault(); var after=mrAfter(e.clientY); if(after==null) mrList.appendChild(dragEl); else mrList.insertBefore(dragEl,after); });
+    }
+
+    // ---- To-do add (with duration) ----
+    var CAL_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>';
+    var tdAdd=document.getElementById('td-add');
+    if(tdAdd) tdAdd.addEventListener('click',function(){
+      var name=(document.getElementById('td-name').value||'').trim()||'New reminder';
+      var note=(document.getElementById('td-note').value||'').trim();
+      var dur=document.getElementById('td-dur').value, unit=document.getElementById('td-unit').value;
+      var durText=dur?(dur+' '+unit):'—';
+      var el=document.createElement('div'); el.className='todo';
+      el.innerHTML='<span class="rcheck"></span><div class="body"><div class="tt">'+esc(name)+'</div>'+(note?'<div class="dd">'+esc(note)+'</div>':'')+'</div><span class="dur">'+esc(durText)+'</span><button class="sched">'+CAL_ICON+'Schedule</button>';
+      document.getElementById('todo-items').appendChild(el);
+      document.getElementById('td-name').value=''; document.getElementById('td-note').value=''; document.getElementById('td-dur').value='';
+    });
+
+    // ---- Goals: Edit toggle + add a goal per tier ----
+    var eg=document.getElementById('edit-goals'), goalsScreen=document.getElementById('goals');
+    if(eg) eg.addEventListener('click',function(){ var on=goalsScreen.classList.toggle('editing'); eg.textContent=on?'Done editing':'Edit Goals'; });
+    document.querySelectorAll('.addgoal').forEach(function(b){
+      b.addEventListener('click',function(){ var ul=b.previousElementSibling; if(ul&&ul.tagName==='UL'){ var li=document.createElement('li'); li.innerHTML='<span style="flex:1" contenteditable="true">New goal…</span>'; ul.appendChild(li); li.querySelector('span').focus(); } });
+    });
+
+    // ---- Calendar (Notion-style): 24h scroll, Day/3-day/Week, view range, now-line, grey past ----
+    var ICONS={
+      faith:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6.5C10.3 5.2 7.8 4.7 5 4.7V18c2.8 0 5.3.5 7 1.8 1.7-1.3 4.2-1.8 7-1.8V4.7c-2.8 0-5.3.5-7 1.8z"/></svg>',
+      health:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6.5 8v8M17.5 8v8M9.5 12h5M4 10v4M20 10v4"/></svg>',
+      deep:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 20h20"/></svg>',
+      optimal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 4 5a2 2 0 0 1 2-2z"/></svg>',
+      family:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7-4.5-9.5-9C1 8 2.5 4.5 6 4.5c2 0 3.2 1.2 4 2.3.8-1.1 2-2.3 4-2.3 3.5 0 5 3.5 3.5 6.5C19 15.5 12 20 12 20z"/></svg>',
+      temple:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 4v2H5V7zM6 9v9M18 9v9M10 9v9M14 9v9M4 21h16"/></svg>',
+      review:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3 6.6 6.6 0 0 0 21 12.8Z"/></svg>'
+    };
+
+    // ---- Goal icon picker: popover grid, only in Edit Goals mode ----
+    var ICON_ORDER=['faith','health','deep','optimal','family','temple','review'];
+    document.addEventListener('click',function(e){
+      var ic=e.target.closest('#goals.editing .goalicon');
+      var open=document.querySelector('.iconpop');
+      if(open && (!ic || open._anchor!==ic)) open.remove();
+      if(!ic) return;
+      if(open && open._anchor===ic) return;   // toggled closed above
+      e.stopPropagation();
+      var pop=document.createElement('div'); pop.className='iconpop'; pop._anchor=ic;
+      ICON_ORDER.forEach(function(k){
+        var b=document.createElement('button'); b.innerHTML=ICONS[k]; b.title=k;
+        b.addEventListener('click',function(ev){ ev.stopPropagation(); ic.innerHTML=ICONS[k]; pop.remove(); toast('Icon updated ✓'); });
+        pop.appendChild(b);
+      });
+      var add=document.createElement('button'); add.className='add'; add.textContent='+'; add.title='Add a custom icon';
+      add.addEventListener('click',function(ev){ ev.stopPropagation(); toast('Custom icons — coming in the build'); });
+      pop.appendChild(add);
+      document.body.appendChild(pop);
+      var r=ic.getBoundingClientRect();
+      pop.style.top=(r.bottom+6)+'px';
+      pop.style.left=Math.max(8,r.left)+'px';
+    });
+    var DAYS=[{k:'Mon',d:13},{k:'Tue',d:14},{k:'Wed',d:15},{k:'Thu',d:16},{k:'Fri',d:17},{k:'Sat',d:18},{k:'Sun',d:19}];
+    var TODAY=4, NOW=14.25;
+    var CAL_EVENTS=[
+      {day:4,s:6,e:6.75,t:'Scripture study',g:'faith'},{day:4,s:6.75,e:7.5,t:'Workout — Lehi gym',g:'health'},
+      {day:4,s:8,e:8.5,t:'Optimal standup',g:'optimal'},{day:4,s:9,e:12,t:'Deep work — Companion',g:'deep'},
+      {day:4,s:12,e:12.75,t:'Lunch w/ wife',g:'family'},{day:4,s:13,e:14.5,t:'Outreach calls',g:'optimal'},
+      {day:4,s:15,e:15.5,t:'Call Dad',g:'family'},{day:4,s:20.5,e:21,t:'Nightly review',g:'review'},
+      {day:3,s:9,e:11,t:'Deep work',g:'deep'},{day:3,s:18,e:18.75,t:'Date night',g:'family'},
+      {day:2,s:9,e:10.5,t:'Deep work',g:'deep'},{day:2,s:19,e:20,t:'Temple prep',g:'temple'},
+      {day:5,s:8,e:9,t:'Temple',g:'temple'},{day:5,s:10,e:11,t:'Long run',g:'health'},
+      {day:0,s:9,e:12,t:'Deep work',g:'deep'},{day:1,s:13,e:14,t:'Outreach',g:'optimal'},
+      {day:6,s:16,e:17,t:'Weekly planning',g:'review'}
+    ];
+    var view='week', rangeS=0, rangeE=24, H=48;
+    function fmtTime(h){var hh=Math.floor(h)%24;var m=Math.round((h-Math.floor(h))*60);var ap=hh<12?'a':'p';var h12=hh%12||12;return h12+(m?':'+(m<10?'0':'')+m:'')+ap;}
+    function fmtHourLabel(h){var hh=h%24;var ap=hh<12?'AM':'PM';var h12=hh%12||12;return h12+' '+ap;}
+    function renderCal(){
+      var root=document.getElementById('cal-root'); if(!root) return;
+      var cols = view==='day'?[TODAY] : view==='3day'?[TODAY-1,TODAY,TODAY+1] : [0,1,2,3,4,5,6];
+      cols=cols.filter(function(c){return c>=0&&c<=6;});
+      var times='<div class="caltimes"><div class="tspacer"></div>';
+      for(var h=rangeS;h<rangeE;h++){times+='<div class="calhr">'+fmtHourLabel(h)+'</div>';}
+      times+='</div>';
+      var bodyH=(rangeE-rangeS)*H;
+      var days='<div class="caldays">';
+      cols.forEach(function(ci){
+        var d=DAYS[ci], isToday=ci===TODAY;
+        days+='<div class="calcol'+(isToday?' today':'')+'"><div class="colhead">'+d.k+' '+d.d+'</div><div class="colbody" style="height:'+bodyH+'px">';
+        for(var h=rangeS;h<rangeE;h++){days+='<div class="hln"></div>';}
+        CAL_EVENTS.filter(function(e){return e.day===ci && e.e>rangeS && e.s<rangeE;}).forEach(function(e){
+          var top=(e.s-rangeS)*H, hgt=(e.e-e.s)*H-2;
+          var past = ci<TODAY || (ci===TODAY && e.e<=NOW);
+          days+='<div class="cev'+(past?' past':'')+'" style="top:'+top+'px;height:'+hgt+'px"><span class="gi">'+(ICONS[e.g]||'')+'</span><div><b>'+esc(e.t)+'</b><span class="cet">'+fmtTime(e.s)+'</span></div></div>';
+        });
+        if(isToday && NOW>rangeS && NOW<rangeE){days+='<div class="nowline" style="top:'+((NOW-rangeS)*H)+'px"></div>';}
+        days+='</div></div>';
+      });
+      days+='</div>';
+      root.innerHTML='<div class="calgrid">'+times+days+'</div>';
+    }
+    function scrollCal(){ var w=document.getElementById('calwrap'); if(w) w.scrollTop=Math.max(0,(6-rangeS))*H; }
+    function wireDD(id,onPick){
+      var dd=document.getElementById(id); if(!dd) return;
+      dd.querySelector('.vdd-btn').addEventListener('click',function(e){ e.stopPropagation(); var open=dd.classList.contains('open'); document.querySelectorAll('.vdd.open').forEach(function(x){x.classList.remove('open');}); if(!open) dd.classList.add('open'); });
+      dd.querySelectorAll('.vdd-menu button').forEach(function(b){ b.addEventListener('click',function(){ dd.querySelectorAll('.vdd-menu button').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); dd.classList.remove('open'); onPick(b); }); });
+    }
+    document.addEventListener('click',function(){ document.querySelectorAll('.vdd.open').forEach(function(x){x.classList.remove('open');}); });
+    wireDD('viewdd',function(b){ view=b.getAttribute('data-view'); document.getElementById('viewbtn').innerHTML=b.textContent+' <span class="faint">▾</span>'; renderCal(); });
+    wireDD('rangedd',function(b){ var r=b.getAttribute('data-range').split(','); rangeS=+r[0]; rangeE=+r[1]; renderCal(); scrollCal(); });
+    renderCal(); scrollCal();
+
+    // ---- Toast ----
+    var toastEl=document.getElementById('toast'), toastT=null;
+    function toast(msg){ toastEl.textContent=msg; toastEl.classList.add('show'); if(toastT) clearTimeout(toastT); toastT=setTimeout(function(){toastEl.classList.remove('show');},2400); }
+
+    // ---- Generic dialog ----
+    var dlgBack=document.getElementById('dlg-back'), dlgConfirmFn=null;
+    function openDialog(title, bodyHTML, okLabel, onConfirm){
+      document.getElementById('dlg-title').textContent=title;
+      document.getElementById('dlg-body').innerHTML=bodyHTML;
+      document.getElementById('dlg-ok').textContent=okLabel||'Confirm';
+      dlgConfirmFn=onConfirm; dlgBack.classList.add('open');
+      var first=dlgBack.querySelector('input,select,textarea'); if(first) first.focus();
+    }
+    function closeDialog(){ dlgBack.classList.remove('open'); dlgConfirmFn=null; }
+    document.getElementById('dlg-x').addEventListener('click',closeDialog);
+    document.getElementById('dlg-cancel').addEventListener('click',closeDialog);
+    dlgBack.addEventListener('click',function(e){ if(e.target===dlgBack) closeDialog(); });
+    document.getElementById('dlg-ok').addEventListener('click',function(){ var keep=false; if(dlgConfirmFn) keep=dlgConfirmFn(document.getElementById('dlg-body')); if(keep!==true) closeDialog(); });
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ closeDialog(); document.getElementById('fabpanel').classList.remove('open'); var pb=document.getElementById('place-back'); if(pb) pb.classList.remove('open'); } });
+
+    // ---- Feedback bot ----
+    var fab=document.getElementById('fab'), fabpanel=document.getElementById('fabpanel');
+    fab.addEventListener('click',function(e){ e.stopPropagation(); fabpanel.classList.toggle('open'); if(fabpanel.classList.contains('open')) document.getElementById('fab-input').focus(); });
+    document.getElementById('fab-x').addEventListener('click',function(){ fabpanel.classList.remove('open'); });
+    fabpanel.addEventListener('click',function(e){ e.stopPropagation(); });
+    // Two modes: "app" (edits the app) and "date" (queues a date idea to research).
+    var fabMode='app';
+    var FAB_COPY={
+      app:{title:'Improve this app', hint:'What would you like to change? Name the tab and the change. Your laptop runner picks these up during the day and makes the edits.', ph:'e.g. On the Calendar tab, make past events fade a bit more…', qhead:'Queued for your runner', send:'Send feedback', toast:'Feedback queued for your laptop runner ✓'},
+      date:{title:'Queue a date idea', hint:'Describe a date idea. Your laptop runner researches it — pulls possible locations and details — and adds it to your Date planner.', ph:'e.g. A pottery class somewhere near Provo', qhead:'Date ideas to research', send:'Queue to research', toast:'Date idea queued to research ✓'}
+    };
+    document.getElementById('fab-seg').addEventListener('click',function(e){
+      var b=e.target.closest('button'); if(!b) return;
+      fabMode=b.getAttribute('data-mode');
+      Array.prototype.forEach.call(this.children,function(c){ c.classList.toggle('on',c===b); });
+      var c=FAB_COPY[fabMode];
+      document.getElementById('fab-title').textContent=c.title;
+      document.getElementById('fab-hint').textContent=c.hint;
+      document.getElementById('fab-input').placeholder=c.ph;
+      document.getElementById('fab-send').textContent=c.send;
+      document.getElementById('fab-qhead').textContent=c.qhead;
+      document.getElementById('fab-input').focus();
+    });
+    document.getElementById('fab-send').addEventListener('click',function(){
+      var v=(document.getElementById('fab-input').value||'').trim(); if(!v) return;
+      var c=FAB_COPY[fabMode];
+      var qh=document.getElementById('fab-qhead'); qh.textContent=c.qhead; qh.style.display='';
+      var q=document.getElementById('fab-queue');
+      var el=document.createElement('div'); el.className='fq';
+      el.innerHTML='<span class="fqd'+(fabMode==='date'?' date':'')+'"></span><span>'+esc(v)+' <b style="color:var(--faint);font-weight:400">· '+(fabMode==='date'?'to research':'queued')+'</b></span>';
+      q.insertBefore(el,q.firstChild);
+      document.getElementById('fab-input').value='';
+      toast(c.toast);
+    });
+
+    // ---- Flow dialogs ----
+    function dayOptions(sel){ var o=''; for(var i=0;i<7;i++){ o+='<option value="'+i+'"'+(i===sel?' selected':'')+'>'+DAYS[i].k+' '+DAYS[i].d+'</option>'; } return o; }
+    function goalOptions(){ return '<option value="deep">Deep work</option><option value="faith">Faith</option><option value="health">Health</option><option value="optimal">Outreach</option><option value="family">Family</option><option value="temple">Temple</option><option value="review">Review</option>'; }
+    function parseDur(d){ if(!d) return 30; var n=parseFloat(d); if(/hr/i.test(d)) return (n||0.5)*60; return n||30; }
+
+    function openNewBlock(){
+      openDialog('New calendar block',
+        '<div class="fld"><label>Name</label><input class="ti" id="nb-name" placeholder="e.g. Deep work — Companion"></div>'+
+        '<div class="fld"><label>Goal (sets the icon)</label><select class="ti" id="nb-goal">'+goalOptions()+'</select></div>'+
+        '<div class="row2"><div class="fld"><label>Day</label><select class="ti" id="nb-day">'+dayOptions(TODAY)+'</select></div><div class="fld"><label>Start (24h)</label><input class="ti" id="nb-start" type="number" min="0" max="23.5" step="0.5" value="10"></div><div class="fld"><label>Hours</label><input class="ti" id="nb-dur" type="number" min="0.25" step="0.25" value="1"></div></div>',
+        'Add block', function(body){
+          var name=(body.querySelector('#nb-name').value||'').trim()||'New block';
+          var g=body.querySelector('#nb-goal').value, day=+body.querySelector('#nb-day').value, s=+body.querySelector('#nb-start').value, dur=+body.querySelector('#nb-dur').value||1;
+          CAL_EVENTS.push({day:day,s:s,e:s+dur,t:name,g:g}); renderCal();
+          toast('Block added to '+DAYS[day].k+' · switch views to see it ✓');
+        });
+    }
+    function openLogSet(){
+      openDialog('Log a set',
+        '<div class="fld"><label>Exercise</label><select class="ti" id="ls-ex"><option>Bench press</option><option>Incline DB press</option><option>Overhead press</option><option>Cable fly</option><option>Triceps pushdown</option></select></div>'+
+        '<div class="row2"><div class="fld"><label>Weight (lb)</label><input class="ti" id="ls-w" type="number" value="185"></div><div class="fld"><label>Reps</label><input class="ti" id="ls-r" type="number" value="8"></div></div>',
+        'Log set', function(body){
+          var ex=body.querySelector('#ls-ex').value, w=body.querySelector('#ls-w').value, r=body.querySelector('#ls-r').value;
+          document.querySelectorAll('#gym .liftrow').forEach(function(lr){ var nm=lr.querySelector('.ln'); if(nm && nm.textContent.indexOf(ex)===0){ var sets=lr.querySelector('.sets'); var nl=sets.querySelector('.faint'); if(nl) nl.remove(); var chip=document.createElement('span'); chip.className='setchip'; chip.textContent=w+'×'+r; sets.appendChild(chip); } });
+          toast(ex+' — '+w+'×'+r+' logged ✓');
+        });
+    }
+    function openNewNote(){
+      openDialog('New study note',
+        '<div class="fld"><label>Reference</label><input class="ti" id="sn-ref" placeholder="e.g. Alma 34 — Saturday"></div>'+
+        '<div class="fld"><label>Note</label><textarea class="ta" id="sn-body" style="min-height:90px;font-family:var(--serif)" placeholder="What stood out?"></textarea></div>',
+        'Save note', function(body){
+          var ref=(body.querySelector('#sn-ref').value||'').trim()||'Study note', txt=(body.querySelector('#sn-body').value||'').trim();
+          var host=document.querySelector('#scripture .content');
+          var card=document.createElement('div'); card.className='card'; card.style.marginTop='16px';
+          card.innerHTML='<p class="eyebrow">Study notes · '+esc(ref)+'</p><div class="ta" style="min-height:80px;cursor:text;font-family:var(--serif)">'+esc(txt||'…')+'</div>';
+          host.appendChild(card); toast('Note saved ✓');
+        });
+    }
+    function openAddBook(btn){
+      openDialog('Add a book',
+        '<div class="fld"><label>Title</label><input class="ti" id="bk-title" placeholder="Book title"></div><div class="fld"><label>Progress</label><input class="ti" id="bk-prog" placeholder="e.g. Ch. 1 of 20"></div>',
+        'Add', function(body){
+          var t=(body.querySelector('#bk-title').value||'').trim()||'New book', p=(body.querySelector('#bk-prog').value||'').trim();
+          var row=document.createElement('div'); row.className='row'; row.innerHTML='<div style="flex:1"><b>'+esc(t)+'</b><div class="faint" style="font-size:12px">'+esc(p||'just started')+'</div></div><span class="pill plain">Book</span>';
+          btn.parentNode.insertBefore(row,btn); toast('Added to your reading ✓');
+        });
+    }
+    function openSchedule(name, dur, btn, goal){
+      goal=goal||'review';
+      openDialog('Schedule "'+name+'"',
+        '<div class="fld"><label>When</label><select class="ti" id="sc-day">'+dayOptions(TODAY)+'</select></div>'+
+        '<div class="row2"><div class="fld"><label>Start (24h)</label><input class="ti" id="sc-start" type="number" min="0" max="23.5" step="0.5" value="16"></div><div class="fld"><label>Duration</label><input class="ti" id="sc-dur" value="'+esc(dur||'30 min')+'" readonly></div></div>',
+        'Add to calendar', function(body){
+          var day=+body.querySelector('#sc-day').value, s=+body.querySelector('#sc-start').value, mins=parseDur(dur);
+          CAL_EVENTS.push({day:day,s:s,e:s+mins/60,t:name,g:goal}); renderCal();
+          if(btn){ btn.textContent='Scheduled'; btn.style.background='var(--good)'; btn.style.color='#fff'; btn.style.borderColor='var(--good)'; }
+          toast('Scheduled — '+(dur||'30 min')+' block added ✓');
+        });
+    }
+    // ================= DATE PLANNER =================
+    // Food = live-API in the real app (nothing stored); Activities = curated list.
+    // Here both are static demo data so the layout + flows can be felt.
+    var FOOD=[
+      {name:'Communal',cuisine:'American',price:3,dist:1.2,ago:null},
+      {name:'Black Sheep Café',cuisine:'Southwest',price:2,dist:2.1,ago:null},
+      {name:'India Palace',cuisine:'Indian',price:1,dist:4.0,ago:null},
+      {name:'Thai Village',cuisine:'Thai',price:2,dist:1.8,ago:null},
+      {name:'Spark',cuisine:'American',price:3,dist:1.0,ago:60},
+      {name:'Station 22',cuisine:'American',price:2,dist:0.6,ago:42},
+      {name:'Se Llama Perú',cuisine:'Peruvian',price:2,dist:3.4,ago:21},
+      {name:'Bombay House',cuisine:'Indian',price:2,dist:0.8,ago:5}
+    ];
+    var ACTS=[
+      {name:'Quarry climbing gym',cat:'Active',price:2,dist:1.5,ago:null},
+      {name:'Getout escape rooms',cat:'Puzzle',price:2,dist:2.0,ago:null},
+      {name:'Color Me Mine pottery',cat:'Creative',price:2,dist:0.9,ago:null},
+      {name:'Sunset hike — Y Trail',cat:'Outdoor',price:0,dist:4.5,ago:null},
+      {name:'BYU Museum of Art',cat:'Culture',price:0,dist:2.4,ago:60},
+      {name:'Live music @ Velour',cat:'Night out',price:2,dist:1.1,ago:120},
+      {name:'Trafalga mini golf',cat:'Low-key',price:1,dist:3.1,ago:35}
+    ];
+    var FOOD_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 3v6a2 2 0 0 0 4 0V3M8 9v12M16 3c-1.4 0-2.5 2-2.5 5s1 3.5 2 3.5V21"/></svg>';
+    var ACT_ICONS={
+      Active:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+      Puzzle:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>',
+      Creative:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l3 5 5 1-3.5 4 1 5.5L12 20l-5.5 3.5 1-5.5L4 9l5-1z"/></svg>',
+      'Low-key':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="7" width="16" height="12" rx="2"/><path d="M8 7V5h8v2M9 13h.01M15 13h.01"/></svg>',
+      'Night out':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>',
+      Culture:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l7 4v2H5V7zM6 9v9M18 9v9M10 9v9M14 9v9M4 21h16"/></svg>',
+      Outdoor:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 20l5-7 4 5 3-4 6 6"/><circle cx="7" cy="7" r="2"/></svg>',
+      other:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7-4.5-9.5-9C1 8 2.5 4.5 6 4.5c2 0 3.2 1.2 4 2.3.8-1.1 2-2.3 4-2.3 3.5 0 5 3.5 3.5 6.5C19 15.5 12 20 12 20z"/></svg>'
+    };
+    function priceLabel(p){ return p===0?'Free':'$'.repeat(p); }
+    function agoLabel(d){ if(d===null) return 'Never'; if(d<21) return d+' days ago'; if(d<60) return Math.round(d/7)+' wks ago'; return Math.round(d/30)+' mo ago'; }
+    function recKey(x){ return x.ago===null?1e9:x.ago; }
+    function byRecency(a,b){ return recKey(b)-recKey(a); }        // never/oldest top, recent bottom
+    function byDist(a,b){ return a.dist-b.dist; }
+    var mode='food', view='list', anchor=null;                   // toggle state + drill-down state
+
+    function detailFields(it,kind){
+      var s=it.name.length;
+      return { rating:(4.1+(s%6)*0.1).toFixed(1), reviews:120+s*29, price:priceLabel(it.price),
+        tag:kind==='food'?it.cuisine:it.cat, addr:kind==='food'?'University Ave, Provo':'Provo, UT',
+        hours:'Open now · closes 9 PM', phone:'(801) 555-01'+(10+s%80),
+        web:(it.name.toLowerCase().replace(/[^a-z0-9]+/g,'')+'.com').slice(0,26), menu:kind==='food' };
+    }
+    function itemBy(name,kind){ var arr=kind==='food'?FOOD:ACTS; for(var i=0;i<arr.length;i++){ if(arr[i].name===name) return arr[i]; } return null; }
+
+    function rowHTML(it,kind,distLabel){
+      if(it.pending) return '<div class="didea" style="cursor:default"><div class="dicon">'+ACT_ICONS.other+'</div><div class="db"><div class="dt">'+esc(it.name)+'</div><div class="dm"><span class="dcat">researching…</span>your runner is pulling category, price &amp; booking</div></div><div class="dlast"><div class="n faint">pending</div></div></div>';
+      var recent=it.ago!==null&&it.ago<=(kind==='food'?14:30);
+      var icon=kind==='food'?FOOD_ICON:(ACT_ICONS[it.cat]||ACT_ICONS.other);
+      var tag=kind==='food'?it.cuisine:it.cat;
+      return '<div class="didea'+(recent?' recent':'')+'" data-name="'+esc(it.name)+'" data-kind="'+kind+'">'
+        +'<div class="dicon">'+icon+'</div>'
+        +'<div class="db"><div class="dt">'+esc(it.name)+'</div><div class="dm"><span class="dcat">'+esc(tag)+'</span><span class="dprice">'+priceLabel(it.price)+'</span></div></div>'
+        +'<div class="ddist">'+(distLabel||(it.dist.toFixed(1)+' mi'))+'</div>'
+        +'<div class="dlast"><div class="n'+(recent?' fresh':'')+'">'+agoLabel(it.ago)+'</div></div>'
+        +'<span class="chev">›</span></div>';
+    }
+    function exDist(x){ return Math.round((Math.abs(x.dist-anchor.item.dist)+0.3)*10)/10; }
+    function renderExploreMap(oKind){
+      var pins=oKind==='food'?'🍽️ 🍽️ 🍽️':'🎯 🎨 ⚡ 🎵';
+      document.getElementById('explore-map').innerHTML='<div style="text-align:center;line-height:1.7"><div style="font-size:20px">⌂ &nbsp; '+pins+'</div>live map · '+esc(anchor.item.name)+' + nearby pins</div>';
+    }
+    function renderList(){
+      var listEl=document.getElementById('date-list');
+      var fb=document.getElementById('date-filterbar'), head=document.getElementById('explore-head'), prox=document.getElementById('proxbar');
+      if(view==='explore'){
+        var oKind=anchor.kind==='food'?'act':'food';
+        fb.style.display='none'; head.style.display=''; prox.style.display='none';
+        document.getElementById('explore-title').textContent=(oKind==='food'?'Food':'Activities')+' near '+anchor.item.name+' — closest first';
+        renderExploreMap(oKind);
+        var arr=(oKind==='food'?FOOD:ACTS).filter(function(x){return !x.pending;})
+          .map(function(x){return {x:x,d:exDist(x)};}).sort(function(a,b){return a.d-b.d;});
+        listEl.innerHTML=arr.map(function(o){return rowHTML(o.x,oKind,o.d.toFixed(1)+' mi');}).join('');
+        document.getElementById('date-foot').textContent='Tap one for its details, then explore the other way — dinner ⇄ activity, as far as you like.';
+        return;
+      }
+      fb.style.display=''; head.style.display='none'; prox.style.display='';
+      document.getElementById('food-filters').style.display= mode==='food'?'flex':'none';
+      document.getElementById('act-filters').style.display= mode==='act'?'flex':'none';
+      document.getElementById('list-eyebrow').textContent= mode==='food'?'Food & Restaurants':'Activities';
+      var list;
+      if(mode==='food'){
+        var cz=document.getElementById('food-cuisine').value, pr=document.getElementById('food-price').value;
+        list=FOOD.filter(function(f){return (!cz||f.cuisine===cz)&&(pr===''||f.price===+pr);}).sort(byRecency);
+      } else {
+        var ct=document.getElementById('act-cat').value, pr2=document.getElementById('act-price').value;
+        list=ACTS.filter(function(a){return a.pending||((!ct||a.cat===ct)&&(pr2===''||a.price===+pr2));});
+        list.sort(function(a,b){ if(a.pending)return -1; if(b.pending)return 1; return byRecency(a,b); });
+      }
+      listEl.innerHTML=list.length?list.map(function(it){return rowHTML(it,mode,null);}).join(''):'<p class="faint" style="padding:14px 0">Nothing matches — loosen a filter.</p>';
+      document.getElementById('date-foot').innerHTML= mode==='food'?'Live from Google · recently-done sinks to the bottom. Tap a place for photos, hours &amp; more.':'Your curated list · tap for details, or “+ Add activity” to research a new one.';
+    }
+    function setMode(m){ mode=m; view='list'; anchor=null;
+      Array.prototype.forEach.call(document.getElementById('date-toggle').children,function(b){ b.classList.toggle('on',b.getAttribute('data-mode')===m); });
+      renderList();
+    }
+    function enterExplore(it,kind){ anchor={item:it,kind:kind}; view='explore'; renderList(); window.scrollTo(0,0); }
+    function exitExplore(){ view='list'; anchor=null; renderList(); }
+
+    function closePlace(){ document.getElementById('place-back').classList.remove('open'); }
+    function openPlace(it,kind){
+      if(!it) return; var d=detailFields(it,kind);
+      // if we drilled in from the other type, that anchor is the pairing candidate
+      var pair=(view==='explore'&&anchor)?{item:anchor.item,kind:anchor.kind}:null;
+      document.getElementById('place-h').textContent=it.name;
+      document.getElementById('place-body').innerHTML=
+         '<div class="pphotos"><div class="pph"></div><div class="pph"></div><div class="pph"></div></div>'
+        +'<div class="pmeta">★ <b>'+d.rating+'</b> ('+d.reviews+')  ·  '+d.price+'  ·  '+esc(d.tag)+(it.ago===null?'  ·  never been':'  ·  last done '+agoLabel(it.ago))+'</div>'
+        +'<div class="pinfo"><div>📍 '+esc(d.addr)+'</div><div>🕐 '+esc(d.hours)+'</div><div>📞 '+esc(d.phone)+'</div><div>🔗 <span class="dirlink" data-kind="web">'+esc(d.web)+'</span>'+(d.menu?'  ·  📋 <span class="dirlink" data-kind="menu">Menu</span>':'')+'</div></div>'
+        +'<div class="pmap">live map · 📍 '+esc(it.name)+'</div>'
+        +'<div class="prow"><button class="btn" id="pl-dir">Directions ↗</button><button class="btn" id="pl-sched">+ Schedule</button></div>'
+        +'<button class="btn primary" id="pl-explore" style="width:100%;justify-content:center">'+(kind==='food'?'🎯 Explore activities near ':'🍽️ Explore food near ')+esc(it.name)+' →</button>';
+      document.getElementById('place-back').classList.add('open');
+      document.getElementById('place-body').querySelectorAll('.dirlink').forEach(function(dl){ dl.onclick=function(){ toast(dl.getAttribute('data-kind')==='menu'?'Opening menu…':'Opening website…'); }; });
+      document.getElementById('pl-dir').onclick=function(){ toast('Opening Apple Maps for directions…'); };
+      document.getElementById('pl-sched').onclick=function(){ closePlace(); openDateSchedule(it,kind,pair); };
+      document.getElementById('pl-explore').onclick=function(){ closePlace(); enterExplore(it,kind); };
+    }
+    function placeListClick(e){
+      var row=e.target.closest('.didea[data-name]'); if(!row) return;
+      openPlace(itemBy(row.getAttribute('data-name'),row.getAttribute('data-kind')), row.getAttribute('data-kind'));
+    }
+    // Schedule a date. If we came from the other type (pair set), offer to combine both
+    // into one event named "{first} + {second}" and drop both locations into the notes.
+    function openDateSchedule(item,kind,pair){
+      var da=detailFields(item,kind), pd=pair?detailFields(pair.item,pair.kind):null, pn=pair?pair.item.name:null;
+      var dur=pair?3:2;
+      var body='';
+      if(pair){
+        body+='<label class="chk"><input type="checkbox" id="ds-inc" checked> Include <b>'+esc(pn)+'</b>?</label>'
+             +'<div class="faint" style="font-size:12.5px;margin:-4px 0 2px">Scheduled as “<span id="ds-name">'+esc(pn+' + '+item.name)+'</span>”</div>';
+      }
+      body+='<div class="fld"><label>When</label><select class="ti" id="ds-day">'+dayOptions(TODAY)+'</select></div>'
+          +'<div class="row2"><div class="fld"><label>Start (24h)</label><input class="ti" id="ds-start" type="number" min="0" max="23.5" step="0.5" value="18"></div><div class="fld"><label>Duration</label><input class="ti" id="ds-dur" value="'+dur+' hr" readonly></div></div>'
+          +'<div class="fld"><label>Notes (added to the calendar event)</label><div class="ds-notes" id="ds-notes"></div></div>';
+      openDialog('Schedule '+(pair?'your date':'“'+item.name+'”'), body, 'Add to calendar', function(bd){
+        var inc=pair&&bd.querySelector('#ds-inc').checked;
+        var name=inc?(pn+' + '+item.name):item.name;
+        var day=+bd.querySelector('#ds-day').value, s=+bd.querySelector('#ds-start').value;
+        CAL_EVENTS.push({day:day,s:s,e:s+dur,t:name,g:'family',notes:noteText(inc)}); renderCal();
+        toast('“'+name+'” added to your calendar ✓');
+      });
+      function noteText(inc){ var l='📍 '+item.name+' — '+da.addr; if(inc) l+='\n📍 '+pn+' — '+pd.addr; return l; }
+      function refresh(){
+        var inc=pair?document.getElementById('ds-inc').checked:false;
+        document.getElementById('ds-notes').textContent=noteText(inc);
+        if(pair) document.getElementById('ds-name').textContent=inc?(pn+' + '+item.name):item.name;
+      }
+      refresh();
+      if(pair) document.getElementById('ds-inc').addEventListener('change',refresh);
+    }
+    function pickStale(arr,thresh){ var pool=arr.filter(function(x){ return !x.pending&&(x.ago===null||x.ago>thresh); }); if(!pool.length) pool=arr.filter(function(x){return !x.pending;}); return pool[Math.floor(Math.random()*pool.length)]; }
+    function rollDice(host){
+      var f=pickStale(FOOD,14), a=pickStale(ACTS,30);
+      host.innerHTML='<div class="dice">'
+        +'<div class="pick"><span class="demoji">🍽️</span><div><div class="pk">Eat</div><div class="pv">'+esc(f.cuisine)+' · '+esc(f.name)+'</div><div class="pm">'+priceLabel(f.price)+' · '+f.dist.toFixed(1)+' mi'+(f.ago===null?' · never been':'')+'</div></div></div>'
+        +'<div class="pick"><span class="demoji">🎯</span><div><div class="pk">Do</div><div class="pv">'+esc(a.name)+'</div><div class="pm">'+esc(a.cat)+' · '+priceLabel(a.price)+' · '+a.dist.toFixed(1)+' mi'+(a.ago===null?' · never done':'')+'</div></div></div>'
+        +'</div>';
+    }
+    function openDice(){
+      openDialog('🎲 Tonight’s roll',
+        '<div id="dice-body"></div><button class="btn" id="dice-reroll" style="width:100%;justify-content:center;margin-top:12px">🎲 Re-roll</button>',
+        'Schedule both', function(){ toast('Dinner + activity added to your calendar ✓'); });
+      rollDice(document.getElementById('dice-body'));
+      document.getElementById('dice-reroll').addEventListener('click',function(){ rollDice(document.getElementById('dice-body')); });
+    }
+    function openAddActivity(){
+      openDialog('Add an activity',
+        '<div class="fld"><label>Name or link</label><input class="ti" id="aa-in" placeholder="e.g. Quarry climbing gym — or paste a URL"></div>'+
+        '<p class="faint" style="font-size:12px;margin:0;line-height:1.5">Your laptop runner researches the category, price, location &amp; booking link, then adds it here for you to confirm.</p>',
+        'Queue for research', function(body){
+          var v=(body.querySelector('#aa-in').value||'').trim()||'New activity';
+          ACTS.unshift({name:v,cat:'…',price:null,dist:0,ago:null,pending:true}); setMode('act');
+          toast('Queued — your runner will research & add it ✓');
+        });
+    }
+
+    // ---- Delegated: to-do Schedule + Plan-Today Add-to-calendar ----
+    document.addEventListener('click',function(e){
+      var s=e.target.closest('.sched');
+      if(s){
+        var di=s.closest('.didea');
+        if(di){ openSchedule(di.querySelector('.dt').textContent, '2 hr', s, 'family'); return; }
+        var todo=s.closest('.todo'); var nm=todo?todo.querySelector('.tt').textContent:'To-do'; var d=todo&&todo.querySelector('.dur')?todo.querySelector('.dur').textContent:''; openSchedule(nm,d,s); return;
+      }
+      var a=e.target.closest('.addcal');
+      if(a){ if(a.textContent.trim().indexOf('On cal')===0) return; var item=a.closest('.sched-item'); var nm2=item?item.querySelector('.st').textContent:'Item'; toast('Added "'+nm2+'" to today ✓'); a.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12l5 5L20 6"/></svg>On cal'; a.style.background='var(--good)'; return; }
+    });
+
+    // ---- Wire the remaining named buttons by container + label ----
+    function byText(rootId, txt){ var root=document.getElementById(rootId); if(!root) return null; var els=root.querySelectorAll('button'); for(var i=0;i<els.length;i++){ if((els[i].textContent||'').trim().indexOf(txt)===0) return els[i]; } return null; }
+    function on(el,fn){ if(el) el.addEventListener('click',fn); }
+    on(byText('cal','+ New block'), openNewBlock);
+    on(byText('cal','Today'), function(){ var w=document.getElementById('calwrap'); if(w) w.scrollTop=Math.max(0,(NOW-rangeS-2)*H); toast('Jumped to now'); });
+    on(byText('gym','Log a set'), openLogSet);
+    on(byText('gym','History'), function(){ toast('Opening workout history…'); });
+    on(byText('scripture','+ New note'), openNewNote);
+    (function(){ var b=byText('scripture','+ Add a book'); on(b, function(){ openAddBook(b); }); })();
+    on(byText('people','All contacts'), function(){ toast('Showing all contacts'); });
+    on(byText('people','Sort'), function(){ toast('Sorted by most stale'); });
+    on(byText('weekly','Save draft'), function(){ toast('Draft saved ✓'); });
+    on(byText('weekly','Finish'), function(){ toast('Week time-blocked to your calendar ✓'); activate('cal'); });
+    (function(){ var b=byText('weekly','+ Add weekly goal'); on(b, function(){ var row=document.createElement('div'); row.className='row'; row.innerHTML='<span class="check"></span><span style="flex:1" contenteditable="true">New weekly goal…</span><span class="pill" style="margin-left:auto">New</span>'; b.parentNode.insertBefore(row,b); row.querySelector('[contenteditable]').focus(); }); })();
+    on(byText('review','Open Calendar'), function(){ activate('cal'); });
+    (function(){ var b=byText('review','Confirm'); on(b, function(){ toast("Logged today's hours to your goals ✓"); b.textContent='Logged ✓'; b.disabled=true; b.style.opacity='.7'; }); })();
+    on(byText('review','Complete review'), function(){ toast('Nightly review saved to Journal 2026 ✓'); });
+
+    // ---- Date planner wiring ----
+    document.getElementById('date-toggle').addEventListener('click',function(e){ var b=e.target.closest('button'); if(b) setMode(b.getAttribute('data-mode')); });
+    ['food-cuisine','food-price','act-cat','act-price'].forEach(function(id){ document.getElementById(id).addEventListener('change', renderList); });
+    document.getElementById('date-list').addEventListener('click', placeListClick);
+    on(document.getElementById('explore-back'), exitExplore);
+    on(document.getElementById('dice'), openDice);
+    on(document.getElementById('act-add'), openAddActivity);
+    on(document.getElementById('place-x'), closePlace);
+    document.getElementById('place-back').addEventListener('click',function(e){ if(e.target===this) closePlace(); });
+    document.getElementById('prox-origin').addEventListener('change',function(){ toast('Searching near '+this.value.toLowerCase()); });
+    document.getElementById('prox-dist').addEventListener('change',function(){ toast('Radius set to within '+this.value); });
+    setMode('food');
+
+  })();
+</script>
