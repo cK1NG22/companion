@@ -24,9 +24,12 @@ const GROUP_ORDER: HabitGroup[] = ["required", "standards", "weekly"];
  */
 export function HabitGrid({
   rows,
+  weekStart,
   isCurrentWeek,
 }: {
   rows: HabitRow[];
+  /** Monday of the week shown, so toggles land on the right week. */
+  weekStart: string;
   isCurrentWeek: boolean;
 }) {
   const [, startTransition] = useTransition();
@@ -49,7 +52,7 @@ export function HabitGrid({
   function toggle(habitId: string, day: number) {
     startTransition(async () => {
       applyToggle({ habitId, day });
-      await toggleHabitAction({ habitId, dayIndex: day });
+      await toggleHabitAction({ habitId, dayIndex: day, weekStart });
     });
   }
 

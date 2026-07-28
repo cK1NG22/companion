@@ -9,18 +9,13 @@
 // Shared primitives
 // ---------------------------------------------------------------------------
 
-/** Goal icons. PRD §4.2 — the approved assortment. Rendered by <GoalIcon />. */
-export type IconKey =
-  | "book"
-  | "dumbbell"
-  | "laptop"
-  | "phone"
-  | "heart"
-  | "temple"
-  | "moon"
-  | "target";
-
-export const ICON_KEYS: readonly IconKey[] = [
+/**
+ * Goal icons. PRD §4.2 — the approved assortment. Rendered by <GoalIcon />.
+ *
+ * The tuple is the single source of truth and the type is derived from it, so
+ * `z.enum(ICON_KEYS)` keeps the literal union instead of widening to `string`.
+ */
+export const ICON_KEYS = [
   "book",
   "dumbbell",
   "laptop",
@@ -30,6 +25,8 @@ export const ICON_KEYS: readonly IconKey[] = [
   "moon",
   "target",
 ] as const;
+
+export type IconKey = (typeof ICON_KEYS)[number];
 
 /** ISO date, no time component: "2026-07-27". */
 export type IsoDate = string;

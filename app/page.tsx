@@ -87,6 +87,7 @@ export default async function HomePage(props: {
             </h2>
             <HabitGrid
               rows={habitGrid.rows}
+              weekStart={habitGrid.weekStart}
               isCurrentWeek={isSameWeek(anchor, new Date())}
             />
           </section>
