@@ -110,8 +110,6 @@ export function CalendarView({
     });
   }
 
-  const now = Date.now();
-
   return (
     <div className="grid gap-3">
       <div className="flex items-center gap-2">
@@ -206,8 +204,9 @@ export function CalendarView({
           }))}
           eventClassNames={(arg) => {
             const classes: string[] = [];
-            // Past = grey, Notion-style.
-            if (arg.event.end && arg.event.end.getTime() < now) {
+            // Read the clock here, not during React's render — a component
+            // render must be pure, and this callback is FullCalendar's.
+            if (arg.event.end && arg.event.end.getTime() < Date.now()) {
               classes.push("is-past");
             }
             if (arg.event.extendedProps.source === "google") {

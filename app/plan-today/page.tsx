@@ -35,6 +35,7 @@ export default async function PlanTodayPage() {
             blocks={blocks}
             windows={windows}
             goalIcons={goalIcons}
+            now={today.getTime()}
           />
           <ToScheduleColumn
             topThree={topThree}

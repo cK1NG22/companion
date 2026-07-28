@@ -48,6 +48,10 @@ export async function scheduleTodoAction(id: string): Promise<TodoResult> {
   }
   revalidatePath("/goals");
   revalidatePath("/calendar");
+  // Plan Today is where this is most often clicked. Without revalidating it,
+  // the row keeps its stale "not scheduled" prop and a second click would
+  // create a duplicate block for the same to-do.
+  revalidatePath("/plan-today");
   revalidatePath("/");
   return { ok: true, message: "Added to today's calendar." };
 }

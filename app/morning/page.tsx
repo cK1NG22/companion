@@ -1,13 +1,18 @@
+import { format } from "date-fns";
 import { PageBody, PageHeader } from "@/components/shell/page-header";
+import { MorningReview } from "@/components/morning/morning-review";
+import { getMorningSections } from "@/lib/data/rhythm";
 
-export default function Page() {
+export default async function MorningPage() {
+  const sections = await getMorningSections();
   return (
     <>
-      <PageHeader title="Morning Review" subtitle="A reading, not a checklist" />
+      <PageHeader
+        title={`Morning Review · ${format(new Date(), "EEEE")}`}
+        subtitle="A reading, not a checklist"
+      />
       <PageBody>
-        <p className="text-sm text-muted-foreground">
-          Built in phase B5.
-        </p>
+        <MorningReview sections={sections} />
       </PageBody>
     </>
   );

@@ -8,6 +8,7 @@ import type {
   Reading,
   ScriptureNote,
 } from "../types";
+import { subDays } from "date-fns";
 import { toIsoDate } from "../week";
 import {
   MOCK_MONTHLY_STUDY_GOAL,
@@ -95,12 +96,11 @@ export async function getNightlyEntry(
  * wise, act when prompted" (PRD §1.2).
  */
 export async function getTopThreeFor(date: Date): Promise<string[]> {
-  const iso = toIsoDate(date);
-  // The Top 3 for a given day was written the night BEFORE it.
-  const previous = nightly
-    .filter((n) => n.date < iso)
-    .sort((a, b) => (a.date < b.date ? 1 : -1))[0];
-  return previous?.topThree ?? [];
+  // Strictly the night BEFORE — not "the most recent entry". If a nightly
+  // review was skipped, today genuinely has no Top 3, and showing a two-day-old
+  // list as if it were today's plan is worse than showing none.
+  const previousNight = toIsoDate(subDays(date, 1));
+  return nightly.find((n) => n.date === previousNight)?.topThree ?? [];
 }
 
 export async function saveNightlyEntry(entry: NightlyEntry): Promise<void> {

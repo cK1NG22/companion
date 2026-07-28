@@ -1,13 +1,33 @@
 import { PageBody, PageHeader } from "@/components/shell/page-header";
+import { ScriptureView } from "@/components/scripture/scripture-view";
+import {
+  getCarriedQuestions,
+  getMonthlyStudyGoal,
+  getReadings,
+  getScriptureNotes,
+} from "@/lib/data/rhythm";
 
-export default function Page() {
+export default async function ScripturePage() {
+  const [notes, questions, readings, monthlyGoal] = await Promise.all([
+    getScriptureNotes(),
+    getCarriedQuestions(),
+    getReadings(),
+    getMonthlyStudyGoal(),
+  ]);
+
   return (
     <>
-      <PageHeader title="Scripture Study" subtitle="Notes, questions carried, currently reading" />
+      <PageHeader
+        title="Scripture study"
+        subtitle="Notes · questions carried · currently reading"
+      />
       <PageBody>
-        <p className="text-sm text-muted-foreground">
-          Built in phase B6.
-        </p>
+        <ScriptureView
+          notes={notes}
+          questions={questions}
+          readings={readings}
+          monthlyGoal={monthlyGoal}
+        />
       </PageBody>
     </>
   );

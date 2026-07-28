@@ -59,7 +59,7 @@ export function OutreachCard({ people }: { people: Person[] }) {
         ))}
         {people.length === 0 ? (
           <li className="px-4 py-6 text-center text-sm text-muted-foreground">
-            Everyone's fresh.
+            Everyone&apos;s fresh.
           </li>
         ) : null}
       </ul>

@@ -25,11 +25,15 @@ export function PlanningFlow({
   thisWeek,
   monthPlans,
   weekLabel,
+  anchor,
 }: {
   lastWeek: KeyIndicator[];
   thisWeek: KeyIndicator[];
   monthPlans: Goal[];
   weekLabel: string;
+  /** Monday of the week being planned — carried into the calendar link so
+      time-blocking lands on the week you just planned, not today's. */
+  anchor: string;
 }) {
   const [step, setStep] = useState(0);
 
@@ -153,7 +157,7 @@ export function PlanningFlow({
             deep work first, then the protected things (workout, scripture, date
             night), then everything else fills the gaps.
           </p>
-          <Button nativeButton={false} render={<Link href="/calendar" />}>
+          <Button nativeButton={false} render={<Link href={`/calendar?w=${anchor}`} />}>
             <CalendarDays className="size-4" /> Open the calendar
           </Button>
         </Card>

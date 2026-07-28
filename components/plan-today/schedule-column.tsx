@@ -21,12 +21,14 @@ export function ScheduleColumn({
   blocks,
   windows,
   goalIcons,
+  now,
 }: {
   blocks: CalendarBlock[];
   windows: OpenWindow[];
   goalIcons: Record<string, IconKey | null>;
+  /** Passed in rather than read here — render must stay pure. */
+  now: number;
 }) {
-  const now = Date.now();
 
   return (
     <Card className="gap-0 p-0 shadow-card">

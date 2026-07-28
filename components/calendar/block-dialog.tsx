@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -39,30 +39,60 @@ export function BlockDialog({
   goals: Goal[];
   onClose: () => void;
 }) {
-  const [name, setName] = useState("");
-  const [goalId, setGoalId] = useState<string>("none");
-  const [date, setDate] = useState("");
-  const [start, setStart] = useState("");
-  const [end, setEnd] = useState("");
-  const [pending, startTransition] = useTransition();
+  return (
+    <ResponsiveModal
+      open={draft !== null}
+      onOpenChange={(o) => !o && onClose()}
+      title={draft?.mode === "edit" ? "Edit block" : "New block"}
+      description="Naming it and assigning a goal is what fills Planned on Home."
+    >
+      {/* The form seeds its state from props, and the key remounts it whenever
+          a different block or time range is opened. That's the React-idiomatic
+          alternative to syncing state with an effect. */}
+      {draft ? (
+        <BlockForm
+          key={draft.mode === "edit" ? draft.block.id : draft.start}
+          draft={draft}
+          goals={goals}
+          onClose={onClose}
+        />
+      ) : null}
+    </ResponsiveModal>
+  );
+}
 
-  // Re-seed the form whenever a different block or range is opened.
-  useEffect(() => {
-    if (!draft) return;
-    if (draft.mode === "edit") {
-      setName(draft.block.name);
-      setGoalId(draft.block.goalId ?? "none");
-      setDate(dateOf(draft.block.start));
-      setStart(timeOf(draft.block.start));
-      setEnd(timeOf(draft.block.end));
-    } else {
-      setName("");
-      setGoalId("none");
-      setDate(dateOf(draft.start));
-      setStart(timeOf(draft.start));
-      setEnd(timeOf(draft.end));
-    }
-  }, [draft]);
+function BlockForm({
+  draft,
+  goals,
+  onClose,
+}: {
+  draft: BlockDraft;
+  goals: Goal[];
+  onClose: () => void;
+}) {
+  const initial =
+    draft.mode === "edit"
+      ? {
+          name: draft.block.name,
+          goalId: draft.block.goalId ?? "none",
+          date: dateOf(draft.block.start),
+          start: timeOf(draft.block.start),
+          end: timeOf(draft.block.end),
+        }
+      : {
+          name: "",
+          goalId: "none",
+          date: dateOf(draft.start),
+          start: timeOf(draft.start),
+          end: timeOf(draft.end),
+        };
+
+  const [name, setName] = useState(initial.name);
+  const [goalId, setGoalId] = useState(initial.goalId);
+  const [date, setDate] = useState(initial.date);
+  const [start, setStart] = useState(initial.start);
+  const [end, setEnd] = useState(initial.end);
+  const [pending, startTransition] = useTransition();
 
   function save() {
     const payload = {
@@ -73,7 +103,7 @@ export function BlockDialog({
     };
     startTransition(async () => {
       const result =
-        draft?.mode === "edit"
+        draft.mode === "edit"
           ? await updateBlockAction({ id: draft.block.id, ...payload })
           : await createBlockAction(payload);
       if (!result.ok) {
@@ -85,7 +115,7 @@ export function BlockDialog({
   }
 
   function remove() {
-    if (draft?.mode !== "edit") return;
+    if (draft.mode !== "edit") return;
     const id = draft.block.id;
     startTransition(async () => {
       await deleteBlockAction(id);
@@ -94,92 +124,86 @@ export function BlockDialog({
   }
 
   return (
-    <ResponsiveModal
-      open={draft !== null}
-      onOpenChange={(o) => !o && onClose()}
-      title={draft?.mode === "edit" ? "Edit block" : "New block"}
-      description="Naming it and assigning a goal is what fills Planned on Home."
-    >
-      <div className="grid gap-3">
+    <div className="grid gap-3">
+      <div className="grid gap-1.5">
+        <Label htmlFor="block-name">Event name</Label>
+        <Input
+          id="block-name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Companion build"
+          autoFocus
+        />
+      </div>
+
+      <div className="grid gap-1.5">
+        <Label htmlFor="block-goal">Goal</Label>
+        {/* Base UI's Select emits null when cleared; "none" is our sentinel. */}
+        <Select value={goalId} onValueChange={(v) => setGoalId(v ?? "none")}>
+          <SelectTrigger id="block-goal">
+            <SelectValue placeholder="No goal" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">No goal</SelectItem>
+            {goals.map((g) => (
+              <SelectItem key={g.id} value={g.id}>
+                {g.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2">
         <div className="grid gap-1.5">
-          <Label htmlFor="block-name">Event name</Label>
+          <Label htmlFor="block-date">Date</Label>
           <Input
-            id="block-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Companion build"
-            autoFocus
+            id="block-date"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
           />
         </div>
-
         <div className="grid gap-1.5">
-          <Label htmlFor="block-goal">Goal</Label>
-          {/* Base UI's Select emits null when cleared; "none" is our sentinel. */}
-          <Select
-            value={goalId}
-            onValueChange={(v) => setGoalId(v ?? "none")}
-          >
-            <SelectTrigger id="block-goal">
-              <SelectValue placeholder="No goal" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">No goal</SelectItem>
-              {goals.map((g) => (
-                <SelectItem key={g.id} value={g.id}>
-                  {g.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label htmlFor="block-start">Start</Label>
+          <Input
+            id="block-start"
+            type="time"
+            value={start}
+            onChange={(e) => setStart(e.target.value)}
+          />
         </div>
-
-        <div className="grid grid-cols-3 gap-2">
-          <div className="grid gap-1.5">
-            <Label htmlFor="block-date">Date</Label>
-            <Input
-              id="block-date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="block-start">Start</Label>
-            <Input
-              id="block-start"
-              type="time"
-              value={start}
-              onChange={(e) => setStart(e.target.value)}
-            />
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="block-end">End</Label>
-            <Input
-              id="block-end"
-              type="time"
-              value={end}
-              onChange={(e) => setEnd(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="mt-1 flex items-center gap-2">
-          <Button onClick={save} disabled={pending || !name.trim()} className="flex-1">
-            {draft?.mode === "edit" ? "Save" : "Add block"}
-          </Button>
-          {draft?.mode === "edit" ? (
-            <Button
-              variant="outline"
-              size="icon"
-              aria-label="Delete block"
-              onClick={remove}
-              disabled={pending}
-            >
-              <Trash2 className="size-4" />
-            </Button>
-          ) : null}
+        <div className="grid gap-1.5">
+          <Label htmlFor="block-end">End</Label>
+          <Input
+            id="block-end"
+            type="time"
+            value={end}
+            onChange={(e) => setEnd(e.target.value)}
+          />
         </div>
       </div>
-    </ResponsiveModal>
+
+      <div className="mt-1 flex items-center gap-2">
+        <Button
+          onClick={save}
+          disabled={pending || !name.trim()}
+          className="flex-1"
+        >
+          {draft.mode === "edit" ? "Save" : "Add block"}
+        </Button>
+        {draft.mode === "edit" ? (
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Delete block"
+            onClick={remove}
+            disabled={pending}
+          >
+            <Trash2 className="size-4" />
+          </Button>
+        ) : null}
+      </div>
+    </div>
   );
 }
