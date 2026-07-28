@@ -53,8 +53,13 @@ const RHYTHM: NavItem[] = [
   { href: "/nightly", label: "Nightly Review", icon: Moon },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({ morningDone }: { morningDone: boolean }) {
   const pathname = usePathname();
+  // The Morning Review tab is time-based: it appears each morning, hides once
+  // marked done, and returns tomorrow (PRD §4.8).
+  const rhythm = morningDone
+    ? RHYTHM.filter((item) => item.href !== "/morning")
+    : RHYTHM;
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
@@ -101,7 +106,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Daily rhythm</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>{renderItems(RHYTHM)}</SidebarMenu>
+            <SidebarMenu>{renderItems(rhythm)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

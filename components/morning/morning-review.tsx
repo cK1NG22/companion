@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import {
   DndContext,
@@ -49,8 +49,22 @@ import type { MorningSection } from "@/lib/types";
  */
 export function MorningReview({ sections }: { sections: MorningSection[] }) {
   const [editing, setEditing] = useState(false);
-  const [order, setOrder] = useState(sections);
+  // Only the *ordering* is held locally, as ids. The sections themselves always
+  // come from props — otherwise a section added or deleted through the menu
+  // would never appear, because Next preserves client state across a refresh.
+  const [localOrder, setLocalOrder] = useState<string[] | null>(null);
   const [, startTransition] = useTransition();
+
+  const order = useMemo(() => {
+    if (!localOrder) return sections;
+    const byId = new Map(sections.map((s) => [s.id, s]));
+    const dragged = localOrder
+      .map((id) => byId.get(id))
+      .filter((s): s is MorningSection => s !== undefined);
+    // Anything the server added since the last drag goes on the end.
+    const added = sections.filter((s) => !localOrder.includes(s.id));
+    return [...dragged, ...added];
+  }, [sections, localOrder]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -64,11 +78,9 @@ export function MorningReview({ sections }: { sections: MorningSection[] }) {
     if (!over || active.id === over.id) return;
     const from = order.findIndex((s) => s.id === active.id);
     const to = order.findIndex((s) => s.id === over.id);
-    const next = arrayMove(order, from, to);
-    setOrder(next);
-    startTransition(() =>
-      reorderMorningSectionsAction(next.map((s) => s.id)),
-    );
+    const next = arrayMove(order, from, to).map((s) => s.id);
+    setLocalOrder(next);
+    startTransition(() => reorderMorningSectionsAction(next));
   }
 
   return (

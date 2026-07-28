@@ -3,6 +3,7 @@ import "./globals.css";
 import { AppSidebar } from "@/components/shell/app-sidebar";
 import { FeedbackBubble } from "@/components/shell/feedback-bubble";
 import { ThemeProvider } from "@/components/shell/theme";
+import { isMorningDone } from "@/lib/data/rhythm";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,9 +21,10 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const morningDone = await isMorningDone();
   return (
     <html lang="en" className="h-full antialiased" suppressHydrationWarning>
       <body className="min-h-full">
@@ -31,7 +33,7 @@ export default function RootLayout({
         <ThemeProvider>
           <TooltipProvider delay={300}>
             <SidebarProvider>
-              <AppSidebar />
+              <AppSidebar morningDone={morningDone} />
               <SidebarInset className="min-w-0">{children}</SidebarInset>
               <FeedbackBubble />
             </SidebarProvider>

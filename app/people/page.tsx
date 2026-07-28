@@ -1,13 +1,22 @@
 import { PageBody, PageHeader } from "@/components/shell/page-header";
+import { PeopleList } from "@/components/people/people-list";
+import { getLastSyncedAt, getPeople } from "@/lib/data/people";
 
-export default function Page() {
+export default async function PeoplePage() {
+  // Include excluded people so they can be found and toggled back on.
+  const [people, lastSyncedAt] = await Promise.all([
+    getPeople(true),
+    getLastSyncedAt(),
+  ]);
+
   return (
     <>
-      <PageHeader title="People" subtitle="Sorted by days since last contact" />
+      <PageHeader
+        title="People"
+        subtitle="Sorted by days since last contact — email, text, or meeting"
+      />
       <PageBody>
-        <p className="text-sm text-muted-foreground">
-          Built in phase B7.
-        </p>
+        <PeopleList people={people} lastSyncedAt={lastSyncedAt} />
       </PageBody>
     </>
   );

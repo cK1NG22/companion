@@ -1,0 +1,57 @@
+/**
+ * MOCK FIXTURES — Date planner (PRD §4.12).
+ *
+ * IMPORTANT: the food rows are shaped exactly like a Google Places (New)
+ * response, because in Part C they are replaced by a live call and NOTHING
+ * about a restaurant is ever persisted. Only `place_history` (place_id +
+ * last_done_date) is ours to keep.
+ *
+ * Activities are the opposite: a small first-party table we own, because
+ * Places exposes no price and no niche category for them.
+ */
+import { subDays } from "date-fns";
+import type { Activity, FoodPlace, HomeLocation } from "../types";
+import { toIsoDate } from "../week";
+
+/** The user's own data, stored permanently. */
+export const MOCK_HOME: HomeLocation = {
+  lat: 40.2338,
+  lng: -111.6585,
+  label: "Home",
+};
+
+const done = (daysAgo: number) => toIsoDate(subDays(new Date(), daysAgo));
+
+/** Stands in for a live Nearby Search result. distanceMiles is computed later. */
+export const MOCK_FOOD: Omit<FoodPlace, "distanceMiles">[] = [
+  { placeId: "p1", name: "Communal", cuisine: "american_restaurant", priceTier: 3, rating: 4.6, address: "102 N University Ave, Provo", lat: 40.2352, lng: -111.6592, openNow: true, phone: "(801) 373-8000", website: "https://communalrestaurant.com", photoUrls: [], lastDone: done(9) },
+  { placeId: "p2", name: "Black Sheep Cafe", cuisine: "southwestern_restaurant", priceTier: 2, rating: 4.5, address: "19 N University Ave, Provo", lat: 40.2338, lng: -111.6588, openNow: true, phone: "(801) 607-2485", website: "https://blacksheepcafe.com", photoUrls: [], lastDone: done(2) },
+  { placeId: "p3", name: "Pizzeria Seven Twelve", cuisine: "italian_restaurant", priceTier: 3, rating: 4.6, address: "320 S State St, Orem", lat: 40.2969, lng: -111.6946, openNow: true, phone: "(801) 623-6712", website: "https://pizzeria712.com", photoUrls: [], lastDone: null },
+  { placeId: "p4", name: "Guru's Cafe", cuisine: "cafe", priceTier: 1, rating: 4.4, address: "45 E Center St, Provo", lat: 40.2337, lng: -111.6561, openNow: false, phone: "(801) 375-4878", website: null, photoUrls: [], lastDone: done(21) },
+  { placeId: "p5", name: "Station 22", cuisine: "american_restaurant", priceTier: 2, rating: 4.5, address: "22 W Center St, Provo", lat: 40.2336, lng: -111.6601, openNow: true, phone: "(801) 607-1803", website: null, photoUrls: [], lastDone: done(47) },
+  { placeId: "p6", name: "Se Llama Peru", cuisine: "peruvian_restaurant", priceTier: 2, rating: 4.7, address: "1288 S State St, Orem", lat: 40.2718, lng: -111.6939, openNow: true, phone: "(801) 655-1200", website: null, photoUrls: [], lastDone: null },
+  { placeId: "p7", name: "Bombay House", cuisine: "indian_restaurant", priceTier: 3, rating: 4.5, address: "463 N University Ave, Provo", lat: 40.2402, lng: -111.6592, openNow: true, phone: "(801) 373-6677", website: null, photoUrls: [], lastDone: done(64) },
+  { placeId: "p8", name: "Tucanos Brazilian Grill", cuisine: "brazilian_restaurant", priceTier: 3, rating: 4.3, address: "545 W University Pkwy, Orem", lat: 40.2769, lng: -111.7118, openNow: true, phone: "(801) 224-4774", website: null, photoUrls: [], lastDone: done(120) },
+];
+
+/** First-party, hand-researched. This table is ours — see PRD §4.12. */
+export const MOCK_ACTIVITIES: Omit<Activity, "distanceMiles">[] = [
+  { id: "a1", name: "The Quarry climbing gym", category: "climbing", priceTier: 2, priceNote: "$18 day pass + $6 shoes", lat: 40.2967, lng: -111.6946, notes: "Bouldering plus top rope. Weeknights after 8 are quiet.", bookingUrl: "https://quarryclimbing.com", lastDone: done(38), status: "active" },
+  { id: "a2", name: "Escape Room Provo", category: "escape room", priceTier: 3, priceNote: "$32/person, 60 min", lat: 40.2341, lng: -111.6605, notes: "Book ahead on weekends.", bookingUrl: null, lastDone: null, status: "active" },
+  { id: "a3", name: "Bridal Veil Falls hike", category: "outdoors", priceTier: 1, priceNote: "Free", lat: 40.3325, lng: -111.6019, notes: "Paved, easy, 20 minutes from home. Good at sunset.", bookingUrl: null, lastDone: done(15), status: "active" },
+  { id: "a4", name: "Pottery night at Clayhaus", category: "craft class", priceTier: 3, priceNote: "$45/person for a 2-hour wheel class", lat: 40.2969, lng: -111.6693, notes: "Sarah has wanted to try this.", bookingUrl: "https://clayhausceramics.com", lastDone: null, status: "active" },
+  { id: "a5", name: "Velocity trampoline park", category: "active", priceTier: 2, priceNote: "$16/person/hour", lat: 40.2913, lng: -111.7126, notes: null, bookingUrl: null, lastDone: done(88), status: "active" },
+  { id: "a6", name: "Provo Rec Center pool", category: "swim", priceTier: 1, priceNote: "$7/person", lat: 40.2456, lng: -111.6489, notes: "Lazy river. Busy on Saturdays.", bookingUrl: null, lastDone: done(5), status: "active" },
+  { id: "a7", name: "Sundance ski lift ride", category: "scenic", priceTier: 2, priceNote: "$22/person for the summer lift", lat: 40.3934, lng: -111.5786, notes: "Fall colours are the reason to go.", bookingUrl: null, lastDone: null, status: "active" },
+];
+
+/** Cuisines offered in the filter. Mirrors the Places type enum. */
+export const CUISINES = [
+  "american_restaurant",
+  "italian_restaurant",
+  "indian_restaurant",
+  "peruvian_restaurant",
+  "brazilian_restaurant",
+  "southwestern_restaurant",
+  "cafe",
+] as const;
