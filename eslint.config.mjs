@@ -17,7 +17,19 @@ const eslintConfig = defineConfig([
     // Regenerate with the CLI instead.
     "components/ui/**",
     "hooks/use-mobile.ts",
+    // Emitted by Playwright and Lighthouse CI on every run. Bundled vendor
+    // code, gitignored, and not ours to fix.
+    "playwright-report/**",
+    "test-results/**",
+    "blob-report/**",
+    ".lighthouseci/**",
   ]),
+  {
+    // Lighthouse CI loads its config with `require`, so this one file has to
+    // be CommonJS.
+    files: ["lighthouserc.js"],
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
 ]);
 
 export default eslintConfig;

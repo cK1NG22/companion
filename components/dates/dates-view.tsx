@@ -270,7 +270,10 @@ export function DatesView({
                   onClick={() => setDetail(row)}
                   className={cn(
                     "flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-muted",
-                    recent && "opacity-55",
+                    // Muted colour, not `opacity-55`. Opacity composites text
+                    // toward the background: it dragged this row's name to
+                    // 2.33:1, under WCAG AA. No opacity below ~0.9 can pass.
+                    recent && "text-muted-foreground",
                   )}
                 >
                   <MapPin className="size-4 shrink-0 text-muted-foreground" />
@@ -337,7 +340,7 @@ function DiceCard({
     <Card className="gap-3 border-2 px-5 py-4 shadow-card">
       <div className="flex items-center gap-2">
         <Dice5 className="size-4 text-warm" />
-        <h3 className="text-sm font-semibold">Try something new</h3>
+        <h2 className="text-sm font-semibold">Try something new</h2>
       </div>
       <div className="grid gap-1 text-sm">
         <p>

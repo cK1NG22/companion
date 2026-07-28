@@ -50,7 +50,7 @@ function ExerciseCard({ item }: { item: SessionExercise }) {
     <Card className="gap-0 p-0 shadow-card">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b px-4 py-3">
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-sm font-semibold">{exercise.name}</h3>
+          <h2 className="truncate text-sm font-semibold">{exercise.name}</h2>
           <p className="text-xs text-muted-foreground">
             Bumstead suggests {target}
           </p>

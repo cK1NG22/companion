@@ -84,4 +84,31 @@ npm run build        # production build — must pass before any phase is "done"
 npm run lint         # eslint
 npx tsc --noEmit     # typecheck
 npm test             # vitest (pure logic only)
+npm run test:a11y    # axe-core on all 11 routes (Playwright) — must be green
+npm run test:lh      # Lighthouse CI — accessibility must stay at 100
 ```
+
+## Accessibility gates
+
+Two borrowed conformance suites run against the rendered app. Neither tests our
+business rules; both test whether the HTML we emit obeys published standards.
+
+- `npm run test:a11y` — axe-core, scoped to **WCAG 2.0/2.1 A and AA**. Fails on
+  any violation. Route list lives in `e2e/routes.json`; **add new routes there**
+  or they escape both audits.
+- `npm run test:lh` — Lighthouse. Runs a wider axe rule set than the above
+  (including best-practice rules like `heading-order` that carry no WCAG tag),
+  so it can fail when `test:a11y` passes. Accessibility is a ratchet at 100.
+
+Two things these gates do **not** cover, so check them by hand:
+
+1. **Dark mode.** Both suites render light mode only. `--faint` was 3.91:1 in
+   dark and no suite caught it.
+2. **Interactive state.** Axe sees the page as first painted — dialogs, popovers,
+   and menus are unopened and therefore unaudited.
+
+Heading levels: `PageHeader` owns the only `<h1>`. Card titles are `<h2>`,
+anything nested under them `<h3>`. Skipping a level fails `test:lh`.
+
+Never dim text with `opacity-*`. Opacity composites text toward the background —
+nothing below roughly `opacity-90` can hold 4.5:1. Use `text-muted-foreground`.

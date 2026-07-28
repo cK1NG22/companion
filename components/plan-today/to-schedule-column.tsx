@@ -25,7 +25,7 @@ export function ToScheduleColumn({
     <div className="grid gap-4">
       <Card className="gap-0 p-0 shadow-card">
         <div className="border-b px-4 py-3">
-          <h3 className="text-sm font-semibold">Top 3 for today</h3>
+          <h2 className="text-sm font-semibold">Top 3 for today</h2>
           <p className="text-xs text-muted-foreground">
             Decided last night, acted on this morning
           </p>
@@ -49,7 +49,7 @@ export function ToScheduleColumn({
 
       <Card className="gap-0 p-0 shadow-card">
         <div className="border-b px-4 py-3">
-          <h3 className="text-sm font-semibold">To schedule</h3>
+          <h2 className="text-sm font-semibold">To schedule</h2>
           <p className="text-xs text-muted-foreground">
             Drops into the first open window that fits
           </p>

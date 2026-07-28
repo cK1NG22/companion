@@ -40,13 +40,13 @@ export function ScriptureView({
         <NoteComposer />
         <Card className="gap-0 p-0 shadow-card">
           <div className="border-b px-5 py-3">
-            <h3 className="text-sm font-semibold">Study notes</h3>
+            <h2 className="text-sm font-semibold">Study notes</h2>
           </div>
           <ul className="divide-y">
             {notes.map((note) => (
               <li key={note.id} className="px-5 py-4">
                 <div className="flex items-baseline justify-between gap-3">
-                  <h4 className="text-sm font-semibold">{note.reference}</h4>
+                  <h3 className="text-sm font-semibold">{note.reference}</h3>
                   <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
                     {format(parseISO(note.date), "MMM d")}
                   </span>
@@ -67,7 +67,7 @@ export function ScriptureView({
 
       <div className="grid gap-4">
         <Card className="gap-2 px-5 py-4 shadow-card">
-          <h3 className="text-sm font-semibold">This month&apos;s study goal</h3>
+          <h2 className="text-sm font-semibold">This month&apos;s study goal</h2>
           <p className="prose-devotional text-[15px] text-muted-foreground">
             {monthlyGoal}
           </p>
@@ -77,7 +77,7 @@ export function ScriptureView({
 
         <Card className="gap-0 p-0 shadow-card">
           <div className="border-b px-5 py-3">
-            <h3 className="text-sm font-semibold">Currently reading</h3>
+            <h2 className="text-sm font-semibold">Currently reading</h2>
           </div>
           <ul className="divide-y">
             {readings.map((r) => (
@@ -91,8 +91,14 @@ export function ScriptureView({
                   </Badge>
                 </div>
                 {/* A single value, so shadcn's Progress is the right control
-                    here — unlike the KI tiles, which need three. */}
-                <Progress value={r.percent} className="h-1.5" />
+                    here — unlike the KI tiles, which need three. The title is
+                    a sibling node, so without aria-label a screen reader
+                    announces a bare percentage with nothing to attach it to. */}
+                <Progress
+                  value={r.percent}
+                  className="h-1.5"
+                  aria-label={`${r.title} reading progress`}
+                />
                 <span className="text-xs text-muted-foreground tabular-nums">
                   {r.progress}
                 </span>
@@ -156,7 +162,7 @@ function QuestionsCard({ questions }: { questions: CarriedQuestion[] }) {
   return (
     <Card className="gap-0 p-0 shadow-card">
       <div className="border-b px-5 py-3">
-        <h3 className="text-sm font-semibold">Questions I&apos;m carrying</h3>
+        <h2 className="text-sm font-semibold">Questions I&apos;m carrying</h2>
         <p className="text-xs text-muted-foreground">
           Hold these while you read.
         </p>

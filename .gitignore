@@ -50,3 +50,10 @@ next-env.d.ts
 
 # claude worktrees
 .claude/worktrees/
+
+# test artifacts
+/playwright-report
+/test-results
+/blob-report
+/playwright/.cache
+/.lighthouseci

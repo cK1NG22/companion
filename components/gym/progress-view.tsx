@@ -50,7 +50,7 @@ export function ProgressView({
       <Card className="gap-0 p-0 shadow-card">
         <div className="flex flex-wrap items-center gap-3 border-b px-4 py-3">
           <div className="min-w-0 flex-1">
-            <h3 className="text-sm font-semibold">Estimated 1RM over time</h3>
+            <h2 className="text-sm font-semibold">Estimated 1RM over time</h2>
             <p className="text-xs text-muted-foreground">
               Averaged Epley and Brzycki from every logged set
             </p>
@@ -114,7 +114,7 @@ export function ProgressView({
 
       <Card className="gap-0 p-0 shadow-card">
         <div className="border-b px-4 py-3">
-          <h3 className="text-sm font-semibold">Fatigue by muscle group</h3>
+          <h2 className="text-sm font-semibold">Fatigue by muscle group</h2>
           <p className="text-xs text-muted-foreground">
             Recent volume against days of rest
           </p>

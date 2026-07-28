@@ -60,7 +60,7 @@ export function NightlyReview({
       <div className="grid gap-4">
         <Card className="gap-0 p-0 shadow-card">
           <div className="border-b px-5 py-4">
-            <h3 className="text-base font-semibold">Account for the day</h3>
+            <h2 className="text-base font-semibold">Account for the day</h2>
             <p className="text-xs text-muted-foreground">
               The answers append to the journal doc.
             </p>
@@ -189,7 +189,7 @@ function ConfirmHoursCard({
   return (
     <Card className="h-fit gap-0 p-0 shadow-card">
       <div className="border-b px-5 py-4">
-        <h3 className="text-base font-semibold">Confirm today&apos;s time</h3>
+        <h2 className="text-base font-semibold">Confirm today&apos;s time</h2>
         <p className="text-xs text-muted-foreground">
           Adjust anything that didn&apos;t go to plan, then log it.
         </p>

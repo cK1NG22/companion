@@ -44,7 +44,7 @@ export function PlanningFlow({
       {step === 0 ? (
         <Card className="gap-0 p-0 shadow-card">
           <div className="border-b px-4 py-3">
-            <h3 className="text-sm font-semibold">How last week actually went</h3>
+            <h2 className="text-sm font-semibold">How last week actually went</h2>
             <p className="text-xs text-muted-foreground">
               Done against the target you set. Wins and misses, plainly.
             </p>
@@ -91,7 +91,7 @@ export function PlanningFlow({
         <div className="grid gap-4 lg:grid-cols-2">
           <Card className="gap-0 p-0 shadow-card">
             <div className="border-b px-4 py-3">
-              <h3 className="text-sm font-semibold">This week&apos;s inputs</h3>
+              <h2 className="text-sm font-semibold">This week&apos;s inputs</h2>
               <p className="text-xs text-muted-foreground">
                 {weekLabel} · edit targets on the Goals tab
               </p>
@@ -127,7 +127,7 @@ export function PlanningFlow({
           {/* The month is shown as reference so the week is set against it. */}
           <Card className="gap-0 p-0 shadow-card">
             <div className="border-b px-4 py-3">
-              <h3 className="text-sm font-semibold">This month&apos;s plans</h3>
+              <h2 className="text-sm font-semibold">This month&apos;s plans</h2>
               <p className="text-xs text-muted-foreground">
                 Reference — what this week has to move
               </p>
@@ -151,7 +151,7 @@ export function PlanningFlow({
 
       {step === 2 ? (
         <Card className="items-start gap-3 px-5 py-5 shadow-card">
-          <h3 className="text-sm font-semibold">Put it on the calendar</h3>
+          <h2 className="text-sm font-semibold">Put it on the calendar</h2>
           <p className="max-w-prose text-sm text-muted-foreground">
             Targets are intentions until they occupy time. Block the week now —
             deep work first, then the protected things (workout, scripture, date

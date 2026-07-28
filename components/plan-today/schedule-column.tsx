@@ -33,7 +33,7 @@ export function ScheduleColumn({
   return (
     <Card className="gap-0 p-0 shadow-card">
       <div className="border-b px-4 py-3">
-        <h3 className="text-sm font-semibold">Today&apos;s schedule</h3>
+        <h2 className="text-sm font-semibold">Today&apos;s schedule</h2>
         <p className="text-xs text-muted-foreground">
           {blocks.length} block{blocks.length === 1 ? "" : "s"} ·{" "}
           {windows.length} open window{windows.length === 1 ? "" : "s"}
@@ -48,7 +48,9 @@ export function ScheduleColumn({
               key={block.id}
               className={cn(
                 "flex items-center gap-3 px-4 py-2",
-                past && "opacity-45",
+                // See dates-view: `opacity-45` put this text at 1.96:1.
+                // De-emphasise with colour, which stays legible.
+                past && "text-muted-foreground",
               )}
             >
               <GoalIcon
@@ -72,9 +74,9 @@ export function ScheduleColumn({
       </ul>
 
       <div className="border-t bg-muted/40 px-4 py-3">
-        <h4 className="text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+        <h3 className="text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
           Open windows
-        </h4>
+        </h3>
         {windows.length === 0 ? (
           <p className="mt-1 text-sm text-muted-foreground">
             The day is full.

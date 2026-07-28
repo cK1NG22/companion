@@ -81,7 +81,9 @@
   /* raw mockup palette */
   --surface: #f5f6f8;
   --surface-2: #eceff4;
-  --faint: #8b93a1;
+  /* The faintest legible ink. Was #8b93a1 — 3.09:1 on white, under WCAG AA.
+     #6b7385 is 4.76:1. Sole consumer is the calendar hour gutter. */
+  --faint: #6b7385;
   --navy-2: #2f4478;
   --navy-soft: #e9edf6;
   --warm: #9a4a3c;
@@ -116,7 +118,10 @@
   --chart-5: #2f5d4a;
 
   --sidebar: #1b2b52;
-  --sidebar-foreground: rgba(255, 255, 255, 0.66);
+  /* 0.75, not 0.66: shadcn's SidebarGroupLabel renders at `/70` of this token,
+     and 0.66 x 0.70 landed the label on 4.16:1 — under WCAG AA. 0.75 x 0.70
+     gives 4.94:1. Verified by `npm run test:a11y`. */
+  --sidebar-foreground: rgba(255, 255, 255, 0.75);
   --sidebar-primary: #ffffff;
   --sidebar-primary-foreground: #1b2b52;
   --sidebar-accent: rgba(255, 255, 255, 0.1);
@@ -130,7 +135,9 @@
 .dark {
   --surface: #161b24;
   --surface-2: #1d2532;
-  --faint: #697285;
+  /* Was #697285 — 3.91:1 on #0e1117. #7c8598 is 5.10:1. The a11y suite only
+     renders light mode, so this one was found by hand, not by axe. */
+  --faint: #7c8598;
   --navy-2: #8aa2d8;
   --navy-soft: #1a2540;
   --warm: #cf8878;
@@ -163,7 +170,8 @@
   --chart-5: #7fb79e;
 
   --sidebar: #141a27;
-  --sidebar-foreground: rgba(255, 255, 255, 0.6);
+  /* Same AA headroom as light mode — see the note there. */
+  --sidebar-foreground: rgba(255, 255, 255, 0.7);
   --sidebar-primary: #ffffff;
   --sidebar-primary-foreground: #141a27;
   --sidebar-accent: rgba(255, 255, 255, 0.08);
