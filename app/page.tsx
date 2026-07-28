@@ -44,10 +44,21 @@ export default async function HomePage(props: {
     <>
       <PageHeader title={`Home · ${format(new Date(), "EEEE, MMMM d")}`}>
         <WeekStepper anchor={toIsoDate(weekStart(anchor))} />
-        <Button variant="outline" size="sm" render={<Link href="/plan-today" />}>
+        {/* nativeButton={false} tells Base UI this renders as an anchor, not a
+            <button> — without it the button semantics are wrong for a link. */}
+        <Button
+          variant="outline"
+          size="sm"
+          nativeButton={false}
+          render={<Link href="/plan-today" />}
+        >
           Plan today
         </Button>
-        <Button size="sm" render={<Link href="/weekly-planning" />}>
+        <Button
+          size="sm"
+          nativeButton={false}
+          render={<Link href="/weekly-planning" />}
+        >
           Weekly planning
         </Button>
       </PageHeader>
