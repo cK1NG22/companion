@@ -26,11 +26,13 @@ export function formatDuration(minutes: number | null): string | null {
 
 /**
  * "3d ago" chips, but terse. `now` is epoch milliseconds, passed in so this
- * stays pure. A month is a flat 30 days.
+ * stays pure. A month is a flat 30 days. Null when there is no date or it does
+ * not parse, so the caller renders no chip.
  */
 export function lastDoneChip(lastDone: string | null, now: number): string | null {
   if (!lastDone) return null;
   const days = Math.round((now - new Date(lastDone).getTime()) / MS_PER_DAY);
+  if (Number.isNaN(days)) return null;
   if (days <= 0) return "today";
   if (days < DAYS_PER_MONTH) return `${days}d ago`;
   return `${Math.round(days / DAYS_PER_MONTH)}mo ago`;

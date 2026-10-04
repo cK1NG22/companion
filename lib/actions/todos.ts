@@ -20,6 +20,24 @@ const NewTodoSchema = z.object({
   goalId: z.string().nullable().optional(),
 }) satisfies z.ZodType<NewTodoInput>;
 
+// `satisfies` above is one-way: a field added to NewTodoInput but not to the
+// schema still compiles, and the action would silently drop it. This fails the
+// typecheck unless the two have the same keys and are assignable both ways.
+// Type-only, and not exported — a "use server" file may export only async
+// functions.
+type Exact<A, B> = [A] extends [B]
+  ? [B] extends [A]
+    ? [keyof A] extends [keyof B]
+      ? [keyof B] extends [keyof A]
+        ? true
+        : false
+      : false
+    : false
+  : false;
+type Assert<T extends true> = T;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _NewTodoSchemaMatchesInput = Assert<Exact<z.infer<typeof NewTodoSchema>, NewTodoInput>>;
+
 export async function addTodoAction(input: unknown): Promise<TodoResult> {
   const parsed = NewTodoSchema.safeParse(input);
   if (!parsed.success) {

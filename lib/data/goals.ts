@@ -26,10 +26,6 @@ export async function getFunnel(): Promise<Funnel> {
   };
 }
 
-export async function getGoal(id: string): Promise<Goal | null> {
-  return goals.find((g) => g.id === id) ?? null;
-}
-
 export interface NewGoalInput {
   title: string;
   tier: GoalTier;

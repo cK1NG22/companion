@@ -7,6 +7,7 @@ import {
   searchActivities,
   searchFood,
 } from "@/lib/data/dates";
+import { MAPS_EMBED_KEY } from "@/lib/geo";
 
 export default async function DatesPage() {
   const home = await getHomeLocation();
@@ -28,7 +29,7 @@ export default async function DatesPage() {
           home={{ lat: home.lat, lng: home.lng }}
           // Public, referrer-restricted embed key. Absent in dev — the popup
           // degrades to a note rather than a broken iframe.
-          mapsKey={process.env.NEXT_PUBLIC_MAPS_EMBED_KEY}
+          mapsKey={MAPS_EMBED_KEY}
         />
       </PageBody>
     </>
