@@ -1,0 +1,206 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ---------------------------------------------------------------------------
+   Companion design tokens.
+   Values are lifted verbatim from mockup.html (the visual reference of record).
+   Palette is FIXED: white / near-black navy-biased ink / navy accent / one
+   muted clay for "behind, overdue, now". No neon, no new accent colors.
+   --------------------------------------------------------------------------- */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  /* Georgia — reserved for devotional + journal text only */
+  --font-serif: var(--serif);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  /* Companion-specific tokens (not part of the stock shadcn set) */
+  --color-faint: var(--faint);
+  --color-navy-2: var(--navy-2);
+  --color-navy-soft: var(--navy-soft);
+  --color-warm: var(--warm);
+  --color-warm-soft: var(--warm-soft);
+  --color-good: var(--good);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --radius: 10px;
+  /* System stack, per mockup.html — no webfont, no network dependency. */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+
+  /* raw mockup palette */
+  --surface: #f5f6f8;
+  --surface-2: #eceff4;
+  /* The faintest legible ink. Was #8b93a1 — 3.09:1 on white, under WCAG AA.
+     #6b7385 is 4.76:1. Sole consumer is the calendar hour gutter. */
+  --faint: #6b7385;
+  --navy-2: #2f4478;
+  --navy-soft: #e9edf6;
+  --warm: #9a4a3c;
+  --warm-soft: #f3e7e4;
+  --good: #2f5d4a;
+
+  /* shadcn semantic mapping */
+  --background: #ffffff;              /* --ground  */
+  --foreground: #12151c;              /* --ink     */
+  --card: #ffffff;                    /* cards are white-on-white, separated by border + shadow */
+  --card-foreground: #12151c;
+  --popover: #ffffff;
+  --popover-foreground: #12151c;
+  --primary: #1b2b52;                 /* --navy    */
+  --primary-foreground: #ffffff;
+  --secondary: #eceff4;               /* --surface-2 */
+  --secondary-foreground: #12151c;
+  --muted: #f5f6f8;                   /* --surface */
+  --muted-foreground: #5b6472;
+  --accent: #e9edf6;                  /* --navy-soft */
+  --accent-foreground: #1b2b52;
+  --destructive: #9a4a3c;             /* --warm — behind / overdue / now */
+  --border: #e2e5ea;                  /* --line    */
+  --input: #e2e5ea;
+  --ring: #2f4478;                    /* --navy-2  */
+
+  /* charts stay inside the fixed palette — navy family + clay + green */
+  --chart-1: #1b2b52;
+  --chart-2: #2f4478;
+  --chart-3: #5b6472;
+  --chart-4: #9a4a3c;
+  --chart-5: #2f5d4a;
+
+  --sidebar: #1b2b52;
+  /* 0.75, not 0.66: shadcn's SidebarGroupLabel renders at `/70` of this token,
+     and 0.66 x 0.70 landed the label on 4.16:1 — under WCAG AA. 0.75 x 0.70
+     gives 4.94:1. Verified by `npm run test:a11y`. */
+  --sidebar-foreground: rgba(255, 255, 255, 0.75);
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #1b2b52;
+  --sidebar-accent: rgba(255, 255, 255, 0.1);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --sidebar-ring: rgba(255, 255, 255, 0.3);
+
+  --shadow-card: 0 1px 2px rgba(18, 21, 28, 0.05), 0 3px 12px rgba(18, 21, 28, 0.05);
+}
+
+.dark {
+  --surface: #161b24;
+  --surface-2: #1d2532;
+  /* Was #697285 — 3.91:1 on #0e1117. #7c8598 is 5.10:1. The a11y suite only
+     renders light mode, so this one was found by hand, not by axe. */
+  --faint: #7c8598;
+  --navy-2: #8aa2d8;
+  --navy-soft: #1a2540;
+  --warm: #cf8878;
+  --warm-soft: #2a1f1c;
+  --good: #7fb79e;
+
+  --background: #0e1117;
+  --foreground: #e8ebf0;
+  --card: #0e1117;
+  --card-foreground: #e8ebf0;
+  --popover: #161b24;
+  --popover-foreground: #e8ebf0;
+  --primary: #3a5088;
+  --primary-foreground: #ffffff;
+  --secondary: #1d2532;
+  --secondary-foreground: #e8ebf0;
+  --muted: #161b24;
+  --muted-foreground: #9aa3b2;
+  --accent: #1a2540;
+  --accent-foreground: #8aa2d8;
+  --destructive: #cf8878;
+  --border: #262d3a;
+  --input: #262d3a;
+  --ring: #8aa2d8;
+
+  --chart-1: #8aa2d8;
+  --chart-2: #3a5088;
+  --chart-3: #9aa3b2;
+  --chart-4: #cf8878;
+  --chart-5: #7fb79e;
+
+  --sidebar: #141a27;
+  /* Same AA headroom as light mode — see the note there. */
+  --sidebar-foreground: rgba(255, 255, 255, 0.7);
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #141a27;
+  --sidebar-accent: rgba(255, 255, 255, 0.08);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.09);
+  --sidebar-ring: rgba(255, 255, 255, 0.25);
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 3px 12px rgba(0, 0, 0, 0.35);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+@layer utilities {
+  /* Devotional / journal text. The ONLY place Georgia is allowed. */
+  .prose-devotional {
+    font-family: var(--serif);
+    line-height: 1.65;
+  }
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+}
