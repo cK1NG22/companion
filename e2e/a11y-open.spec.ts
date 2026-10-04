@@ -25,7 +25,10 @@ const OPENABLE: {
     name: "key-indicator breakdown",
     route: "/",
     open: (p) =>
-      p.getByRole("button", { name: /Open breakdown/ }).first().click(),
+      p
+        .getByRole("button", { name: /Open breakdown/ })
+        .first()
+        .click(),
     role: "dialog",
   },
   {

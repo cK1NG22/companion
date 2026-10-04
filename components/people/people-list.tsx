@@ -2,7 +2,13 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
-import { CalendarDays, Mail, MessageSquare, RefreshCw, Search } from "lucide-react";
+import {
+  CalendarDays,
+  Mail,
+  MessageSquare,
+  RefreshCw,
+  Search,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -84,7 +90,9 @@ export function PeopleList({
           onClick={() =>
             startTransition(async () => {
               await refreshContactsAction();
-              toast.success("Queued — the Mac agent runs it next time it's on.");
+              toast.success(
+                "Queued — the Mac agent runs it next time it's on.",
+              );
             })
           }
         >

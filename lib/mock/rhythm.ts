@@ -69,12 +69,14 @@ export const MOCK_MORNING_SECTIONS: MorningSection[] = [
 export const MOCK_NIGHTLY: NightlyEntry[] = [
   {
     date: dayBefore(1),
-    gratitude: "Sarah made time to talk through the week even though she was tired.",
+    gratitude:
+      "Sarah made time to talk through the week even though she was tired.",
     whatHappened:
       "Shipped the goals funnel. Two client calls, one of which turned into a real pilot conversation.",
     repentAndImprove:
       "I was short with Ben on the phone because I was mid-task. Answering the phone means being present or not answering.",
-    prepareForTomorrow: "Lay out gym clothes; put the deep-work block before email.",
+    prepareForTomorrow:
+      "Lay out gym clothes; put the deep-work block before email.",
     topThree: [
       "Ship Companion Phase 0 → deploy",
       "Protect the 6:45 workout",
@@ -89,7 +91,7 @@ export const MOCK_SCRIPTURE_NOTES: ScriptureNote[] = [
     id: "sn1",
     date: dayBefore(0),
     reference: "Alma 32:27",
-    body: "\"Awake and arouse your faculties, even to an experiment upon my words.\" An experiment is not certainty — it is a willingness to act before the proof arrives. That is the whole thing.",
+    body: '"Awake and arouse your faculties, even to an experiment upon my words." An experiment is not certainty — it is a willingness to act before the proof arrives. That is the whole thing.',
   },
   {
     id: "sn2",
@@ -100,15 +102,45 @@ export const MOCK_SCRIPTURE_NOTES: ScriptureNote[] = [
 ];
 
 export const MOCK_QUESTIONS: CarriedQuestion[] = [
-  { id: "q1", text: "What does it mean to receive revelation for someone else?", resolved: false },
-  { id: "q2", text: "How do I tell desire from discipline when they feel the same?", resolved: false },
-  { id: "q3", text: "Why does gratitude come before petition in almost every prayer I admire?", resolved: false },
+  {
+    id: "q1",
+    text: "What does it mean to receive revelation for someone else?",
+    resolved: false,
+  },
+  {
+    id: "q2",
+    text: "How do I tell desire from discipline when they feel the same?",
+    resolved: false,
+  },
+  {
+    id: "q3",
+    text: "Why does gratitude come before petition in almost every prayer I admire?",
+    resolved: false,
+  },
 ];
 
 export const MOCK_READINGS: Reading[] = [
-  { id: "r1", title: "Book of Mormon", type: "scripture", progress: "Alma 32 of 63", percent: 51 },
-  { id: "r2", title: "The Brothers Karamazov", type: "book", progress: "Ch. 7 of 42", percent: 17 },
-  { id: "r3", title: "Preach My Gospel", type: "book", progress: "Ch. 3 of 13", percent: 23 },
+  {
+    id: "r1",
+    title: "Book of Mormon",
+    type: "scripture",
+    progress: "Alma 32 of 63",
+    percent: 51,
+  },
+  {
+    id: "r2",
+    title: "The Brothers Karamazov",
+    type: "book",
+    progress: "Ch. 7 of 42",
+    percent: 17,
+  },
+  {
+    id: "r3",
+    title: "Preach My Gospel",
+    type: "book",
+    progress: "Ch. 3 of 13",
+    percent: 23,
+  },
 ];
 
 export const MOCK_MONTHLY_STUDY_GOAL =

@@ -46,7 +46,13 @@ const deepWork: Goal = {
   sortOrder: 0,
 };
 
-const outreach: Goal = { ...deepWork, id: "w2", title: "Outreach", target: 4, unit: "count" };
+const outreach: Goal = {
+  ...deepWork,
+  id: "w2",
+  title: "Outreach",
+  target: 4,
+  unit: "count",
+};
 
 describe("blocksInWeek", () => {
   it("includes Sunday and excludes the following Monday", () => {
@@ -78,7 +84,9 @@ describe("hours unit", () => {
 
   it("flags behind when planned time cannot reach the target", () => {
     expect(computeKeyIndicator(deepWork, blocks, []).behind).toBe(true);
-    expect(computeKeyIndicator({ ...deepWork, target: 5 }, blocks, []).behind).toBe(false);
+    expect(
+      computeKeyIndicator({ ...deepWork, target: 5 }, blocks, []).behind,
+    ).toBe(false);
   });
 
   it("groups allocation rows by block name, not by block", () => {

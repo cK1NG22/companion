@@ -43,9 +43,12 @@ export async function getTodaySession(): Promise<SessionExercise[]> {
   return exercises.map((exercise) => ({
     exercise,
     sets: sets.filter(
-      (s) => s.exerciseId === exercise.id && s.performedAt.slice(0, 10) === today,
+      (s) =>
+        s.exerciseId === exercise.id && s.performedAt.slice(0, 10) === today,
     ),
-    bestOneRepMax: bestOneRepMax(sets.filter((s) => s.exerciseId === exercise.id)),
+    bestOneRepMax: bestOneRepMax(
+      sets.filter((s) => s.exerciseId === exercise.id),
+    ),
   }));
 }
 

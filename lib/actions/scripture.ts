@@ -2,7 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { addQuestion, addScriptureNote, toggleQuestion } from "@/lib/data/rhythm";
+import {
+  addQuestion,
+  addScriptureNote,
+  toggleQuestion,
+} from "@/lib/data/rhythm";
 
 const NoteSchema = z.object({
   reference: z.string().trim().min(1, "Which passage?").max(120),
@@ -16,7 +20,10 @@ export async function addScriptureNoteAction(
 ): Promise<ScriptureResult> {
   const parsed = NoteSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid note." };
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid note.",
+    };
   }
   await addScriptureNote(parsed.data);
   revalidatePath("/scripture");

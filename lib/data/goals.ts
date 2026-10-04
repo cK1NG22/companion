@@ -16,7 +16,9 @@ export interface Funnel {
 
 export async function getFunnel(): Promise<Funnel> {
   const byTier = (tier: GoalTier) =>
-    goals.filter((g) => g.tier === tier).sort((a, b) => a.sortOrder - b.sortOrder);
+    goals
+      .filter((g) => g.tier === tier)
+      .sort((a, b) => a.sortOrder - b.sortOrder);
   const parentTitles = Object.fromEntries(goals.map((g) => [g.id, g.title]));
   return {
     year: byTier("year"),
@@ -50,9 +52,7 @@ export async function createGoal(input: NewGoalInput): Promise<Goal> {
     note: null,
     // Yearly goals carry letter badges (A/B/C/D) used as ladder targets.
     badge:
-      input.tier === "year"
-        ? String.fromCharCode(65 + siblings.length)
-        : null,
+      input.tier === "year" ? String.fromCharCode(65 + siblings.length) : null,
     target: input.target ?? null,
     unit: input.unit ?? (input.tier === "week" ? "hours" : null),
     sortOrder: siblings.length,
@@ -63,7 +63,9 @@ export async function createGoal(input: NewGoalInput): Promise<Goal> {
 
 export async function updateGoal(
   id: string,
-  patch: Partial<Pick<Goal, "title" | "icon" | "note" | "parentId" | "target" | "unit">>,
+  patch: Partial<
+    Pick<Goal, "title" | "icon" | "note" | "parentId" | "target" | "unit">
+  >,
 ): Promise<void> {
   const goal = goals.find((g) => g.id === id);
   if (!goal) return;

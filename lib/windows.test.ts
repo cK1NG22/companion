@@ -32,7 +32,9 @@ describe("computeOpenWindows", () => {
       [block("a", "09:00", "12:00"), block("b", "14:00", "15:00")],
       DAY,
     );
-    expect(windows.map((w) => [w.start.slice(11, 16), w.end.slice(11, 16)])).toEqual([
+    expect(
+      windows.map((w) => [w.start.slice(11, 16), w.end.slice(11, 16)]),
+    ).toEqual([
       ["06:00", "09:00"],
       ["12:00", "14:00"],
       ["15:00", "23:00"],
@@ -68,7 +70,10 @@ describe("computeOpenWindows", () => {
       DAY,
     );
     expect(windows.every((w) => w.minutes > 0)).toBe(true);
-    expect(windows.map((w) => w.start.slice(11, 16))).toEqual(["06:00", "13:00"]);
+    expect(windows.map((w) => w.start.slice(11, 16))).toEqual([
+      "06:00",
+      "13:00",
+    ]);
   });
 
   it("respects a custom hour window", () => {
@@ -114,12 +119,20 @@ describe("notBefore", () => {
 
   it("clips a window that is partly in the past", () => {
     const nine = parseISO(`${DAY}T09:00:00`);
-    const windows = computeOpenWindows([block("a", "12:00", "13:00")], DAY, 6, 23, nine);
+    const windows = computeOpenWindows(
+      [block("a", "12:00", "13:00")],
+      DAY,
+      6,
+      23,
+      nine,
+    );
     expect(windows[0].start.slice(11, 16)).toBe("09:00");
     expect(windows[0].end.slice(11, 16)).toBe("12:00");
   });
 
   it("returns nothing once the day is over", () => {
-    expect(computeOpenWindows([], DAY, 6, 23, parseISO(`${DAY}T23:30:00`))).toEqual([]);
+    expect(
+      computeOpenWindows([], DAY, 6, 23, parseISO(`${DAY}T23:30:00`)),
+    ).toEqual([]);
   });
 });

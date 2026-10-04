@@ -51,7 +51,9 @@ export function NightlyReview({
   function save() {
     startTransition(async () => {
       await saveNightlyAction({ ...answers, topThree });
-      toast.success("Saved. It appends to the journal doc once Google is wired.");
+      toast.success(
+        "Saved. It appends to the journal doc once Google is wired.",
+      );
     });
   }
 
@@ -165,8 +167,7 @@ function ConfirmHoursCard({
     minutes: parseMinutes(minutes[b.id] ?? ""),
   }));
   const invalid = parsed.filter((p) => p.minutes === null);
-  const totalHours =
-    parsed.reduce((sum, p) => sum + (p.minutes ?? 0), 0) / 60;
+  const totalHours = parsed.reduce((sum, p) => sum + (p.minutes ?? 0), 0) / 60;
 
   function confirm() {
     if (invalid.length > 0) {

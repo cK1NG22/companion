@@ -17,7 +17,9 @@ import { toIsoDate } from "@/lib/week";
 // Morning Review — a reading, editable with Google-Forms mechanics
 // ---------------------------------------------------------------------------
 
-export async function reorderMorningSectionsAction(ids: string[]): Promise<void> {
+export async function reorderMorningSectionsAction(
+  ids: string[],
+): Promise<void> {
   if (!Array.isArray(ids) || ids.some((id) => typeof id !== "string")) return;
   await reorderMorningSections(ids);
   revalidatePath("/morning");
@@ -29,7 +31,9 @@ const SectionPatch = z.object({
   body: z.string().max(4000).optional(),
 });
 
-export async function updateMorningSectionAction(input: unknown): Promise<void> {
+export async function updateMorningSectionAction(
+  input: unknown,
+): Promise<void> {
   const parsed = SectionPatch.safeParse(input);
   if (!parsed.success) return;
   const { id, ...patch } = parsed.data;

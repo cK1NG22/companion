@@ -8,7 +8,12 @@
 import type { Todo } from "../types";
 import type { TodoCountItem } from "../rollup";
 import { nextId, store } from "../mock/store";
-import { createBlock, endFor, firstWindowFitting, toLocalIso } from "./calendar";
+import {
+  createBlock,
+  endFor,
+  firstWindowFitting,
+  toLocalIso,
+} from "./calendar";
 
 const todos = store.todos;
 

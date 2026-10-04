@@ -44,7 +44,9 @@ export function PlanningFlow({
       {step === 0 ? (
         <Card className="gap-0 p-0 shadow-card">
           <div className="border-b px-4 py-3">
-            <h2 className="text-sm font-semibold">How last week actually went</h2>
+            <h2 className="text-sm font-semibold">
+              How last week actually went
+            </h2>
             <p className="text-xs text-muted-foreground">
               Done against the target you set. Wins and misses, plainly.
             </p>
@@ -55,7 +57,10 @@ export function PlanningFlow({
               return (
                 <li key={ki.goalId} className="px-4 py-3">
                   <div className="flex items-center gap-2.5">
-                    <GoalIcon icon={ki.icon} className="text-muted-foreground" />
+                    <GoalIcon
+                      icon={ki.icon}
+                      className="text-muted-foreground"
+                    />
                     <span className="min-w-0 flex-1 truncate text-sm">
                       {ki.title}
                     </span>
@@ -138,7 +143,10 @@ export function PlanningFlow({
                   key={plan.id}
                   className="flex items-center gap-2.5 px-4 py-2.5"
                 >
-                  <GoalIcon icon={plan.icon} className="text-muted-foreground" />
+                  <GoalIcon
+                    icon={plan.icon}
+                    className="text-muted-foreground"
+                  />
                   <span className="min-w-0 flex-1 truncate text-sm">
                     {plan.title}
                   </span>
@@ -157,7 +165,10 @@ export function PlanningFlow({
             deep work first, then the protected things (workout, scripture, date
             night), then everything else fills the gaps.
           </p>
-          <Button nativeButton={false} render={<Link href={`/calendar?w=${anchor}`} />}>
+          <Button
+            nativeButton={false}
+            render={<Link href={`/calendar?w=${anchor}`} />}
+          >
             <CalendarDays className="size-4" /> Open the calendar
           </Button>
         </Card>

@@ -2,9 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { addTodo, deleteTodo, scheduleTodo, toggleTodo } from "@/lib/data/todos";
+import {
+  addTodo,
+  deleteTodo,
+  scheduleTodo,
+  toggleTodo,
+} from "@/lib/data/todos";
 
-export type TodoResult = { ok: true; message?: string } | { ok: false; error: string };
+export type TodoResult =
+  { ok: true; message?: string } | { ok: false; error: string };
 
 const NewTodoSchema = z.object({
   name: z.string().trim().min(1, "Name the to-do.").max(200),
@@ -17,7 +23,10 @@ const NewTodoSchema = z.object({
 export async function addTodoAction(input: unknown): Promise<TodoResult> {
   const parsed = NewTodoSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid to-do." };
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid to-do.",
+    };
   }
   await addTodo(parsed.data);
   revalidatePath("/goals");

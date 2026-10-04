@@ -21,7 +21,10 @@ export type ActionResult = { ok: true } | { ok: false; error: string };
 export async function createGoalAction(input: unknown): Promise<ActionResult> {
   const parsed = NewGoalSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid goal." };
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid goal.",
+    };
   }
   await createGoal(parsed.data);
   revalidatePath("/goals");
@@ -41,7 +44,10 @@ const UpdateGoalSchema = z.object({
 export async function updateGoalAction(input: unknown): Promise<ActionResult> {
   const parsed = UpdateGoalSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid change." };
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid change.",
+    };
   }
   const { id, ...patch } = parsed.data;
   await updateGoal(id, patch);

@@ -20,7 +20,10 @@ export async function submitFeedbackAction(
 ): Promise<FeedbackResult> {
   const parsed = FeedbackSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid input.",
+    };
   }
   await submitFeedback(parsed.data);
   return { ok: true };

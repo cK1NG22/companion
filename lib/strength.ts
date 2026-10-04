@@ -57,21 +57,26 @@ export function computeFatigue(
   windowDays = 7,
 ): MuscleFatigue {
   const recent = sets.filter(
-    (s) => differenceInCalendarDays(today, parseISO(s.performedAt)) < windowDays,
+    (s) =>
+      differenceInCalendarDays(today, parseISO(s.performedAt)) < windowDays,
   );
 
   const recentVolume = volume(recent);
 
-  const daysRest = recent.length === 0 && sets.length === 0
-    ? FULL_RECOVERY_DAYS
-    : Math.min(
-        FULL_RECOVERY_DAYS,
-        sets.reduce(
-          (min, s) =>
-            Math.min(min, differenceInCalendarDays(today, parseISO(s.performedAt))),
-          Number.POSITIVE_INFINITY,
-        ),
-      );
+  const daysRest =
+    recent.length === 0 && sets.length === 0
+      ? FULL_RECOVERY_DAYS
+      : Math.min(
+          FULL_RECOVERY_DAYS,
+          sets.reduce(
+            (min, s) =>
+              Math.min(
+                min,
+                differenceInCalendarDays(today, parseISO(s.performedAt)),
+              ),
+            Number.POSITIVE_INFINITY,
+          ),
+        );
 
   const load = Math.min(1, recentVolume / REFERENCE_WEEKLY_VOLUME);
   // Linear recovery: every rest day sheds a quarter of the accumulated load.

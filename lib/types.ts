@@ -266,12 +266,7 @@ export interface Reading {
 // ---------------------------------------------------------------------------
 
 export type MuscleGroup =
-  | "chest"
-  | "back"
-  | "shoulders"
-  | "arms"
-  | "legs"
-  | "core";
+  "chest" | "back" | "shoulders" | "arms" | "legs" | "core";
 
 export interface Exercise {
   id: string;

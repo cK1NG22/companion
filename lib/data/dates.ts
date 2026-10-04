@@ -6,7 +6,13 @@
  * "try something new", enacted by sinking recently-done to the bottom.
  */
 import { differenceInCalendarDays, parseISO } from "date-fns";
-import type { Activity, DiceRoll, FoodPlace, HomeLocation, PriceTier } from "../types";
+import type {
+  Activity,
+  DiceRoll,
+  FoodPlace,
+  HomeLocation,
+  PriceTier,
+} from "../types";
 import { distanceMiles, type LatLng } from "../geo";
 import { CUISINES, MOCK_ACTIVITIES, MOCK_FOOD, MOCK_HOME } from "../mock/dates";
 

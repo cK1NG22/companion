@@ -52,7 +52,9 @@ describe("week label", () => {
 
   it("shows both months when the week spans a boundary", () => {
     // 2026-06-29 is a Monday; that week ends Sunday 2026-07-05.
-    expect(formatWeekLabel(new Date(2026, 5, 29))).toBe("week of Jun 29 – Jul 5");
+    expect(formatWeekLabel(new Date(2026, 5, 29))).toBe(
+      "week of Jun 29 – Jul 5",
+    );
   });
 });
 

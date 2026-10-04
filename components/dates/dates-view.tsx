@@ -33,9 +33,7 @@ import {
 } from "@/lib/actions/dates";
 import type { Activity, DateMode, DiceRoll, FoodPlace } from "@/lib/types";
 
-type Row =
-  | ({ kind: "food" } & FoodPlace)
-  | ({ kind: "activity" } & Activity);
+type Row = ({ kind: "food" } & FoodPlace) | ({ kind: "activity" } & Activity);
 
 const price = (tier: number | null) => (tier ? "$".repeat(tier) : "—");
 
@@ -121,13 +119,28 @@ export function DatesView({
 
     const base = mode === "food" ? allFood : allActivities;
     return base.filter((r) => {
-      if (maxPrice !== "any" && (r.priceTier ?? 1) > Number(maxPrice)) return false;
-      if (r.kind === "food" && cuisine !== "any" && r.cuisine !== cuisine) return false;
-      if (r.kind === "activity" && category !== "any" && r.category !== category)
+      if (maxPrice !== "any" && (r.priceTier ?? 1) > Number(maxPrice))
+        return false;
+      if (r.kind === "food" && cuisine !== "any" && r.cuisine !== cuisine)
+        return false;
+      if (
+        r.kind === "activity" &&
+        category !== "any" &&
+        r.category !== category
+      )
         return false;
       return true;
     });
-  }, [anchorRow, exploreRows, mode, allFood, allActivities, cuisine, category, maxPrice]);
+  }, [
+    anchorRow,
+    exploreRows,
+    mode,
+    allFood,
+    allActivities,
+    cuisine,
+    category,
+    maxPrice,
+  ]);
 
   /** Server-side so the real novelty filter runs, and so re-rolling differs. */
   function roll() {
@@ -175,7 +188,9 @@ export function DatesView({
           </Button>
           <p className="text-sm text-muted-foreground">
             {anchorRow.kind === "food" ? "Activities" : "Food"} near{" "}
-            <span className="font-medium text-foreground">{anchorRow.name}</span>
+            <span className="font-medium text-foreground">
+              {anchorRow.name}
+            </span>
           </p>
         </div>
       ) : (
@@ -193,10 +208,15 @@ export function DatesView({
           </ToggleGroup>
 
           {mode === "food" ? (
-            <Select value={cuisine} onValueChange={(v) => setCuisine(v ?? "any")}>
+            <Select
+              value={cuisine}
+              onValueChange={(v) => setCuisine(v ?? "any")}
+            >
               <SelectTrigger className="h-9 w-[170px]" aria-label="Cuisine">
                 <SelectValue className="capitalize">
-                  {(v) => (v === "any" ? "Any cuisine" : prettyCuisine(String(v)))}
+                  {(v) =>
+                    v === "any" ? "Any cuisine" : prettyCuisine(String(v))
+                  }
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -209,7 +229,10 @@ export function DatesView({
               </SelectContent>
             </Select>
           ) : (
-            <Select value={category} onValueChange={(v) => setCategory(v ?? "any")}>
+            <Select
+              value={category}
+              onValueChange={(v) => setCategory(v ?? "any")}
+            >
               <SelectTrigger className="h-9 w-[170px]" aria-label="Category">
                 <SelectValue className="capitalize">
                   {(v) => (v === "any" ? "Any category" : String(v))}
@@ -226,7 +249,10 @@ export function DatesView({
             </Select>
           )}
 
-          <Select value={maxPrice} onValueChange={(v) => setMaxPrice(v ?? "any")}>
+          <Select
+            value={maxPrice}
+            onValueChange={(v) => setMaxPrice(v ?? "any")}
+          >
             <SelectTrigger className="h-9 w-[120px]" aria-label="Max price">
               <SelectValue>
                 {(v) => (v === "any" ? "Any price" : "$".repeat(Number(v)))}
@@ -264,7 +290,9 @@ export function DatesView({
               row.lastDone !== null &&
               now - new Date(row.lastDone).getTime() < 30 * 86_400_000;
             return (
-              <li key={`${row.kind}-${"placeId" in row ? row.placeId : row.id}`}>
+              <li
+                key={`${row.kind}-${"placeId" in row ? row.placeId : row.id}`}
+              >
                 <button
                   type="button"
                   onClick={() => setDetail(row)}

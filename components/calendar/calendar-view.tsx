@@ -22,7 +22,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { GoalIcon } from "@/components/common/goal-icon";
-import { BlockDialog, type BlockDraft } from "@/components/calendar/block-dialog";
+import {
+  BlockDialog,
+  type BlockDraft,
+} from "@/components/calendar/block-dialog";
 import { updateBlockAction } from "@/lib/actions/calendar";
 import { toLocalIso } from "@/lib/data/calendar";
 import type { CalendarBlock, Goal, IconKey } from "@/lib/types";
@@ -95,7 +98,9 @@ export function CalendarView({
   }
 
   /** Dragging or resizing an existing block writes the new time straight back. */
-  function handleEventChange(info: EventDropArg | { event: EventDropArg["event"]; revert: () => void }) {
+  function handleEventChange(
+    info: EventDropArg | { event: EventDropArg["event"]; revert: () => void },
+  ) {
     const { event, revert } = info;
     if (!event.start || !event.end) return;
     startTransition(async () => {
@@ -115,9 +120,7 @@ export function CalendarView({
     <div className="grid gap-3">
       <div className="flex items-center gap-2">
         <DropdownMenu>
-          <DropdownMenuTrigger
-            render={<Button variant="outline" size="sm" />}
-          >
+          <DropdownMenuTrigger render={<Button variant="outline" size="sm" />}>
             {VIEW_LABELS[view]}
             <ChevronDown className="size-3.5 opacity-60" />
           </DropdownMenuTrigger>
@@ -237,11 +240,7 @@ export function CalendarView({
         />
       </div>
 
-      <BlockDialog
-        draft={draft}
-        goals={goals}
-        onClose={() => setDraft(null)}
-      />
+      <BlockDialog draft={draft} goals={goals} onClose={() => setDraft(null)} />
     </div>
   );
 }

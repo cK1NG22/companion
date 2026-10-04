@@ -12,7 +12,15 @@ import { expect, test } from "@playwright/test";
 test("week runs Monday to Sunday", async ({ page }) => {
   await page.goto("/");
   const days = page.locator("thead th[scope=col]");
-  await expect(days).toHaveText(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]);
+  await expect(days).toHaveText([
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat",
+    "Sun",
+  ]);
 });
 
 test("week stepper moves the URL one week at a time, Monday-anchored", async ({

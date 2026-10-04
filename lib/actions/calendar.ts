@@ -9,7 +9,10 @@ export type BlockResult = { ok: true } | { ok: false; error: string };
 /** Local-naive ISO, e.g. "2026-07-27T09:00:00". Never UTC — see lib/data/calendar.ts. */
 const LocalIso = z
   .string()
-  .regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/, "Expected a local timestamp");
+  .regex(
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/,
+    "Expected a local timestamp",
+  );
 
 const NewBlockSchema = z
   .object({
@@ -27,7 +30,10 @@ const NewBlockSchema = z
 export async function createBlockAction(input: unknown): Promise<BlockResult> {
   const parsed = NewBlockSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid block." };
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid block.",
+    };
   }
   await createBlock(parsed.data);
   revalidatePath("/calendar");
@@ -54,7 +60,10 @@ const UpdateBlockSchema = z
 export async function updateBlockAction(input: unknown): Promise<BlockResult> {
   const parsed = UpdateBlockSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid change." };
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid change.",
+    };
   }
   const { id, ...patch } = parsed.data;
   await updateBlock(id, patch);

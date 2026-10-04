@@ -39,7 +39,10 @@ export function appleMapsUrl(name: string, coords: LatLng): string {
  * ponytail: the key is a public, HTTP-referrer-restricted embed key. If it is
  * missing we render a static link instead of a broken iframe.
  */
-export function mapsEmbedUrl(query: string, apiKey: string | undefined): string | null {
+export function mapsEmbedUrl(
+  query: string,
+  apiKey: string | undefined,
+): string | null {
   if (!apiKey) return null;
   return `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodeURIComponent(query)}`;
 }
