@@ -9,6 +9,12 @@ export type PositionResult =
   { ok: true; lat: number; lng: number } | { ok: false; message: string };
 
 const TIMEOUT_MS = 10_000;
+/**
+ * The browser's own `timeout` only starts once permission is granted, and a
+ * dismissed prompt can call neither callback. This is the backstop: past it we
+ * stop waiting and report a timeout.
+ */
+const WATCHDOG_MS = TIMEOUT_MS + 2_000;
 /** A fix this recent is reused rather than waking the GPS again. */
 const MAX_AGE_MS = 60_000;
 
@@ -31,7 +37,18 @@ export function getCurrentPosition(): Promise<PositionResult> {
     return Promise.resolve({ ok: false, message: MESSAGES.missing });
   }
 
-  return new Promise((resolve) => {
+  return new Promise((settle) => {
+    // A promise settles once, so whichever of the browser and the watchdog
+    // answers first wins and a late answer from the other changes nothing.
+    const watchdog = setTimeout(
+      () => settle({ ok: false, message: MESSAGES.timeout }),
+      WATCHDOG_MS,
+    );
+    const resolve = (result: PositionResult) => {
+      clearTimeout(watchdog);
+      settle(result);
+    };
+
     geolocation.getCurrentPosition(
       (position) =>
         resolve({

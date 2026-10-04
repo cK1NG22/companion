@@ -39,6 +39,11 @@ import {
 import type { Activity, DateMode, DiceRoll, FoodPlace } from "@/lib/types";
 
 const FELL_BACK = "Showing results from Home.";
+const STILL_LIVE = "Still showing results from your current location.";
+const SEARCH_FAILED = "The search could not be completed.";
+
+/** "superseded": a newer search started, so this one changed nothing. */
+type SearchOutcome = "done" | "superseded" | { error: string };
 
 /**
  * The Date planner (PRD §4.12). One toggled list, never two side by side.
@@ -160,62 +165,75 @@ export function DatesView({
 
   /**
    * Run the proximity search. `origin` null means Home, which the server
-   * looks up itself. Resolves to an error message, or null when it worked.
+   * looks up itself. Never throws: a dropped request is a failure like any
+   * other. The list on screen changes only on "done", so a caller commits its
+   * anchor or radius only then — that keeps the bar matching the list.
    */
   async function search(
     origin: LatLng | null,
     radiusValue: string,
-  ): Promise<string | null> {
+  ): Promise<SearchOutcome> {
     const id = ++latestSearch.current;
     if (!origin && radiusValue === DEFAULT_RADIUS) {
       setSearched(null);
-      return null;
+      return "done";
     }
-    const result = await searchDatesAction({
-      ...(origin ? { anchor: "live", ...origin } : { anchor: "home" }),
-      ...(radiusValue === DEFAULT_RADIUS
-        ? {}
-        : { radiusMiles: Number(radiusValue) }),
-    });
-    if (id !== latestSearch.current) return null;
-    if (!result.ok) return result.error;
+    let result: Awaited<ReturnType<typeof searchDatesAction>>;
+    try {
+      result = await searchDatesAction({
+        ...(origin ? { anchor: "live", ...origin } : { anchor: "home" }),
+        ...(radiusValue === DEFAULT_RADIUS
+          ? {}
+          : { radiusMiles: Number(radiusValue) }),
+      });
+    } catch {
+      result = { ok: false, error: SEARCH_FAILED };
+    }
+    if (id !== latestSearch.current) return "superseded";
+    if (!result.ok) return { error: result.error };
     setSearched({ food: result.food, activities: result.activities });
-    return null;
+    return "done";
   }
 
   async function searchFromHome() {
-    setLiveCoords(null);
-    setLocationError(await search(null, radius));
+    setLocationError(null);
+    const outcome = await search(null, radius);
+    if (outcome === "done") setLiveCoords(null);
+    // The list is still the current-location one, so the anchor stays there.
+    else if (outcome !== "superseded")
+      setLocationError(`${outcome.error} ${STILL_LIVE}`);
   }
 
   /** Every failure ends the same way: say why, stay on Home. */
   async function searchFromCurrentLocation() {
     setLocationError(null);
     setLocating(true);
-    const position = await getCurrentPosition();
-    if (!position.ok) {
+    try {
+      const position = await getCurrentPosition();
+      if (!position.ok) {
+        setLocationError(`${position.message} ${FELL_BACK}`);
+        return;
+      }
+      const coords = { lat: position.lat, lng: position.lng };
+      const outcome = await search(coords, radius);
+      if (outcome === "done") setLiveCoords(coords);
+      else if (outcome !== "superseded")
+        setLocationError(`${outcome.error} ${FELL_BACK}`);
+    } finally {
+      // Whatever happened, the bar must not stay disabled.
       setLocating(false);
-      setLocationError(`${position.message} ${FELL_BACK}`);
-      return;
     }
-    const coords = { lat: position.lat, lng: position.lng };
-    const error = await search(coords, radius);
-    setLocating(false);
-    if (error) {
-      setLocationError(`${error} ${FELL_BACK}`);
-      return;
-    }
-    setLiveCoords(coords);
   }
 
   async function chooseRadius(next: string) {
     const previous = radius;
     setRadius(next);
     setLocationError(null);
-    const error = await search(liveCoords, next);
-    if (error) {
+    const outcome = await search(liveCoords, next);
+    if (outcome !== "done" && outcome !== "superseded") {
+      // The list did not change, so neither may the radius shown.
       setRadius(previous);
-      setLocationError(error);
+      setLocationError(outcome.error);
     }
   }
 

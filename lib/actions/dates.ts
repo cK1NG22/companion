@@ -74,10 +74,13 @@ export async function scheduleDateAction(input: unknown): Promise<DateResult> {
  * Coordinates come from the browser, so they are untrusted: finite numbers,
  * latitude -90..90, longitude -180..180, or the request is refused.
  */
-const CoordsSchema = z.object({
+const CoordsSchema = z.strictObject({
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
 });
+
+/** Longest id accepted for "not this one again". Real ids are far shorter. */
+const MAX_ID_LENGTH = 100;
 
 /** A radius between MIN_RADIUS_MILES and MAX_RADIUS_MILES (lib/geo.ts). */
 const RadiusSchema = z.number().refine(isRadiusMiles);
@@ -134,6 +137,11 @@ export async function searchDatesAction(
   return { ok: true, food, activities };
 }
 
+const ExploreSchema = z.strictObject({
+  ...CoordsSchema.shape,
+  want: z.enum(["food", "activity"]),
+});
+
 /**
  * Explore the OTHER type near an anchor (PRD §4.12 level 3).
  *
@@ -144,9 +152,7 @@ export async function searchDatesAction(
 export async function exploreNearAction(
   input: unknown,
 ): Promise<{ food: FoodPlace[] } | { activities: Activity[] } | null> {
-  const parsed = CoordsSchema.extend({
-    want: z.enum(["food", "activity"]),
-  }).safeParse(input);
+  const parsed = ExploreSchema.safeParse(input);
   if (!parsed.success) return null;
 
   const { lat, lng, want } = parsed.data;
@@ -155,9 +161,11 @@ export async function exploreNearAction(
     : { activities: await searchActivities({ lat, lng }, { radiusMiles: 25 }) };
 }
 
-const RollSchema = CoordsSchema.extend({
-  excludePlaceId: z.string().optional(),
-  excludeActivityId: z.string().optional(),
+// Strict like the search: a key the screen does not send is a refusal.
+const RollSchema = z.strictObject({
+  ...CoordsSchema.shape,
+  excludePlaceId: z.string().max(MAX_ID_LENGTH).optional(),
+  excludeActivityId: z.string().max(MAX_ID_LENGTH).optional(),
 });
 
 /** Dice Roll, server-side so it uses the real novelty filter (PRD §4.12). */
