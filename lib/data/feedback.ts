@@ -6,8 +6,9 @@
  * (`date_research`).
  */
 import type { FeedbackItem, FeedbackKind } from "../types";
+import { store } from "../mock/store";
 
-const queue: FeedbackItem[] = [];
+const queue = store.feedback;
 let nextId = 1;
 
 export async function getFeedbackQueue(): Promise<FeedbackItem[]> {

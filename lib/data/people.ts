@@ -8,13 +8,9 @@
 import { subDays } from "date-fns";
 import type { Person } from "../types";
 import { MOCK_PEOPLE, OVERDUE_AFTER_DAYS } from "../mock/people";
+import { store } from "../mock/store";
 
-const excluded = new Set(
-  MOCK_PEOPLE.filter((p) => p.excluded).map((p) => p.id),
-);
-
-/** When the on-demand Mac agent last ran. Drives the "synced 2h ago" label. */
-let lastSyncedAt: string = subDays(new Date(), 0).toISOString();
+const excluded = store.excludedPeople;
 
 function toPerson(p: (typeof MOCK_PEOPLE)[number]): Person {
   const days = p.daysAgo;
@@ -59,7 +55,7 @@ export async function setPersonExcluded(
 }
 
 export async function getLastSyncedAt(): Promise<string> {
-  return lastSyncedAt;
+  return store.lastSyncedAt;
 }
 
 /**
@@ -67,5 +63,5 @@ export async function getLastSyncedAt(): Promise<string> {
  * next time the Mac is on — nothing grinds through the message DB all day.
  */
 export async function requestContactRefresh(): Promise<void> {
-  lastSyncedAt = new Date().toISOString();
+  store.lastSyncedAt = new Date().toISOString();
 }

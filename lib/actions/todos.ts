@@ -2,7 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { addTodo, deleteTodo, scheduleTodo, toggleTodo } from "@/lib/data/todos";
+import {
+  addTodo,
+  deleteTodo,
+  scheduleTodo,
+  toggleTodo,
+  type NewTodoInput,
+} from "@/lib/data/todos";
 
 export type TodoResult = { ok: true; message?: string } | { ok: false; error: string };
 
@@ -12,7 +18,7 @@ const NewTodoSchema = z.object({
   // 5 minutes to a full day — anything outside that is a typo, not an intent.
   durationMinutes: z.number().int().min(5).max(1440).nullable().optional(),
   goalId: z.string().nullable().optional(),
-});
+}) satisfies z.ZodType<NewTodoInput>;
 
 export async function addTodoAction(input: unknown): Promise<TodoResult> {
   const parsed = NewTodoSchema.safeParse(input);

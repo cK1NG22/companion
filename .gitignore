@@ -5,7 +5,6 @@ node_modules
 .vercel
 .DS_Store
 *.tsbuildinfo
-.gstack
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies

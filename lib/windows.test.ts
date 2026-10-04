@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseISO } from "date-fns";
-import { computeOpenWindows, overlapsDay } from "./windows";
+import { computeOpenWindows, endFor, overlapsDay } from "./windows";
 import type { CalendarBlock } from "./types";
 
 const DAY = "2026-07-27";
@@ -121,5 +121,15 @@ describe("notBefore", () => {
 
   it("returns nothing once the day is over", () => {
     expect(computeOpenWindows([], DAY, 6, 23, parseISO(`${DAY}T23:30:00`))).toEqual([]);
+  });
+});
+
+describe("endFor", () => {
+  it("adds the duration to the start", () => {
+    expect(endFor(`${DAY}T09:00:00`, 45)).toBe(`${DAY}T09:45:00`);
+  });
+
+  it("rolls past midnight into the next day", () => {
+    expect(endFor(`${DAY}T23:30:00`, 60)).toBe("2026-07-28T00:30:00");
   });
 });

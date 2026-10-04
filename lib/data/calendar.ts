@@ -4,7 +4,6 @@
  * Blocks are the input surface: creating one is how "Planned" gets filled.
  * Confirming a block's real duration at night is how "Done" gets filled.
  */
-import { addMinutes, parseISO } from "date-fns";
 import type { CalendarBlock, OpenWindow } from "../types";
 import { blocksInWeek } from "../rollup";
 import { toIsoDate } from "../week";
@@ -102,9 +101,4 @@ export async function firstWindowFitting(
 ): Promise<OpenWindow | null> {
   const windows = await findOpenWindows(day);
   return windows.find((w) => w.minutes >= durationMinutes) ?? null;
-}
-
-/** Helper for scheduling: end time for a start + duration. */
-export function endFor(start: string, durationMinutes: number): string {
-  return toLocalIso(addMinutes(parseISO(start), durationMinutes));
 }
