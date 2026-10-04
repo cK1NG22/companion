@@ -20,7 +20,7 @@ const exercises = store.exercises;
 const sets = store.sets;
 let counter = 1;
 
-export const MUSCLE_GROUPS: MuscleGroup[] = [
+const MUSCLE_GROUPS: MuscleGroup[] = [
   "chest",
   "back",
   "shoulders",

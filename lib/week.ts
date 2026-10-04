@@ -13,7 +13,7 @@ import type { IsoDate } from "./types";
  * Every week calculation in the app must go through this module so that
  * invariant is stated exactly once.
  */
-export const WEEK_STARTS_ON = 1 as const; // Monday
+const WEEK_STARTS_ON = 1 as const; // Monday
 
 export const DAY_LABELS = [
   "Mon",
@@ -74,7 +74,7 @@ export function formatWeekLabel(date: Date): string {
 
 /** Index of a date within its Monday-first week: Monday = 0 … Sunday = 6. */
 export function dayIndex(date: Date): number {
-  return (date.getDay() + 6) % 7;
+  return (date.getDay() - WEEK_STARTS_ON + 7) % 7;
 }
 
 /**

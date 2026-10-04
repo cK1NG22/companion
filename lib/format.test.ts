@@ -79,9 +79,9 @@ describe("lastDoneChip", () => {
     expect(lastDoneChip(ago(365), NOW)).toBe("12mo ago");
   });
 
-  // Not a behaviour anyone wants — pinned so a change to it is deliberate.
-  it("does not guard against an unparseable date", () => {
-    expect(lastDoneChip("not a date", NOW)).toBe("NaNmo ago");
+  // Same as never done: the caller renders no chip rather than "NaNmo ago".
+  it("is null for an unparseable date", () => {
+    expect(lastDoneChip("not a date", NOW)).toBeNull();
   });
 });
 

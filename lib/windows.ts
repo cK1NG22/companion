@@ -28,7 +28,7 @@ export function overlapsDay(block: CalendarBlock, dayIso: string): boolean {
 }
 
 /** Gaps shorter than this are not schedulable time; don't offer them. */
-export const MIN_WINDOW_MINUTES = 15;
+const MIN_WINDOW_MINUTES = 15;
 
 /**
  * The free gaps in a day, between `startHour` and `endHour` (PRD §4.7).
