@@ -193,6 +193,13 @@ export interface Todo {
 
 export type ContactChannel = "email" | "text" | "calendar";
 
+/** A user-made label for sorting and filtering people. */
+export interface Tag {
+  id: string;
+  name: string;
+  sortOrder: number;
+}
+
 export interface Person {
   id: string;
   name: string;
@@ -207,6 +214,8 @@ export interface Person {
   overdue: boolean;
   /** Filtered out of the People list AND out of the iMessage scan itself. */
   excluded: boolean;
+  /** Ids of the `Tag`s on this person. */
+  tags: string[];
 }
 
 // ---------------------------------------------------------------------------

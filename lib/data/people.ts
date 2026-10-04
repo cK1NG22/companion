@@ -25,6 +25,7 @@ function toPerson(p: (typeof MOCK_PEOPLE)[number]): Person {
     daysSinceContact: days,
     overdue: days !== null && days >= OVERDUE_AFTER_DAYS,
     excluded: excluded.has(p.id),
+    tags: store.personTags[p.id] ?? [],
   };
 }
 

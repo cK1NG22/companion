@@ -5,7 +5,23 @@
  * freshest of Gmail / Calendar / iMessage (the last via the local Mac agent,
  * metadata only).
  */
-import type { ContactChannel } from "../types";
+import type { ContactChannel, Tag } from "../types";
+
+export const MOCK_TAGS: Tag[] = [
+  { id: "t1", name: "Family", sortOrder: 0 },
+  { id: "t2", name: "Work", sortOrder: 1 },
+  { id: "t3", name: "Church", sortOrder: 2 },
+];
+
+/** personId → tag ids. */
+export const MOCK_PERSON_TAGS: Record<string, string[]> = {
+  p1: ["t2"],
+  p2: ["t1"],
+  p4: ["t1"],
+  p6: ["t1"],
+  p8: ["t2"],
+  p9: ["t3"],
+};
 
 export interface MockPerson {
   id: string;
