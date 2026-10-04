@@ -96,34 +96,77 @@ types in `node_modules/@base-ui/react/` — do not assume Radix.
 ```bash
 npm run dev          # dev server (turbopack)
 npm run build        # production build — must pass before any phase is "done"
+npm run check        # the fast gates in one go: typecheck, lint, format:check, arch, knip, test
+npm run typecheck    # tsc --noEmit
 npm run lint         # eslint
-npx tsc --noEmit     # typecheck
+npm run format       # prettier --write (format:check is the gate)
+npm run arch         # dependency-cruiser — the lib/data seam, see below
+npm run knip         # unused files and dependencies
 npm test             # vitest (pure logic only)
-npm run test:a11y    # axe-core on all 11 routes (Playwright) — must be green
+npm run test:e2e     # every Playwright spec: axe, HTML validity, behaviour
+npm run test:a11y    # the axe specs only
 npm run test:lh      # Lighthouse CI — accessibility must stay at 100
 ```
 
-## Accessibility gates
+`.github/workflows/ci.yml` runs all of the above, plus `npm audit`, on every push
+to `main` and every pull request.
 
-Two borrowed conformance suites run against the rendered app. Neither tests our
-business rules; both test whether the HTML we emit obeys published standards.
+## Architecture gate
 
-- `npm run test:a11y` — axe-core, scoped to **WCAG 2.0/2.1 A and AA**. Fails on
-  any violation. Route list lives in `e2e/routes.json`; **add new routes there**
-  or they escape both audits.
-- `npm run test:lh` — Lighthouse. Runs a wider axe rule set than the above
+`npm run arch` turns architecture rules 1 and 4 into a failing check
+(`.dependency-cruiser.cjs`):
+
+- Only `lib/data/` may import `lib/mock/` — and, from Part C, Drizzle or the
+  Neon driver. A screen or a server action that reaches past the seam fails.
+- `lib/*.ts` (the pure math) may not import data, actions, mock, React or Next.
+- No circular imports.
+
+`npm run knip` fails on unused files and unused dependencies. Unused *exports*
+are reported as warnings only: `lib/data/` deliberately exports functions that
+Part C will call. `components/ui/**` is excluded — it is machine-owned.
+
+## Browser gates
+
+Three borrowed conformance suites run against the rendered app, plus our own
+behaviour tests. The borrowed suites test whether the HTML we emit obeys
+published standards; none of them tests a business rule.
+
+- **axe-core** (`e2e/a11y.spec.ts`, `e2e/a11y-open.spec.ts`) — scoped to
+  **WCAG 2.0/2.1 A and AA**, in **light and dark**. Fails on any violation.
+  - The route list lives in `e2e/routes.json`; **add new routes there** or they
+    escape axe, the HTML check and Lighthouse together.
+  - axe sees the page as painted, so anything closed on load is invisible to
+    it. `a11y-open.spec.ts` opens each dialog, menu, popover and select and
+    audits again. **Add an entry to its `OPENABLE` list whenever a screen gains
+    something that opens** — otherwise it is unaudited.
+- **html-validate** (`e2e/html.spec.ts`) — the server's HTML against the WHATWG
+  standard (`html-validate:standard`). The common failure is block content
+  inside a `<button>`: a button may hold phrasing content only, so no `<div>`,
+  `<p>` or `Card` inside one. Use `<span className="block">`, or stretch the
+  button over the card (see `key-indicator-tiles.tsx`).
+- **Lighthouse** (`npm run test:lh`) — runs a wider axe rule set than the above
   (including best-practice rules like `heading-order` that carry no WCAG tag),
-  so it can fail when `test:a11y` passes. Accessibility is a ratchet at 100.
+  so it can fail when the axe specs pass. Accessibility is a ratchet at 100.
+  Light mode only.
+- **Behaviour** (`e2e/behaviour.spec.ts`) — hand-written: Monday-first week,
+  habit checks, to-dos, feedback, navigation. The mock store is one shared
+  in-memory world and specs run in parallel, so **each test owns its data**: a
+  week nobody else views, or a row with a unique name.
 
-Two things these gates do **not** cover, so check them by hand:
+Still not covered by any gate, so check by hand:
 
-1. **Dark mode.** Both suites render light mode only. `--faint` was 3.91:1 in
-   dark and no suite caught it.
-2. **Interactive state.** Axe sees the page as first painted — dialogs, popovers,
-   and menus are unopened and therefore unaudited.
+1. **Drag interactions** — calendar drag-to-create and resize, Morning Review
+   reordering.
+2. **Phone layout.** Every spec runs at desktop width; `ResponsiveModal`'s
+   drawer branch is never rendered.
+3. **Lighthouse in dark mode.**
 
 Heading levels: `PageHeader` owns the only `<h1>`. Card titles are `<h2>`,
 anything nested under them `<h3>`. Skipping a level fails `test:lh`.
 
 Never dim text with `opacity-*`. Opacity composites text toward the background —
 nothing below roughly `opacity-90` can hold 4.5:1. Use `text-muted-foreground`.
+
+Never put `text-white` on a token colour (`bg-good`, `bg-warm`). The tokens get
+lighter in dark mode and white stops being readable; `text-background` flips
+with them.

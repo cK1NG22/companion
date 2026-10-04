@@ -45,7 +45,9 @@ export async function getTodaySession(): Promise<SessionExercise[]> {
     sets: sets.filter(
       (s) => s.exerciseId === exercise.id && datePart(s.performedAt) === today,
     ),
-    bestOneRepMax: bestOneRepMax(sets.filter((s) => s.exerciseId === exercise.id)),
+    bestOneRepMax: bestOneRepMax(
+      sets.filter((s) => s.exerciseId === exercise.id),
+    ),
   }));
 }
 

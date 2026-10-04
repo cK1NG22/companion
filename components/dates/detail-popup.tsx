@@ -11,8 +11,7 @@ import { scheduleDateAction } from "@/lib/actions/dates";
 import type { Activity, FoodPlace } from "@/lib/types";
 
 export type Row =
-  | ({ kind: "food" } & FoodPlace)
-  | ({ kind: "activity" } & Activity);
+  ({ kind: "food" } & FoodPlace) | ({ kind: "activity" } & Activity);
 
 export const price = (tier: number | null) => (tier ? "$".repeat(tier) : "—");
 

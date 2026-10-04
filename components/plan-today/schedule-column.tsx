@@ -25,7 +25,6 @@ export function ScheduleColumn({
   /** Passed in rather than read here — render must stay pure. */
   now: number;
 }) {
-
   return (
     <Card className="gap-0 p-0 shadow-card">
       <div className="border-b px-4 py-3">
@@ -74,9 +73,7 @@ export function ScheduleColumn({
           Open windows
         </h3>
         {windows.length === 0 ? (
-          <p className="mt-1 text-sm text-muted-foreground">
-            The day is full.
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">The day is full.</p>
         ) : (
           <ul className="mt-1.5 flex flex-wrap gap-1.5">
             {windows.map((w) => (

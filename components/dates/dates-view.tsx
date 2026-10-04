@@ -89,13 +89,28 @@ export function DatesView({
 
     const base = mode === "food" ? allFood : allActivities;
     return base.filter((r) => {
-      if (maxPrice !== "any" && (r.priceTier ?? 1) > Number(maxPrice)) return false;
-      if (r.kind === "food" && cuisine !== "any" && r.cuisine !== cuisine) return false;
-      if (r.kind === "activity" && category !== "any" && r.category !== category)
+      if (maxPrice !== "any" && (r.priceTier ?? 1) > Number(maxPrice))
+        return false;
+      if (r.kind === "food" && cuisine !== "any" && r.cuisine !== cuisine)
+        return false;
+      if (
+        r.kind === "activity" &&
+        category !== "any" &&
+        r.category !== category
+      )
         return false;
       return true;
     });
-  }, [anchorRow, exploreRows, mode, allFood, allActivities, cuisine, category, maxPrice]);
+  }, [
+    anchorRow,
+    exploreRows,
+    mode,
+    allFood,
+    allActivities,
+    cuisine,
+    category,
+    maxPrice,
+  ]);
 
   /** Server-side so the real novelty filter runs, and so re-rolling differs. */
   function roll() {
@@ -143,7 +158,9 @@ export function DatesView({
           </Button>
           <p className="text-sm text-muted-foreground">
             {anchorRow.kind === "food" ? "Activities" : "Food"} near{" "}
-            <span className="font-medium text-foreground">{anchorRow.name}</span>
+            <span className="font-medium text-foreground">
+              {anchorRow.name}
+            </span>
           </p>
         </div>
       ) : (
@@ -161,10 +178,15 @@ export function DatesView({
           </ToggleGroup>
 
           {mode === "food" ? (
-            <Select value={cuisine} onValueChange={(v) => setCuisine(v ?? "any")}>
+            <Select
+              value={cuisine}
+              onValueChange={(v) => setCuisine(v ?? "any")}
+            >
               <SelectTrigger className="h-9 w-[170px]" aria-label="Cuisine">
                 <SelectValue className="capitalize">
-                  {(v) => (v === "any" ? "Any cuisine" : prettyCuisine(String(v)))}
+                  {(v) =>
+                    v === "any" ? "Any cuisine" : prettyCuisine(String(v))
+                  }
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -177,7 +199,10 @@ export function DatesView({
               </SelectContent>
             </Select>
           ) : (
-            <Select value={category} onValueChange={(v) => setCategory(v ?? "any")}>
+            <Select
+              value={category}
+              onValueChange={(v) => setCategory(v ?? "any")}
+            >
               <SelectTrigger className="h-9 w-[170px]" aria-label="Category">
                 <SelectValue className="capitalize">
                   {(v) => (v === "any" ? "Any category" : String(v))}
@@ -194,7 +219,10 @@ export function DatesView({
             </Select>
           )}
 
-          <Select value={maxPrice} onValueChange={(v) => setMaxPrice(v ?? "any")}>
+          <Select
+            value={maxPrice}
+            onValueChange={(v) => setMaxPrice(v ?? "any")}
+          >
             <SelectTrigger className="h-9 w-[120px]" aria-label="Max price">
               <SelectValue>
                 {(v) => (v === "any" ? "Any price" : "$".repeat(Number(v)))}
@@ -232,7 +260,9 @@ export function DatesView({
               row.lastDone !== null &&
               now - new Date(row.lastDone).getTime() < 30 * 86_400_000;
             return (
-              <li key={`${row.kind}-${"placeId" in row ? row.placeId : row.id}`}>
+              <li
+                key={`${row.kind}-${"placeId" in row ? row.placeId : row.id}`}
+              >
                 <button
                   type="button"
                   onClick={() => setDetail(row)}
@@ -245,18 +275,22 @@ export function DatesView({
                   )}
                 >
                   <MapPin className="size-4 shrink-0 text-muted-foreground" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{row.name}</p>
-                    <p className="truncate text-xs text-muted-foreground capitalize">
+                  {/* Spans, not div/p: a <button> may only hold phrasing
+                      content (checked by e2e/html.spec.ts). */}
+                  <span className="block min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">
+                      {row.name}
+                    </span>
+                    <span className="block truncate text-xs text-muted-foreground capitalize">
                       {label(row)} · {price(row.priceTier)}
-                    </p>
-                  </div>
+                    </span>
+                  </span>
                   {chip ? (
                     <Badge variant="secondary" className="shrink-0 text-[10px]">
                       {chip}
                     </Badge>
                   ) : (
-                    <Badge className="shrink-0 bg-good text-[10px] text-white">
+                    <Badge className="shrink-0 bg-good text-[10px] text-background">
                       new
                     </Badge>
                   )}

@@ -21,7 +21,11 @@ import type { Goal, GoalTier, IconKey } from "@/lib/types";
 const TIERS: { tier: GoalTier; label: string; caption: string }[] = [
   { tier: "year", label: "Goals", caption: "Who I'm becoming · this year" },
   { tier: "month", label: "Plans", caption: "The means · this month" },
-  { tier: "week", label: "Inputs", caption: "Measured weekly · these are the tiles" },
+  {
+    tier: "week",
+    label: "Inputs",
+    caption: "Measured weekly · these are the tiles",
+  },
 ];
 
 export function GoalFunnel({
@@ -109,6 +113,7 @@ function GoalRow({
             onChange={(e) => setTitle(e.target.value)}
             // Commit on blur rather than per keystroke — one write per edit.
             onBlur={() => title !== goal.title && save({ title })}
+            aria-label={`Title: ${goal.title}`}
             className="h-7 text-sm"
           />
         ) : (

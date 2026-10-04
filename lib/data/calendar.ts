@@ -35,7 +35,9 @@ export interface NewBlockInput {
   notes?: string | null;
 }
 
-export async function createBlock(input: NewBlockInput): Promise<CalendarBlock> {
+export async function createBlock(
+  input: NewBlockInput,
+): Promise<CalendarBlock> {
   const block: CalendarBlock = {
     id: nextId("b"),
     name: input.name,
@@ -53,7 +55,12 @@ export async function createBlock(input: NewBlockInput): Promise<CalendarBlock> 
 
 export async function updateBlock(
   id: string,
-  patch: Partial<Pick<CalendarBlock, "name" | "start" | "end" | "goalId" | "confirmedMinutes" | "notes">>,
+  patch: Partial<
+    Pick<
+      CalendarBlock,
+      "name" | "start" | "end" | "goalId" | "confirmedMinutes" | "notes"
+    >
+  >,
 ): Promise<void> {
   const block = blocks.find((b) => b.id === id);
   if (!block) return;

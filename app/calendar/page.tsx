@@ -20,7 +20,10 @@ export default async function CalendarPage(props: {
   // Blocks show their goal's icon, so the page resolves the lookup once
   // rather than every event doing it during render.
   const goalIcons: Record<string, IconKey | null> = Object.fromEntries(
-    [...funnel.year, ...funnel.month, ...funnel.week].map((g) => [g.id, g.icon]),
+    [...funnel.year, ...funnel.month, ...funnel.week].map((g) => [
+      g.id,
+      g.icon,
+    ]),
   );
 
   return (

@@ -22,7 +22,9 @@ export function endFor(start: string, durationMinutes: number): string {
  * comparison is chronological.
  */
 export function overlapsDay(block: CalendarBlock, dayIso: string): boolean {
-  return block.start <= `${dayIso}T23:59:59` && block.end > `${dayIso}T00:00:00`;
+  return (
+    block.start <= `${dayIso}T23:59:59` && block.end > `${dayIso}T00:00:00`
+  );
 }
 
 /** Gaps shorter than this are not schedulable time; don't offer them. */

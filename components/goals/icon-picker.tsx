@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { GoalIcon, ICON_LABELS } from "@/components/common/goal-icon";
 import { cn } from "@/lib/utils";
 import { ICON_KEYS, type IconKey } from "@/lib/types";

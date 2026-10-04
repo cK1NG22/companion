@@ -67,7 +67,9 @@ export function ScriptureView({
 
       <div className="grid gap-4">
         <Card className="gap-2 px-5 py-4 shadow-card">
-          <h2 className="text-sm font-semibold">This month&apos;s study goal</h2>
+          <h2 className="text-sm font-semibold">
+            This month&apos;s study goal
+          </h2>
           <p className="prose-devotional text-[15px] text-muted-foreground">
             {monthlyGoal}
           </p>

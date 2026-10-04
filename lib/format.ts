@@ -28,7 +28,10 @@ export function formatDuration(minutes: number | null): string | null {
  * "3d ago" chips, but terse. `now` is epoch milliseconds, passed in so this
  * stays pure. A month is a flat 30 days.
  */
-export function lastDoneChip(lastDone: string | null, now: number): string | null {
+export function lastDoneChip(
+  lastDone: string | null,
+  now: number,
+): string | null {
   if (!lastDone) return null;
   const days = Math.round((now - new Date(lastDone).getTime()) / MS_PER_DAY);
   if (days <= 0) return "today";

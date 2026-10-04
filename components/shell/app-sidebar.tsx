@@ -119,7 +119,9 @@ export function AppSidebar({ morningDone }: { morningDone: boolean }) {
             </AvatarFallback>
           </Avatar>
           <div className="grid leading-tight group-data-[collapsible=icon]:hidden">
-            <span className="text-sm text-sidebar-accent-foreground">Carter</span>
+            <span className="text-sm text-sidebar-accent-foreground">
+              Carter
+            </span>
             <span className="text-[11px] text-sidebar-foreground">
               Synced with Google
             </span>

@@ -15,7 +15,15 @@ import type { IsoDate } from "./types";
  */
 export const WEEK_STARTS_ON = 1 as const; // Monday
 
-export const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+export const DAY_LABELS = [
+  "Mon",
+  "Tue",
+  "Wed",
+  "Thu",
+  "Fri",
+  "Sat",
+  "Sun",
+] as const;
 
 /** "2026-07-27" — date only, no timezone drift from toISOString(). */
 export function toIsoDate(date: Date): IsoDate {

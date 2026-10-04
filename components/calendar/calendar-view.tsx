@@ -17,11 +17,15 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { GoalIcon } from "@/components/common/goal-icon";
-import { BlockDialog, type BlockDraft } from "@/components/calendar/block-dialog";
+import {
+  BlockDialog,
+  type BlockDraft,
+} from "@/components/calendar/block-dialog";
 import { updateBlockAction } from "@/lib/actions/calendar";
 import { toLocalIso } from "@/lib/data/calendar";
 import type { CalendarBlock, Goal, IconKey } from "@/lib/types";
@@ -94,7 +98,9 @@ export function CalendarView({
   }
 
   /** Dragging or resizing an existing block writes the new time straight back. */
-  function handleEventChange(info: EventDropArg | { event: EventDropArg["event"]; revert: () => void }) {
+  function handleEventChange(
+    info: EventDropArg | { event: EventDropArg["event"]; revert: () => void },
+  ) {
     const { event, revert } = info;
     if (!event.start || !event.end) return;
     startTransition(async () => {
@@ -114,9 +120,7 @@ export function CalendarView({
     <div className="grid gap-3">
       <div className="flex items-center gap-2">
         <DropdownMenu>
-          <DropdownMenuTrigger
-            render={<Button variant="outline" size="sm" />}
-          >
+          <DropdownMenuTrigger render={<Button variant="outline" size="sm" />}>
             {VIEW_LABELS[view]}
             <ChevronDown className="size-3.5 opacity-60" />
           </DropdownMenuTrigger>
@@ -142,16 +146,20 @@ export function CalendarView({
             <Settings2 className="size-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            <DropdownMenuLabel>Visible hours</DropdownMenuLabel>
-            {HOUR_WINDOWS.map((w, i) => (
-              <DropdownMenuCheckboxItem
-                key={w.label}
-                checked={windowIndex === i}
-                onCheckedChange={() => setWindowIndex(i)}
-              >
-                {w.label}
-              </DropdownMenuCheckboxItem>
-            ))}
+            {/* Base UI's GroupLabel throws outside a Group — without this
+                wrapper, opening the menu crashes the whole page. */}
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Visible hours</DropdownMenuLabel>
+              {HOUR_WINDOWS.map((w, i) => (
+                <DropdownMenuCheckboxItem
+                  key={w.label}
+                  checked={windowIndex === i}
+                  onCheckedChange={() => setWindowIndex(i)}
+                >
+                  {w.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -232,11 +240,7 @@ export function CalendarView({
         />
       </div>
 
-      <BlockDialog
-        draft={draft}
-        goals={goals}
-        onClose={() => setDraft(null)}
-      />
+      <BlockDialog draft={draft} goals={goals} onClose={() => setDraft(null)} />
     </div>
   );
 }

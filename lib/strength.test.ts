@@ -10,7 +10,12 @@ import type { ExerciseSet } from "./types";
 
 const TODAY = new Date(2026, 6, 27);
 
-function set(id: string, weight: number, reps: number, daysAgo: number): ExerciseSet {
+function set(
+  id: string,
+  weight: number,
+  reps: number,
+  daysAgo: number,
+): ExerciseSet {
   const d = new Date(TODAY);
   d.setDate(d.getDate() - daysAgo);
   const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}T07:00:00`;

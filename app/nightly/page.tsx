@@ -15,7 +15,10 @@ export default async function NightlyPage() {
   ]);
 
   const goalIcons: Record<string, IconKey | null> = Object.fromEntries(
-    [...funnel.year, ...funnel.month, ...funnel.week].map((g) => [g.id, g.icon]),
+    [...funnel.year, ...funnel.month, ...funnel.week].map((g) => [
+      g.id,
+      g.icon,
+    ]),
   );
 
   return (

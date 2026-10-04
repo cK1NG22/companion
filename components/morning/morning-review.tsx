@@ -20,7 +20,14 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ArrowRight, Check, GripVertical, MoreVertical, Plus, Trash2 } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  GripVertical,
+  MoreVertical,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -92,7 +99,11 @@ export function MorningReview({ sections }: { sections: MorningSection[] }) {
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button variant="ghost" size="icon" aria-label="Section options" />
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Section options"
+              />
             }
           >
             <MoreVertical className="size-4" />
@@ -176,8 +187,14 @@ function SectionRow({
   section: MorningSection;
   editing: boolean;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: section.id, disabled: !editing });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: section.id, disabled: !editing });
   const [title, setTitle] = useState(section.title);
   const [body, setBody] = useState(section.body);
   const [, startTransition] = useTransition();
@@ -194,9 +211,7 @@ function SectionRow({
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={
-        isDragging
-          ? "relative z-10 bg-card opacity-90 shadow-lg"
-          : "bg-card"
+        isDragging ? "relative z-10 bg-card opacity-90 shadow-lg" : "bg-card"
       }
     >
       <div className="flex items-start gap-2 px-5 py-4">

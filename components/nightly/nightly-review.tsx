@@ -52,7 +52,9 @@ export function NightlyReview({
   function save() {
     startTransition(async () => {
       await saveNightlyAction({ ...answers, topThree });
-      toast.success("Saved. It appends to the journal doc once Google is wired.");
+      toast.success(
+        "Saved. It appends to the journal doc once Google is wired.",
+      );
     });
   }
 

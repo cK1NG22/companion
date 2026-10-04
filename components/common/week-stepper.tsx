@@ -3,7 +3,13 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { formatWeekLabel, fromIsoDate, isSameWeek, shiftWeeks, toIsoDate } from "@/lib/week";
+import {
+  formatWeekLabel,
+  fromIsoDate,
+  isSameWeek,
+  shiftWeeks,
+  toIsoDate,
+} from "@/lib/week";
 
 /**
  * ‹ week of Jul 13 – 19 · this week ›  (PRD §4.1)

@@ -78,7 +78,9 @@ export const store: MockStore = {
   scriptureNotes: structuredClone(MOCK_SCRIPTURE_NOTES),
   questions: structuredClone(MOCK_QUESTIONS),
   readings: structuredClone(MOCK_READINGS),
-  excludedPeople: new Set(MOCK_PEOPLE.filter((p) => p.excluded).map((p) => p.id)),
+  excludedPeople: new Set(
+    MOCK_PEOPLE.filter((p) => p.excluded).map((p) => p.id),
+  ),
   lastSyncedAt: new Date().toISOString(),
   feedback: [],
 };

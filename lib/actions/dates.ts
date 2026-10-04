@@ -19,7 +19,8 @@ const ScheduleSchema = z.object({
   durationMinutes: z.number().int().min(30).max(480).default(120),
 });
 
-export type DateResult = { ok: true; message: string } | { ok: false; error: string };
+export type DateResult =
+  { ok: true; message: string } | { ok: false; error: string };
 
 /**
  * Schedule a date (PRD §4.12).
