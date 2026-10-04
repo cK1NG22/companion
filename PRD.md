@@ -324,10 +324,10 @@ Supersedes the older phase list in the memory plan. Every tab in §4 is slotted 
 
 **Neon schema to build** (replaces the shorter list in the memory plan): `goals` (self-referential parent, tier, icon, note, weekly target) · `calendar_blocks` (goal_id, name, start/end, confirmed_actual, google_event_id) · `habits` + `habit_entries` · `todos` · `people` + `contact_events` · `weekly_plans` · `nightly_entries` · `morning_sections` · `scripture_notes` + `readings` + `questions` · `exercises` + `sets` · `feedback_items` (+ `kind`) · `place_history` (restaurant recency) + `activities` (curated) + `home_location` · `purpose_statement`. *(No date_ideas/date_instances tables — food is live-only, activities are the owned table; see §4.12.)*
 
-**Additions 2026-10-04 — not yet slotted into a phase.** The phase list above predates §4.0 and the People and Dates additions, so the claim that nothing is unassigned no longer holds for these:
+**Additions 2026-10-04.** The phase list above predates §4.0 and the People and Dates additions. They are slotted in `BUILD-PLAN.md` instead, as phases **B11–B15**:
 - **Schema:** `tags` + `person_tags` (many-to-many), and an in-outreach-rotation column on `people` (§4.4). `goals` already carries a sort order; reorder and delete need no new table.
-- **Unslotted work:** goal reorder and delete (§4.2), page location and layout editing (§4.0), removing the hardcoded items listed in §4.0, People tags and the outreach mark (§4.4), the Dates location bar (§4.12).
-- `BUILD-PLAN.md` §7 still lists goal reordering and deletion as deliberately deferred. This PRD outranks it.
+- **B11** goal reorder and delete (§4.2) · **B12** removing goal lookups by meaning (§4.0) · **B13** page location and layout editing (§4.0) · **B14** People tags and the outreach mark (§4.4) · **B15** the Dates location bar (§4.12).
+- **Still unslotted:** the §4.0 items that are open questions rather than requirements — user-defined habit groups, editable Nightly questions, more input units, goal history. Each needs a decision before it is work.
 
 ## 8. Proposed — not decided (2026-10-04) — **[NMT]**
 
