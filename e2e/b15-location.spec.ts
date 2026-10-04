@@ -295,7 +295,37 @@ test("going back to Home fails: message, and the anchor stays on the list shown"
 // The dice roll and the cross-over take coordinates too; their schemas reject
 // unknown keys, so prove the keys the screen really sends still pass.
 
-test("dice roll works from the current location", async ({ context, page }) => {
+/**
+ * Roll, then re-roll. A re-roll sends the previous picks' ids and the server
+ * excludes them, so both lines must change. If the action refused the input
+ * the card would keep its first roll and this fails.
+ */
+async function expectRollThenReroll(page: Page) {
+  const pick = (kind: "Food" | "Activity") =>
+    page.locator("main p").filter({ hasText: `${kind} · ` });
+
+  await page.getByRole("button", { name: "Dice roll" }).click();
+  await expect(pick("Food")).toBeVisible();
+  await expect(pick("Food")).not.toContainText("nothing in range");
+  const firstFood = await pick("Food").innerText();
+  const firstActivity = await pick("Activity").innerText();
+
+  await page.getByRole("button", { name: "Re-roll" }).click();
+  await expect(pick("Food")).toBeVisible();
+  await expect(pick("Food")).not.toHaveText(firstFood);
+  await expect(pick("Activity")).not.toHaveText(firstActivity);
+  await expect(pick("Food")).not.toContainText("nothing in range");
+}
+
+test("dice roll and re-roll work from Home", async ({ page }) => {
+  await page.goto("/dates");
+  await expectRollThenReroll(page);
+});
+
+test("dice roll and re-roll work from the current location", async ({
+  context,
+  page,
+}) => {
   await context.grantPermissions(["geolocation"]);
   await context.setGeolocation(SUNDANCE);
   await page.goto("/dates");
@@ -303,12 +333,132 @@ test("dice roll works from the current location", async ({ context, page }) => {
   await useCurrentLocation(page);
   await expect(row(page, "Sundance ski lift ride")).toContainText("0.0 mi");
 
-  await page.getByRole("button", { name: "Dice roll" }).click();
-  const card = page.getByRole("heading", { name: "Try something new" });
-  await expect(card).toBeVisible();
-  // A re-roll sends the previous picks' ids as well.
-  await page.getByRole("button", { name: /re-?roll/i }).click();
-  await expect(card).toBeVisible();
+  await expectRollThenReroll(page);
+});
+
+// ---------------------------------------------------------------------------
+// Overlapping bar actions. Once everything settles, the anchor and the radius
+// shown must be the ones the list on screen was built with.
+// ---------------------------------------------------------------------------
+
+test("two radius picks in a row that both fail: the select reads what the list shows", async ({
+  page,
+}) => {
+  await page.goto("/dates");
+  // Slow, then dropped — so the second pick is made while the first is out.
+  await page.route("**/dates", async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    await new Promise((done) => setTimeout(done, 400));
+    return route.abort();
+  });
+
+  await chooseRadius(page, "Within 2 mi");
+  await chooseRadius(page, "Within 5 mi");
+
+  await expect(page.locator("main").getByRole("alert")).toHaveText(
+    /could not be completed/i,
+  );
+  await expect(page.getByRole("combobox", { name: "Radius" })).toHaveText(
+    /Default \(15 mi\)/,
+  );
+  await expect(row(page, "Pizzeria Seven Twelve")).toBeVisible();
+  await expectBarEnabled(page);
+});
+
+test("a radius pick fails while locating: the live list and the select agree, no stale error", async ({
+  page,
+}) => {
+  // A fix that takes longer than the failing radius search, so the order is
+  // fixed: radius pick sent, locating starts, pick fails, fix arrives.
+  await page.addInitScript((position) => {
+    Object.defineProperty(navigator, "geolocation", {
+      configurable: true,
+      value: {
+        getCurrentPosition: (ok: PositionCallback) =>
+          setTimeout(
+            () => ok({ coords: position } as GeolocationPosition),
+            1_200,
+          ),
+      },
+    });
+  }, SUNDANCE);
+  await page.goto("/dates");
+  await page.getByRole("button", { name: "Activity", exact: true }).click();
+
+  // Only the first action call fails; the live search after it goes through.
+  let calls = 0;
+  await page.route("**/dates", async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    calls += 1;
+    if (calls > 1) return route.continue();
+    await new Promise((done) => setTimeout(done, 300));
+    return route.abort();
+  });
+
+  await chooseRadius(page, "Within 2 mi");
+  await useCurrentLocation(page);
+
+  await expect(row(page, "Sundance ski lift ride")).toContainText("0.0 mi");
+  await expect(page.getByRole("combobox", { name: "Radius" })).toHaveText(
+    /Default \(40 mi\)/,
+  );
+  // A dozen miles from the fix: listed at the default radius, not at 2 mi.
+  await expect(row(page, "Escape Room Provo")).toBeVisible();
+  await expect(page.locator("main").getByRole("alert")).toHaveCount(0);
+  await expectBarEnabled(page);
+});
+
+test("a radius pick is still out when going Home fails: anchor, select and list agree", async ({
+  context,
+  page,
+}) => {
+  await context.grantPermissions(["geolocation"]);
+  await context.setGeolocation(SUNDANCE);
+  await page.goto("/dates");
+  await page.getByRole("button", { name: "Activity", exact: true }).click();
+  await useCurrentLocation(page);
+  await expect(row(page, "Sundance ski lift ride")).toContainText("0.0 mi");
+
+  await page.route("**/dates", async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    await new Promise((done) => setTimeout(done, 400));
+    return route.abort();
+  });
+  await chooseRadius(page, "Within 2 mi");
+  await page.getByRole("button", { name: "Home", exact: true }).click();
+
+  await expect(page.locator("main").getByRole("alert")).toHaveText(
+    /could not be completed.*current location/i,
+  );
+  await expect(
+    page.getByRole("button", { name: "Current location", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("combobox", { name: "Radius" })).toHaveText(
+    /Default \(40 mi\)/,
+  );
+  // Still the live list at the default radius.
+  await expect(row(page, "Sundance ski lift ride")).toContainText("0.0 mi");
+  await expect(row(page, "Escape Room Provo")).toBeVisible();
+  await expectBarEnabled(page);
+});
+
+test("geolocation throws outright: a clear message, and the list falls back to Home", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "geolocation", {
+      configurable: true,
+      value: {
+        getCurrentPosition: () => {
+          throw new Error("blocked by policy");
+        },
+      },
+    });
+  });
+  await page.goto("/dates");
+  await useCurrentLocation(page);
+  await expectFellBackToHome(page, /could not be determined/i);
+  await expectBarEnabled(page);
 });
 
 test("explore near a place still returns the other type", async ({ page }) => {

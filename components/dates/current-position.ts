@@ -49,23 +49,29 @@ export function getCurrentPosition(): Promise<PositionResult> {
       settle(result);
     };
 
-    geolocation.getCurrentPosition(
-      (position) =>
-        resolve({
-          ok: true,
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        }),
-      (error) => {
-        if (error.code === PERMISSION_DENIED) {
-          resolve({ ok: false, message: MESSAGES.denied });
-        } else if (error.code === TIMEOUT) {
-          resolve({ ok: false, message: MESSAGES.timeout });
-        } else {
-          resolve({ ok: false, message: MESSAGES.unavailable });
-        }
-      },
-      { timeout: TIMEOUT_MS, maximumAge: MAX_AGE_MS },
-    );
+    try {
+      geolocation.getCurrentPosition(
+        (position) =>
+          resolve({
+            ok: true,
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          }),
+        (error) => {
+          if (error.code === PERMISSION_DENIED) {
+            resolve({ ok: false, message: MESSAGES.denied });
+          } else if (error.code === TIMEOUT) {
+            resolve({ ok: false, message: MESSAGES.timeout });
+          } else {
+            resolve({ ok: false, message: MESSAGES.unavailable });
+          }
+        },
+        { timeout: TIMEOUT_MS, maximumAge: MAX_AGE_MS },
+      );
+    } catch {
+      // The call itself threw. Left alone that would reject this promise,
+      // with no message for the caller to show.
+      resolve({ ok: false, message: MESSAGES.unavailable });
+    }
   });
 }

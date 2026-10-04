@@ -38,12 +38,22 @@ import {
 } from "@/lib/actions/dates";
 import type { Activity, DateMode, DiceRoll, FoodPlace } from "@/lib/types";
 
-const FELL_BACK = "Showing results from Home.";
-const STILL_LIVE = "Still showing results from your current location.";
+const FROM_HOME = "Showing results from Home.";
+const FROM_LIVE = "Showing results from your current location.";
 const SEARCH_FAILED = "The search could not be completed.";
 
-/** "superseded": a newer search started, so this one changed nothing. */
-type SearchOutcome = "done" | "superseded" | { error: string };
+/** What a bar search asks for. `origin` null means Home. */
+interface BarTarget {
+  origin: LatLng | null;
+  /** DEFAULT_RADIUS, or a number of miles as a string. */
+  radius: string;
+}
+const HOME_AT_DEFAULT: BarTarget = { origin: null, radius: DEFAULT_RADIUS };
+
+interface Lists {
+  food: FoodPlace[];
+  activities: Activity[];
+}
 
 /**
  * The Date planner (PRD §4.12). One toggled list, never two side by side.
@@ -81,17 +91,21 @@ export function DatesView({
   const [now] = useState(() => Date.now());
   const [rolling, startRolling] = useTransition();
   /**
-   * The device's position while "Current location" is the anchor; null means
-   * Home. Held in memory only — never a URL, a cookie or storage, so it is
-   * gone on reload (PRD §4.12 leaves storing it undecided).
+   * The list on screen and the anchor and radius it was built with, in one
+   * piece of state so they cannot drift apart. `lists` null: the lists the
+   * page loaded. A live `target.origin` is held in memory only — never a URL,
+   * a cookie or storage, so it is gone on reload (PRD §4.12 leaves storing it
+   * undecided).
    */
-  const [liveCoords, setLiveCoords] = useState<LatLng | null>(null);
-  const [radius, setRadius] = useState(DEFAULT_RADIUS);
-  /** A search from the proximity bar. Null: the lists the page loaded. */
-  const [searched, setSearched] = useState<{
-    food: FoodPlace[];
-    activities: Activity[];
-  } | null>(null);
+  const [shown, setShown] = useState<{
+    target: BarTarget;
+    lists: Lists | null;
+  }>({ target: HOME_AT_DEFAULT, lists: null });
+  /** The newest search still out, so the select can show the pick meanwhile. */
+  const [pending, setPending] = useState<BarTarget | null>(null);
+  // The same two values for handlers that outlive the render they began in.
+  const shownTarget = useRef<BarTarget>(HOME_AT_DEFAULT);
+  const pendingTarget = useRef<BarTarget | null>(null);
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   /** Only the newest search may land; a slow older one is dropped. */
@@ -99,16 +113,16 @@ export function DatesView({
 
   const allFood: Row[] = useMemo(
     () =>
-      (searched?.food ?? food).map((f) => ({ kind: "food" as const, ...f })),
-    [searched, food],
+      (shown.lists?.food ?? food).map((f) => ({ kind: "food" as const, ...f })),
+    [shown, food],
   );
   const allActivities: Row[] = useMemo(
     () =>
-      (searched?.activities ?? activities).map((a) => ({
+      (shown.lists?.activities ?? activities).map((a) => ({
         kind: "activity" as const,
         ...a,
       })),
-    [searched, activities],
+    [shown, activities],
   );
 
   /** In Explore mode the list is the OTHER type, ranked from the anchor. */
@@ -155,7 +169,7 @@ export function DatesView({
   function roll() {
     startRolling(async () => {
       const next = await rollDiceAction({
-        ...(liveCoords ?? home),
+        ...(shown.target.origin ?? home),
         excludePlaceId: dice?.food?.placeId,
         excludeActivityId: dice?.activity?.id,
       });
@@ -163,77 +177,84 @@ export function DatesView({
     });
   }
 
+  /** Names where the list on screen is measured from, for a failure message. */
+  const shownFrom = () => (shownTarget.current.origin ? FROM_LIVE : FROM_HOME);
+
   /**
-   * Run the proximity search. `origin` null means Home, which the server
-   * looks up itself. Never throws: a dropped request is a failure like any
-   * other. The list on screen changes only on "done", so a caller commits its
-   * anchor or radius only then — that keeps the bar matching the list.
+   * What the next bar action builds on: the search still out if there is one,
+   * otherwise the list on screen. Read from refs, never from a render's
+   * closure, so an action that waited (for a fix, say) sees the latest.
    */
-  async function search(
-    origin: LatLng | null,
-    radiusValue: string,
-  ): Promise<SearchOutcome> {
+  const intended = () => pendingTarget.current ?? shownTarget.current;
+
+  /**
+   * Run the proximity search for `target`. Never throws: a dropped request is
+   * a failure like any other.
+   *
+   * This is the one place the list changes, and the anchor and radius shown
+   * change with it in the same state update. A failure changes neither, and a
+   * superseded search changes nothing at all — the newer one owns the bar.
+   */
+  async function search(target: BarTarget) {
     const id = ++latestSearch.current;
-    if (!origin && radiusValue === DEFAULT_RADIUS) {
-      setSearched(null);
-      return "done";
-    }
-    let result: Awaited<ReturnType<typeof searchDatesAction>>;
-    try {
-      result = await searchDatesAction({
-        ...(origin ? { anchor: "live", ...origin } : { anchor: "home" }),
-        ...(radiusValue === DEFAULT_RADIUS
-          ? {}
-          : { radiusMiles: Number(radiusValue) }),
-      });
-    } catch {
-      result = { ok: false, error: SEARCH_FAILED };
-    }
-    if (id !== latestSearch.current) return "superseded";
-    if (!result.ok) return { error: result.error };
-    setSearched({ food: result.food, activities: result.activities });
-    return "done";
-  }
-
-  async function searchFromHome() {
+    pendingTarget.current = target;
+    setPending(target);
     setLocationError(null);
-    const outcome = await search(null, radius);
-    if (outcome === "done") setLiveCoords(null);
-    // The list is still the current-location one, so the anchor stays there.
-    else if (outcome !== "superseded")
-      setLocationError(`${outcome.error} ${STILL_LIVE}`);
+
+    let result:
+      { ok: true; lists: Lists | null } | { ok: false; error: string };
+    if (!target.origin && target.radius === DEFAULT_RADIUS) {
+      // Home at the default radius is what the page loaded: no request.
+      result = { ok: true, lists: null };
+    } else {
+      try {
+        const response = await searchDatesAction({
+          ...(target.origin
+            ? { anchor: "live", ...target.origin }
+            : { anchor: "home" }),
+          ...(target.radius === DEFAULT_RADIUS
+            ? {}
+            : { radiusMiles: Number(target.radius) }),
+        });
+        result = response.ok
+          ? {
+              ok: true,
+              lists: { food: response.food, activities: response.activities },
+            }
+          : response;
+      } catch {
+        result = { ok: false, error: SEARCH_FAILED };
+      }
+    }
+
+    if (id !== latestSearch.current) return;
+    pendingTarget.current = null;
+    setPending(null);
+    if (!result.ok) {
+      setLocationError(`${result.error} ${shownFrom()}`);
+      return;
+    }
+    shownTarget.current = target;
+    setShown({ target, lists: result.lists });
   }
 
-  /** Every failure ends the same way: say why, stay on Home. */
+  /** Every failure ends the same way: say why, keep the list there was. */
   async function searchFromCurrentLocation() {
     setLocationError(null);
     setLocating(true);
     try {
       const position = await getCurrentPosition();
       if (!position.ok) {
-        setLocationError(`${position.message} ${FELL_BACK}`);
+        setLocationError(`${position.message} ${shownFrom()}`);
         return;
       }
-      const coords = { lat: position.lat, lng: position.lng };
-      const outcome = await search(coords, radius);
-      if (outcome === "done") setLiveCoords(coords);
-      else if (outcome !== "superseded")
-        setLocationError(`${outcome.error} ${FELL_BACK}`);
+      await search({
+        origin: { lat: position.lat, lng: position.lng },
+        radius: intended().radius,
+      });
     } finally {
       // Whatever happened, the bar must not stay disabled.
       setLocating(false);
-    }
-  }
-
-  async function chooseRadius(next: string) {
-    const previous = radius;
-    setRadius(next);
-    setLocationError(null);
-    const outcome = await search(liveCoords, next);
-    if (outcome !== "done" && outcome !== "superseded") {
-      // The list did not change, so neither may the radius shown.
-      setRadius(previous);
-      setLocationError(outcome.error);
     }
   }
 
@@ -280,8 +301,8 @@ export function DatesView({
         <div className="flex flex-wrap items-center gap-2">
           <div className="grid w-full gap-2">
             <ProximityBar
-              anchor={liveCoords ? "live" : "home"}
-              radius={radius}
+              anchor={shown.target.origin ? "live" : "home"}
+              radius={(pending ?? shown.target).radius}
               defaultRadiusMiles={
                 mode === "food"
                   ? DEFAULT_FOOD_RADIUS_MILES
@@ -292,9 +313,11 @@ export function DatesView({
               onAnchorChange={(next) =>
                 void (next === "live"
                   ? searchFromCurrentLocation()
-                  : searchFromHome())
+                  : search({ origin: null, radius: intended().radius }))
               }
-              onRadiusChange={(next) => void chooseRadius(next)}
+              onRadiusChange={(next) =>
+                void search({ origin: intended().origin, radius: next })
+              }
             />
           </div>
           <ToggleGroup
