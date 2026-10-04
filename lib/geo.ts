@@ -51,7 +51,8 @@ export function mapsEmbedUrl(
  * The embed key, read here so no screen touches `process.env`. Must stay the
  * literal `process.env.NEXT_PUBLIC_*` form — that is what Next inlines at build.
  */
-export const MAPS_EMBED_KEY: string | undefined = process.env.NEXT_PUBLIC_MAPS_EMBED_KEY;
+export const MAPS_EMBED_KEY: string | undefined =
+  process.env.NEXT_PUBLIC_MAPS_EMBED_KEY;
 
 function round(n: number): number {
   return Math.round(n * 10) / 10;

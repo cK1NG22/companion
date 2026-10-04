@@ -38,4 +38,4 @@ Tags: **[no decision]** can be done as written. **[decision]** needs Carter's ca
 - [ ] Codex review of PR #4 (structure fixes) — added 2026-10-04
 - [ ] Commit the uncommitted edits in the parent `products/` repo (`CLAUDE.md`, `PROJECT.md`) — added 2026-10-04
 - [ ] Codex review of PR #6 (no-decision fixes) — added 2026-10-04
-- [ ] Remove the merged worktrees `structure-fixes` and `docs-drift` once their transcripts are folded — added 2026-10-04
+- [ ] Remove the merged worktrees `structure-fixes`, `docs-drift`, `todo-fixes` and `format-fix` once their transcripts are folded — added 2026-10-04

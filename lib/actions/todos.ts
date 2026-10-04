@@ -37,7 +37,9 @@ type Exact<A, B> = [A] extends [B]
   : false;
 type Assert<T extends true> = T;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-type _NewTodoSchemaMatchesInput = Assert<Exact<z.infer<typeof NewTodoSchema>, NewTodoInput>>;
+type _NewTodoSchemaMatchesInput = Assert<
+  Exact<z.infer<typeof NewTodoSchema>, NewTodoInput>
+>;
 
 export async function addTodoAction(input: unknown): Promise<TodoResult> {
   const parsed = NewTodoSchema.safeParse(input);
