@@ -3,7 +3,7 @@
 **A personal calendar, scheduler, and goal-tracking app modeled on the Preach My Gospel / Missionary planner.**
 
 Owner: Carter · Working title: *Companion* · Status: pre-build (mockup + spec)
-Last updated: 2026-07-20 · Mockup (visual reference of record): **`~/Projects/companion/mockup.html`** — open locally, or the Artifact: claude.ai/code/artifact/72342dce-b616-4b10-ad65-9200faa58dd0
+Last updated: 2026-10-04 · Mockup (visual reference of record): **`~/Projects/companion/mockup.html`** — open locally, or the Artifact: claude.ai/code/artifact/72342dce-b616-4b10-ad65-9200faa58dd0
 Related: architecture plan in auto-memory `plan-pmg-life-app.md`. **This PRD is the spec of record** — where it and the memory plan disagree, this wins.
 
 ---
@@ -18,7 +18,8 @@ Design principles that constrain every feature:
 2. **Decide when wise, act when prompted.** Reflection (Morning Review) is separate from logistics (Plan Today); goals are set at their own altitude and only *referenced* below. Top 3 is decided at night and surfaced in the morning.
 3. **Line of sight.** Every weekly goal ladders to a monthly goal, which ladders to a yearly goal. The link is chosen by the human during planning, never inferred.
 4. **Plain and minimal.** Palette: white / near-black (navy-biased) / navy accent + one muted clay for "behind/overdue/now." No neon. Georgia serif reserved for devotional/journal text.
-5. **Single-user.** Just Carter. Google OAuth is identity + all integrations in one consent. No accounts system.
+5. **Single-user.** Just Carter. Google OAuth is identity + all integrations in one consent. No accounts system. *([NMT] 2026-10-04: the goal-agnostic direction below speaks of "people" and "users" deciding their own goals. Whether that means other people use the app is undecided — see §6. Until decided, this principle stands.)*
+6. **Goal-agnostic: fixed structure, user-defined content (added 2026-10-04).** The goal-setting process — **Goals → Plans → Inputs** (§4.2) — is preserved. What fills it is not: no goal, plan, input or other goal detail is hardcoded. The user decides their own goals inside the app, changes them, and reorders them, and can change the location and layout of pages. See §4.0.
 
 ## 2. Tech stack (proposed — validate at kickoff)
 
@@ -37,7 +38,8 @@ Design principles that constrain every feature:
   - **`unit` (decided 2026-07-20)** — one field on the KI that determines *how* Planned/Done are computed and *what the tile's pop-up shows*. See §4.1a.
 - **Calendar block** — start/end, title (the "event name"), assigned goal (→ icon), source (Companion-planned vs Google), and a confirmed actual duration once logged. **Blocks with the same name inside a goal are grouped** into one allocation row (name is the join key — projects emerge from what's scheduled).
 - **Habit** — a daily binary discipline in the weekly grid, grouped (Required / Standards of Excellence / Weekly). Distinct from KIs: KIs are measured (hours/counts), habits are checked (did / didn't).
-- **Person** — contact + relationship + next step + last-contacted (max of email/text/calendar signal).
+- **Person** — contact + relationship + next step + last-contacted (max of email/text/calendar signal), plus **tags** (zero or more — §4.4) and an **in-outreach-rotation** flag (§4.4). *(Both added 2026-10-04.)*
+- **Tag** *(added 2026-10-04)* — a user-defined label for grouping people. A person can carry any number of tags; tags are what the People list is filtered and sorted by.
 - **To-do** — name, optional notes, optional **duration** (minutes/hours). "Schedule" creates a calendar block of that duration.
 - **Morning Review section** — title, body, sort order. User-editable/reorderable (the ⋮ Forms-style editor); order + text persist.
 - **Nightly entry** — date, the five answers (gratitude / what happened / repent+improve / prepare / **Top 3 for tomorrow**), and whether hours were confirmed. Top 3 is read by tomorrow's Plan Today.
@@ -48,12 +50,42 @@ Design principles that constrain every feature:
 - **Date planner (§4.12) — hybrid, mostly NOT stored.** Restaurants are **live from Google Places**; nothing about them persists but recency. Activities are a **small curated owned table** (APIs can't price them). The stored pieces:
   - **`place_history`** — `(provider, place_id, last_done_date, source)`. The only restaurant data we keep — personal recency, seeded from the debit-card import. Joined against live Places results at render to sink recently-done to the bottom.
   - **`activities`** — `(id, name, category, price_tier 1–4, price_note, lat, lng, notes, booking_url, last_done_date, status)`. First-party, hand-researched (enriched via the §4.11 runner). Distinct from restaurants precisely because Places APIs give no activity price/niche-category.
-  - **home coordinates** — the user's, stored permanently (their data, not an API's).
+  - **home coordinates** — the user's, stored permanently (their data, not an API's). Set by the user, not shipped as a fixture (§4.12, "Location").
   - *(No `date_ideas`/`date_instances`/`date_principles` tables — superseded by this design; a "date instance" is just a `last_done_date` on the two tables above.)*
 
 ---
 
 ## 4. Per-tab requirements
+
+### 4.0 Customization — goal-agnostic content and layout — **ADDED 2026-10-04**
+Carter's direction: the app is agnostic to goals. Users decide their own goals inside the app, make changes, and reorder things; none of that detail is hardcoded. Users can also change the locations and layouts of pages. The goal-setting process (Goals → Plans → Inputs) is preserved.
+
+**Stays fixed (the process):**
+- The three tiers and what each means (§4.2), and the ladder between them.
+- Target → Planned → Done for weekly inputs (§3).
+- The week running Monday → Sunday (§4.10).
+
+**Becomes user-defined (the content):**
+- **Goals, plans and inputs** at every tier: add, rename, **reorder**, **delete**, pick icon, set parent. *(Reorder and delete were "future" in §4.2 until this date.)*
+- **Page location and layout:** the user can change where pages sit and how they are laid out.
+- **No feature may find a goal by what it means.** A feature that needs a specific goal gets it from an explicit user setting — never from an icon or a title match.
+
+**Hardcoded in the build as of 2026-10-04** (what this section has to remove):
+- The Date planner tags events to "the family goal" by looking for the heart icon (§4.12; `lib/actions/dates.ts`).
+- Icon labels carry meanings ("heart" = Family) in `components/common/goal-icon.tsx`.
+- The three habit groups and their labels (§4.1; `components/home/habit-grid.tsx`).
+- The sidebar's page list and order (`components/shell/app-sidebar.tsx`).
+- The Nightly Review questions (§4.9; `components/nightly/nightly-review.tsx`).
+- The seed goals, habits and people in `lib/mock/` — fixtures today, but they are the only content the app has.
+
+**[NMT] — not decided:**
+- **How far layout editing goes.** An ordered list with show/hide per page and per Home section reuses the Morning Review pattern (§4.8). A free-form grid of movable sections is a larger build and widens what the accessibility gates must cover.
+- **Whether the habit grid's groups and rows are user-defined** the same way goals are.
+- **Whether the Nightly Review questions stay locked** (§4.9 says the order is locked) or become editable like Morning Review sections.
+- **Whether Scripture and Gym are optional pages.** Both are specific to Carter's goals.
+- **Whether two input units are enough** (§4.1a). `hours` and `count` were chosen for Carter's goals; `tally` and `value` are deferred there for lack of a use case.
+- **What past weeks show after a goal is renamed or deleted.** The week stepper (§4.1) browses prior weeks; either they rewrite themselves or goals need a start and end date.
+- **What deleting a goal does** to its child goals and to the calendar blocks and to-dos tagged to it.
 
 ### 4.1 Home (hub)
 - **Header:** date + a **week stepper** (‹ ›) to browse prior/next weeks; the whole dashboard reflects the selected week. Buttons: **Plan today** (→ Plan Today flow), **Weekly planning** (→ Weekly Planning flow). *(These are the only two nav entries for Plan Today and Weekly Planning — neither has a sidebar tab.)*
@@ -92,7 +124,7 @@ The three tiers mean three different things, and this is the app's core informat
 - **Goal notes:** a goal can carry an actionable note (e.g. Network → "grow my ability to receive personal revelation; a real desire to know people, not add contacts").
 - **Goal icons:** each goal has an **icon** chosen from an assortment (book/faith, dumbbell/health, laptop/deep-work, phone/outreach, heart/family, temple, moon/review, target, …). The icon represents the goal **everywhere** — most importantly on calendar blocks.
   - **Picker UX (decided 2026-07-20): popover grid.** In Edit Goals mode the goal's icon becomes a compact `[icon ▾]` trigger; clicking it drops a small 3-wide grid of the icon set (plus a "+" for a future custom icon); picking one swaps it and closes. Chosen over an always-visible inline row (too busy in the funnel) and a searchable picker (overkill for ~7 icons). Built into the mockup for feel.
-- **Edit Goals** button (was "+ New goal"): toggles edit mode → **add a goal at each tier** (year/month/week), rename inline, (future: reorder, delete, pick icon, set parent). Editing should feel like a lightweight inline editor.
+- **Edit Goals** button (was "+ New goal"): toggles edit mode → **add a goal at each tier** (year/month/week), rename inline, **reorder, delete**, pick icon, set parent. Editing should feel like a lightweight inline editor. *(Updated 2026-10-04: reorder and delete were listed as "future"; §4.0 makes them required.)*
 - **Outreach card** (moved here): people going stale, sorted, with a next step + overdue flag. *(This is the People-tab data surfaced on Goals; see §4.4.)*
 - **To-do list** (Apple-Reminders style): each item = name + optional notes + **duration** (min/hr) + a **Schedule** button. Adding an item works from the inline form (name / notes / duration / Add). **Duration drives the length of the calendar event** when scheduled.
 
@@ -104,10 +136,22 @@ The three tiers mean three different things, and this is the app's core informat
 - **Goal icons on blocks:** a block reads **[event name] + [goal icon]** — no text labels like "Deep work"/"Health." The icon is the goal's chosen symbol.
 - **Blocks are the input:** creating a block = name it + assign a goal (+ duration). This is what fills "Planned" on the Home tiles. Confirming a block's real duration at night fills "Done."
 - **Google Calendar sync:** two-way. Existing Google events appear; Companion-planned blocks are written back.
+  - **Reaffirmed 2026-10-04 — both directions:** an event **made in Companion** is created in Google Calendar, and an event **made or changed in Google** is pulled into Companion.
+  - **Status 2026-10-04:** not wired. The "Synced with Google" text in the build is a label only.
+  - **[NMT] — not decided:**
+    - **The conflict rule** when the same event changes on both sides between syncs.
+    - **Which Google calendars** are read, and which one Companion writes to.
+    - **Where the goal assignment and confirmed duration live** for an event that originated in Google. Google has no field for either.
+    - **Deletes and recurring events** — whether a delete on one side deletes on the other, and how a recurring Google event appears as blocks.
+    - **When a pull happens** — on page load, on a schedule, or on a push from Google.
 - Legend shows the goal-icon assortment.
 
 ### 4.4 People (keep-in-touch)
 - Sorted by **staleness** — "days since last contact," where last-contact = the freshest of **email / text / calendar meeting**.
+  - **Automatic (reaffirmed 2026-10-04):** people Carter hasn't talked to recently move to the top on their own. There is no manual ordering. Someone never contacted sorts above everyone.
+- **Groups are tags (added 2026-10-04).** A person can carry any number of tags, and the tags are used to sort and filter the contacts. Tags are user-defined (§4.0) — none ship hardcoded.
+- **In the outreach rotation, or not (added 2026-10-04).** Each person carries a mark for whether they are included in the cycle of recency for outreach. Someone marked out is not surfaced as going stale.
+  - **[NMT]:** whether this is the existing exclusion toggle below, or a separate mark. The exclusion toggle does two things at once — hides the person from the list *and* skips their handle in the iMessage scan. A separate mark would allow a third state: visible and scanned, but out of the rotation.
 - Per person: relationship, next step, channel signals, last-contact source, overdue flag.
 - Fed by **Google Contacts** (list), **Gmail** (last email), **Calendar** (last meeting), and **iMessage** (last text — via the local Mac agent; the one non-cloud source).
 - Identity resolution v1: match on exact email/phone from Contacts; skip unknowns.
@@ -199,6 +243,15 @@ A shared date tab for Carter + his wife. **One principle, codified not written: 
 - **Both locations in the notes:** the calendar event's **notes** get a 📍 line per included place (name + address), so Carter can **navigate to each from his calendar app**. Unchecking "Include" drops that place from both the name and the notes.
 - The event is tagged to the **family** goal (heart) and lands on the calendar.
 
+**Location — manual or live (added 2026-10-04):** dates need location data, and it comes one of two ways.
+- **Manual** — a location the user enters: their home, or another place to search from.
+- **Live** — the device's current location.
+- This is the "Home / current GPS · within N mi" proximity bar in level 1 of the flow above. **Status 2026-10-04:** the bar is not built. The build centres every list on a fixed fixture home and fixed radii.
+- **[NMT] — not decided:**
+  - **How a manual location is entered** — typed address (needs a geocoding call inside the free cap), a pin on the map, or pasted coordinates.
+  - **Whether live coordinates are ever stored,** or used for the query and discarded.
+  - **Whether "dates" here also means calendar events.** A calendar block has no location field today; the Date planner writes 📍 lines into its notes instead.
+
 **Data plumbing for the flow:**
 - Food list/detail = live Google Places (list = Nearby/Text Search; detail = Place Details; map = Maps Embed).
 - Activity list/detail = the curated `activities` table (+ Maps Embed for its map).
@@ -243,8 +296,21 @@ A shared date tab for Carter + his wife. **One principle, codified not written: 
 
 10. **Goal-icon picker — popover grid** (decided): `[icon ▾]` trigger in Edit Goals → 3-wide grid → pick swaps it. Built into the mockup (§4.2).
 
+### Directed 2026-10-04
+12. **Goal-agnostic.** No goal detail is hardcoded; users decide, change and reorder their own goals, and can change the location and layout of pages. The Goals → Plans → Inputs process is preserved (§1.6, §4.0).
+13. **Google Calendar sync goes both ways** — make events, pull events (§4.3). Reaffirms the existing spec.
+14. **People: stale people rise to the top automatically; groups are tags; each person is marked in or out of the outreach rotation** (§4.4).
+15. **Dates need location data, manual or live** (§4.12).
+
 ### Still open
-*None that block the build.* Remaining choices (custom-icon support, exact planning-session anchor time) are build-time details.
+Remaining build-time details: custom-icon support, exact planning-session anchor time.
+
+**[NMT] — opened by the 2026-10-04 direction.** Each is spelled out where it applies:
+- **Single-user or not** (§1.5). Goal-agnostic content and other people using the app are separable. The second reverses §1.5 and bears on the $0 rule: a Google OAuth app in "testing" mode is limited in who can use it, and publishing one that reads Gmail requires Google's review. *(Recalled, not verified — check Google's current OAuth policy before relying on it.)*
+- **Layout depth, habit groups, Nightly questions, optional pages, input units, goal history, goal deletion** (§4.0).
+- **Sync conflict rule, calendars, ownership of goal assignment, deletes and recurrence, pull timing** (§4.3).
+- **Outreach mark vs the exclusion toggle** (§4.4).
+- **Manual location entry, storing live coordinates, location on calendar events** (§4.12).
 
 ## 7. Build phasing
 
@@ -257,5 +323,37 @@ Supersedes the older phase list in the memory plan. Every tab in §4 is slotted 
 - **Phase 4 — Feedback loop (§4.11):** the bubble + queue (both modes: app-edit + date-research), then the **laptop launchd runner** (poll queue → Claude Code edit *or* date-idea research → test → branch/PR, graduating to auto-push). Ship the bubble early if cheap — it collects real feedback during Phases 1–3 even before the runner exists.
 
 **Neon schema to build** (replaces the shorter list in the memory plan): `goals` (self-referential parent, tier, icon, note, weekly target) · `calendar_blocks` (goal_id, name, start/end, confirmed_actual, google_event_id) · `habits` + `habit_entries` · `todos` · `people` + `contact_events` · `weekly_plans` · `nightly_entries` · `morning_sections` · `scripture_notes` + `readings` + `questions` · `exercises` + `sets` · `feedback_items` (+ `kind`) · `place_history` (restaurant recency) + `activities` (curated) + `home_location` · `purpose_statement`. *(No date_ideas/date_instances tables — food is live-only, activities are the owned table; see §4.12.)*
+
+**Additions 2026-10-04 — not yet slotted into a phase.** The phase list above predates §4.0 and the People and Dates additions, so the claim that nothing is unassigned no longer holds for these:
+- **Schema:** `tags` + `person_tags` (many-to-many), and an in-outreach-rotation column on `people` (§4.4). `goals` already carries a sort order; reorder and delete need no new table.
+- **Unslotted work:** goal reorder and delete (§4.2), page location and layout editing (§4.0), removing the hardcoded items listed in §4.0, People tags and the outreach mark (§4.4), the Dates location bar (§4.12).
+- `BUILD-PLAN.md` §7 still lists goal reordering and deletion as deliberately deferred. This PRD outranks it.
+
+## 8. Proposed — not decided (2026-10-04) — **[NMT]**
+
+Ideas raised while working through the 2026-10-04 direction. None is a requirement. Each is here so it is not lost; move one into §4 when it is decided.
+
+**Features**
+- **Cadence per tag, sorted by ratio.** Rank people by days-since-contact ÷ the cadence wanted for their tag, instead of raw days. A close friend at 20 days can then outrank an acquaintance at 40. Today one 30-day cutoff applies to everyone.
+- **Tags seeded from Google Contacts labels.** The People API already in the OAuth consent exposes them.
+- **"Talked today" button.** An in-person conversation is invisible to the email, text and calendar signals.
+- **Snooze a person** until a date.
+- **Next step → to-do → calendar block.** Completing an outreach to-do updates that person's last contact and the `count` input in one action.
+- **Starter templates.** Carter's current goals, habits and Morning Review become the first template instead of code, so a new setup is not a blank page.
+- **Onboarding as the funnel itself** — year, then month, then week.
+- **Month and year reviews.** Only the week tier has an "account" step today (§4.10).
+- **Location on calendar blocks,** carried to and from Google's event location field.
+- **A Settings page.** None exists. Candidates to live there: home location, page order, the calendar hour window, the planning-session day, outreach cadences.
+- **Data export.**
+
+**Principles**
+- **Fixed grammar, free vocabulary.** The funnel's shape stays; every name, icon and count is data. *(The reasoning behind §1.6.)*
+- **Nothing finds a goal by its meaning.** *(Already adopted as a rule in §4.0.)*
+- **Editing changes the future, not the past.** A renamed or deleted goal leaves past weeks as they were.
+- **Every integration has a manual fallback** — location, last contact, a calendar that works without Google.
+- **One owner per fact, across systems.** Extends §1.1 to Google: one side owns an event's time, the other owns its goal assignment.
+- **Use and discard live sensitive data.** Live coordinates are queried, not stored — the same stance as the iMessage metadata-only rule (§4.4).
+- **Configurable never means required.** Everything customizable ships with a working default.
+- **List order is the nudge.** Dates sinks what was done recently; People raises who is going stale.
 
 *This PRD documents intended functionality captured from mockup-review feedback. It is the spec of record for the build; the mockup is the visual reference.*
