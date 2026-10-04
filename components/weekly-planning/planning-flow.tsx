@@ -6,7 +6,7 @@ import { ArrowRight, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { GoalIcon } from "@/components/common/goal-icon";
-import { Stepper } from "@/components/common/stepper";
+import { Stepper } from "@/components/weekly-planning/stepper";
 import { TriStateBar } from "@/components/common/tri-state-bar";
 import type { Goal, KeyIndicator } from "@/lib/types";
 

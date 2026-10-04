@@ -20,6 +20,7 @@ import {
   updateBlockAction,
 } from "@/lib/actions/calendar";
 import type { CalendarBlock, Goal } from "@/lib/types";
+import { datePart } from "@/lib/week";
 
 /** What the dialog is editing: an existing block, or a fresh time range. */
 export type BlockDraft =
@@ -28,7 +29,6 @@ export type BlockDraft =
 
 /** "2026-07-27T09:00:00" → "09:00", for <input type="time">. */
 const timeOf = (iso: string) => iso.slice(11, 16);
-const dateOf = (iso: string) => iso.slice(0, 10);
 
 export function BlockDialog({
   draft,
@@ -75,14 +75,14 @@ function BlockForm({
       ? {
           name: draft.block.name,
           goalId: draft.block.goalId ?? "none",
-          date: dateOf(draft.block.start),
+          date: datePart(draft.block.start),
           start: timeOf(draft.block.start),
           end: timeOf(draft.block.end),
         }
       : {
           name: "",
           goalId: "none",
-          date: dateOf(draft.start),
+          date: datePart(draft.start),
           start: timeOf(draft.start),
           end: timeOf(draft.end),
         };

@@ -13,11 +13,11 @@ import type {
   OneRepMaxPoint,
 } from "../types";
 import { bestOneRepMax, computeFatigue, estimateOneRepMax } from "../strength";
-import { toIsoDate } from "../week";
-import { MOCK_EXERCISES, MOCK_SETS } from "../mock/gym";
+import { datePart, toIsoDate } from "../week";
+import { store } from "../mock/store";
 
-const exercises: Exercise[] = structuredClone(MOCK_EXERCISES);
-const sets: ExerciseSet[] = structuredClone(MOCK_SETS);
+const exercises = store.exercises;
+const sets = store.sets;
 let counter = 1;
 
 export const MUSCLE_GROUPS: MuscleGroup[] = [
@@ -43,7 +43,7 @@ export async function getTodaySession(): Promise<SessionExercise[]> {
   return exercises.map((exercise) => ({
     exercise,
     sets: sets.filter(
-      (s) => s.exerciseId === exercise.id && s.performedAt.slice(0, 10) === today,
+      (s) => s.exerciseId === exercise.id && datePart(s.performedAt) === today,
     ),
     bestOneRepMax: bestOneRepMax(sets.filter((s) => s.exerciseId === exercise.id)),
   }));
@@ -81,7 +81,7 @@ export async function getOneRepMaxTrend(
 ): Promise<OneRepMaxPoint[]> {
   const byDate = new Map<string, number>();
   for (const s of sets.filter((x) => x.exerciseId === exerciseId)) {
-    const date = s.performedAt.slice(0, 10);
+    const date = datePart(s.performedAt);
     const estimate = estimateOneRepMax(s.weight, s.reps);
     byDate.set(date, Math.max(byDate.get(date) ?? 0, estimate));
   }

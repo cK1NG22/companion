@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { createBlock, endFor, firstWindowFitting } from "@/lib/data/calendar";
+import { createBlock, firstWindowFitting } from "@/lib/data/calendar";
+import { endFor } from "@/lib/windows";
 import { getFunnel } from "@/lib/data/goals";
 import { rollTheDice, searchActivities, searchFood } from "@/lib/data/dates";
 import type { Activity, DiceRoll, FoodPlace } from "@/lib/types";

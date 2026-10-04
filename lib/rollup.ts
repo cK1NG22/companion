@@ -6,7 +6,7 @@ import type {
   Goal,
   KeyIndicator,
 } from "./types";
-import { toIsoDate, weekDays } from "./week";
+import { datePart, toIsoDate, weekDays } from "./week";
 
 /** A `count` contribution that came from a checked-off to-do, not the calendar. */
 export interface TodoCountItem {
@@ -132,7 +132,7 @@ export function computeAllocation(
         planned: 1,
         done: b.confirmedMinutes !== null ? 1 : 0,
         origin: "calendar" as const,
-        date: b.start.slice(0, 10),
+        date: datePart(b.start),
       })),
       ...myTodos.map((t) => ({
         label: t.label,
