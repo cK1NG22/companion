@@ -23,7 +23,7 @@ Don't collapse them.
 
 | Path | Why | The only legitimate way to change it |
 |---|---|---|
-| `components/ui/**` | shadcn/ui generated. A hand-fix here is silently reverted by the next `shadcn add`, and the bug returns with no trace of why it was ever gone. | The shadcn CLI. Need different behaviour? Wrap it in `components/common/`. |
+| `components/ui/**`, `hooks/use-mobile.ts` | shadcn/ui generated. A hand-fix here is silently reverted by the next `shadcn add`, and the bug returns with no trace of why it was ever gone. | The shadcn CLI. Need different behaviour? Wrap it in `components/common/`. |
 | `node_modules/**`, `package-lock.json` | Managed by npm. | npm. |
 | `.next/**`, `next-env.d.ts` | Build output. | The build. |
 
@@ -66,6 +66,9 @@ types in `node_modules/@base-ui/react/` — do not assume Radix.
    `components/<screen>/`, not in a shared bucket.
 4. Pure math (week rollups, 1RM, fatigue, distance) lives in `lib/*.ts` as plain
    functions with Vitest tests. Business math does not live inside components.
+5. **Server Actions live in `lib/actions/`,** one file per domain. Each is a
+   `"use server"` wrapper that validates input with zod, calls `lib/data/`, and
+   revalidates the affected paths.
 
 ## Product invariants (do not "helpfully" change these)
 

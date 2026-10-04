@@ -299,7 +299,7 @@ export interface OneRepMaxPoint {
   estimate: number;
 }
 
-/** Recent volume weighed against days of rest. See lib/fatigue.ts. */
+/** Recent volume weighed against days of rest. See `computeFatigue` in lib/strength.ts. */
 export interface MuscleFatigue {
   muscleGroup: MuscleGroup;
   /** Σ(weight × reps) over the recent window. */
