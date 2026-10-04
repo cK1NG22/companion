@@ -85,6 +85,12 @@ const OPENABLE: {
     },
     role: "listbox",
   },
+  {
+    name: "radius select",
+    route: "/dates",
+    open: (p) => p.getByRole("combobox", { name: "Radius" }).click(),
+    role: "listbox",
+  },
 ];
 
 for (const theme of THEMES) {

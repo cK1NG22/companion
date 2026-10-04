@@ -13,8 +13,14 @@ import type {
   HomeLocation,
   PriceTier,
 } from "../types";
-import { distanceMiles, type LatLng } from "../geo";
-import { CUISINES, MOCK_ACTIVITIES, MOCK_FOOD, MOCK_HOME } from "../mock/dates";
+import {
+  DEFAULT_ACTIVITY_RADIUS_MILES,
+  DEFAULT_FOOD_RADIUS_MILES,
+  withinRadius,
+  type LatLng,
+} from "../geo";
+import { CUISINES, MOCK_ACTIVITIES, MOCK_FOOD } from "../mock/dates";
+import { store } from "../mock/store";
 
 export const CUISINE_OPTIONS = CUISINES;
 
@@ -42,7 +48,7 @@ export interface ActivityFilters {
 }
 
 export async function getHomeLocation(): Promise<HomeLocation> {
-  return MOCK_HOME;
+  return { ...store.home };
 }
 
 /**
@@ -53,12 +59,8 @@ export async function searchFood(
   anchor: LatLng,
   filters: FoodFilters = {},
 ): Promise<FoodPlace[]> {
-  const radius = filters.radiusMiles ?? 15;
-  return MOCK_FOOD.map((f) => ({
-    ...f,
-    distanceMiles: distanceMiles(anchor, { lat: f.lat, lng: f.lng }),
-  }))
-    .filter((f) => f.distanceMiles <= radius)
+  const radius = filters.radiusMiles ?? DEFAULT_FOOD_RADIUS_MILES;
+  return withinRadius(anchor, MOCK_FOOD, radius)
     .filter((f) => !filters.cuisine || f.cuisine === filters.cuisine)
     .filter((f) => !filters.maxPrice || (f.priceTier ?? 1) <= filters.maxPrice)
     .filter((f) => !filters.openNow || f.openNow !== false)
@@ -73,13 +75,12 @@ export async function searchActivities(
   anchor: LatLng,
   filters: ActivityFilters = {},
 ): Promise<Activity[]> {
-  const radius = filters.radiusMiles ?? 40;
-  return MOCK_ACTIVITIES.filter((a) => a.status === "active")
-    .map((a) => ({
-      ...a,
-      distanceMiles: distanceMiles(anchor, { lat: a.lat, lng: a.lng }),
-    }))
-    .filter((a) => a.distanceMiles <= radius)
+  const radius = filters.radiusMiles ?? DEFAULT_ACTIVITY_RADIUS_MILES;
+  return withinRadius(
+    anchor,
+    MOCK_ACTIVITIES.filter((a) => a.status === "active"),
+    radius,
+  )
     .filter((a) => !filters.category || a.category === filters.category)
     .filter((a) => !filters.maxPrice || a.priceTier <= filters.maxPrice)
     .sort(

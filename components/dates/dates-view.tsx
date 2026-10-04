@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { ArrowLeft, Dice5, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,11 +21,24 @@ import {
   type Row,
 } from "@/components/dates/detail-popup";
 import { DiceCard } from "@/components/dates/dice-card";
+import { getCurrentPosition } from "@/components/dates/current-position";
+import { DEFAULT_RADIUS, ProximityBar } from "@/components/dates/proximity-bar";
 import { cn } from "@/lib/utils";
 import { lastDoneChip } from "@/lib/format";
-import { distanceMiles } from "@/lib/geo";
-import { exploreNearAction, rollDiceAction } from "@/lib/actions/dates";
+import {
+  DEFAULT_ACTIVITY_RADIUS_MILES,
+  DEFAULT_FOOD_RADIUS_MILES,
+  distanceMiles,
+  type LatLng,
+} from "@/lib/geo";
+import {
+  exploreNearAction,
+  rollDiceAction,
+  searchDatesAction,
+} from "@/lib/actions/dates";
 import type { Activity, DateMode, DiceRoll, FoodPlace } from "@/lib/types";
+
+const FELL_BACK = "Showing results from Home.";
 
 /**
  * The Date planner (PRD §4.12). One toggled list, never two side by side.
@@ -44,8 +57,8 @@ export function DatesView({
   activities: Activity[];
   cuisines: readonly string[];
   categories: string[];
-  /** Where the default lists were centred, and the Dice Roll origin. */
-  home: { lat: number; lng: number };
+  /** Where the default lists were centred. */
+  home: LatLng;
   mapsKey?: string;
 }) {
   const [mode, setMode] = useState<DateMode>("food");
@@ -62,14 +75,35 @@ export function DatesView({
   // the component non-idempotent.
   const [now] = useState(() => Date.now());
   const [rolling, startRolling] = useTransition();
+  /**
+   * The device's position while "Current location" is the anchor; null means
+   * Home. Held in memory only — never a URL, a cookie or storage, so it is
+   * gone on reload (PRD §4.12 leaves storing it undecided).
+   */
+  const [liveCoords, setLiveCoords] = useState<LatLng | null>(null);
+  const [radius, setRadius] = useState(DEFAULT_RADIUS);
+  /** A search from the proximity bar. Null: the lists the page loaded. */
+  const [searched, setSearched] = useState<{
+    food: FoodPlace[];
+    activities: Activity[];
+  } | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  /** Only the newest search may land; a slow older one is dropped. */
+  const latestSearch = useRef(0);
 
   const allFood: Row[] = useMemo(
-    () => food.map((f) => ({ kind: "food" as const, ...f })),
-    [food],
+    () =>
+      (searched?.food ?? food).map((f) => ({ kind: "food" as const, ...f })),
+    [searched, food],
   );
   const allActivities: Row[] = useMemo(
-    () => activities.map((a) => ({ kind: "activity" as const, ...a })),
-    [activities],
+    () =>
+      (searched?.activities ?? activities).map((a) => ({
+        kind: "activity" as const,
+        ...a,
+      })),
+    [searched, activities],
   );
 
   /** In Explore mode the list is the OTHER type, ranked from the anchor. */
@@ -116,12 +150,73 @@ export function DatesView({
   function roll() {
     startRolling(async () => {
       const next = await rollDiceAction({
-        ...home,
+        ...(liveCoords ?? home),
         excludePlaceId: dice?.food?.placeId,
         excludeActivityId: dice?.activity?.id,
       });
       if (next) setDice(next);
     });
+  }
+
+  /**
+   * Run the proximity search. `origin` null means Home, which the server
+   * looks up itself. Resolves to an error message, or null when it worked.
+   */
+  async function search(
+    origin: LatLng | null,
+    radiusValue: string,
+  ): Promise<string | null> {
+    const id = ++latestSearch.current;
+    if (!origin && radiusValue === DEFAULT_RADIUS) {
+      setSearched(null);
+      return null;
+    }
+    const result = await searchDatesAction({
+      ...(origin ? { anchor: "live", ...origin } : { anchor: "home" }),
+      ...(radiusValue === DEFAULT_RADIUS
+        ? {}
+        : { radiusMiles: Number(radiusValue) }),
+    });
+    if (id !== latestSearch.current) return null;
+    if (!result.ok) return result.error;
+    setSearched({ food: result.food, activities: result.activities });
+    return null;
+  }
+
+  async function searchFromHome() {
+    setLiveCoords(null);
+    setLocationError(await search(null, radius));
+  }
+
+  /** Every failure ends the same way: say why, stay on Home. */
+  async function searchFromCurrentLocation() {
+    setLocationError(null);
+    setLocating(true);
+    const position = await getCurrentPosition();
+    if (!position.ok) {
+      setLocating(false);
+      setLocationError(`${position.message} ${FELL_BACK}`);
+      return;
+    }
+    const coords = { lat: position.lat, lng: position.lng };
+    const error = await search(coords, radius);
+    setLocating(false);
+    if (error) {
+      setLocationError(`${error} ${FELL_BACK}`);
+      return;
+    }
+    setLiveCoords(coords);
+  }
+
+  async function chooseRadius(next: string) {
+    const previous = radius;
+    setRadius(next);
+    setLocationError(null);
+    const error = await search(liveCoords, next);
+    if (error) {
+      setRadius(previous);
+      setLocationError(error);
+    }
   }
 
   function explore(row: Row) {
@@ -165,6 +260,25 @@ export function DatesView({
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-2">
+          <div className="grid w-full gap-2">
+            <ProximityBar
+              anchor={liveCoords ? "live" : "home"}
+              radius={radius}
+              defaultRadiusMiles={
+                mode === "food"
+                  ? DEFAULT_FOOD_RADIUS_MILES
+                  : DEFAULT_ACTIVITY_RADIUS_MILES
+              }
+              locating={locating}
+              error={locationError}
+              onAnchorChange={(next) =>
+                void (next === "live"
+                  ? searchFromCurrentLocation()
+                  : searchFromHome())
+              }
+              onRadiusChange={(next) => void chooseRadius(next)}
+            />
+          </div>
           <ToggleGroup
             value={[mode]}
             onValueChange={(v) => {
