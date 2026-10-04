@@ -38,7 +38,7 @@ export function volume(sets: ExerciseSet[]): number {
  * tolerate more tonnage than arms; if the suggestions come out lopsided, make
  * this a per-muscle lookup rather than adding a new model.
  */
-export const REFERENCE_WEEKLY_VOLUME = 12000;
+const REFERENCE_WEEKLY_VOLUME = 12000;
 
 /** Days of rest after which a muscle is treated as fully recovered. */
 export const FULL_RECOVERY_DAYS = 4;
