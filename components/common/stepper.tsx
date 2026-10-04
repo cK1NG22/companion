@@ -33,7 +33,7 @@ export function Stepper({
                 className={cn(
                   "grid size-5 shrink-0 place-items-center rounded-full text-[11px] font-bold",
                   active && "bg-primary text-primary-foreground",
-                  done && "bg-good text-white",
+                  done && "bg-good text-background",
                   !active && !done && "bg-secondary text-muted-foreground",
                 )}
               >

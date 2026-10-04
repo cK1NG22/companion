@@ -109,6 +109,7 @@ function GoalRow({
             onChange={(e) => setTitle(e.target.value)}
             // Commit on blur rather than per keystroke — one write per edit.
             onBlur={() => title !== goal.title && save({ title })}
+            aria-label={`Title: ${goal.title}`}
             className="h-7 text-sm"
           />
         ) : (

@@ -277,18 +277,22 @@ export function DatesView({
                   )}
                 >
                   <MapPin className="size-4 shrink-0 text-muted-foreground" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{row.name}</p>
-                    <p className="truncate text-xs text-muted-foreground capitalize">
+                  {/* Spans, not div/p: a <button> may only hold phrasing
+                      content (checked by e2e/html.spec.ts). */}
+                  <span className="block min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">
+                      {row.name}
+                    </span>
+                    <span className="block truncate text-xs text-muted-foreground capitalize">
                       {label(row)} · {price(row.priceTier)}
-                    </p>
-                  </div>
+                    </span>
+                  </span>
                   {chip ? (
                     <Badge variant="secondary" className="shrink-0 text-[10px]">
                       {chip}
                     </Badge>
                   ) : (
-                    <Badge className="shrink-0 bg-good text-[10px] text-white">
+                    <Badge className="shrink-0 bg-good text-[10px] text-background">
                       new
                     </Badge>
                   )}

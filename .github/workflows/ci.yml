@@ -1,0 +1,62 @@
+name: CI
+
+# Runs every gate in AGENTS.md on each push to main and each pull request.
+# No deploy step: Vercel's GitHub integration handles that.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: Typecheck, lint, architecture, unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - name: Architecture (lib/data is the seam)
+        run: npm run arch
+      - name: Unused files and dependencies
+        run: npm run knip
+      - run: npm test
+      - name: Dependency audit
+        run: npm audit --omit=dev --audit-level=high
+
+  browser:
+    name: Build, browser tests, Lighthouse
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # Playwright's webServer runs `npm run build && npm run start`, so this
+      # step is also the production-build gate.
+      - name: axe, HTML validity and behaviour (Playwright)
+        run: npm run test:e2e
+      # Reuses the build the step above left in .next.
+      - name: Lighthouse (accessibility stays at 100)
+        run: npx lhci autorun
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-reports
+          path: |
+            playwright-report/
+            .lighthouseci/
+          retention-days: 7

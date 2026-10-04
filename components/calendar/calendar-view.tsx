@@ -17,6 +17,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -142,16 +143,20 @@ export function CalendarView({
             <Settings2 className="size-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            <DropdownMenuLabel>Visible hours</DropdownMenuLabel>
-            {HOUR_WINDOWS.map((w, i) => (
-              <DropdownMenuCheckboxItem
-                key={w.label}
-                checked={windowIndex === i}
-                onCheckedChange={() => setWindowIndex(i)}
-              >
-                {w.label}
-              </DropdownMenuCheckboxItem>
-            ))}
+            {/* Base UI's GroupLabel throws outside a Group — without this
+                wrapper, opening the menu crashes the whole page. */}
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Visible hours</DropdownMenuLabel>
+              {HOUR_WINDOWS.map((w, i) => (
+                <DropdownMenuCheckboxItem
+                  key={w.label}
+                  checked={windowIndex === i}
+                  onCheckedChange={() => setWindowIndex(i)}
+                >
+                  {w.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
 

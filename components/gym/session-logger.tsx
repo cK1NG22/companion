@@ -120,7 +120,7 @@ function ExerciseCard({ item }: { item: SessionExercise }) {
 
       {sets.some((s) => s.isPr) ? (
         <div className="border-t bg-warm-soft px-4 py-1.5">
-          <Badge className="bg-warm text-[10px] text-white">
+          <Badge className="bg-warm text-[10px] text-background">
             PR today — new estimated max
           </Badge>
         </div>

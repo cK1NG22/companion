@@ -33,16 +33,16 @@ export function KeyIndicatorTiles({
     <>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {indicators.map((ki) => (
-          // Card is a plain div, so the button wraps it rather than composing
-          // into it — that keeps native focus and keyboard activation.
-          <button
+          // Card is a <div>, and a <button> may only hold phrasing content, so
+          // the button can't wrap the card. Instead it is stretched over it:
+          // valid HTML, and still a native button for focus and keyboard.
+          <Card
             key={ki.goalId}
-            type="button"
-            onClick={() => setOpenGoalId(ki.goalId)}
-            aria-label={`${ki.title}: ${fmt(ki.done, ki.unit)} done of ${fmt(ki.target, ki.unit)}. Open breakdown.`}
-            className="rounded-xl text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="relative h-full gap-0 px-3.5 py-3.5 shadow-card transition-colors hover:bg-muted"
           >
-            <Card className="h-full gap-0 px-3.5 py-3.5 shadow-card transition-colors hover:bg-muted">
+            {/* The button's label says everything below; hiding the visual
+                copy stops a screen reader announcing each tile twice. */}
+            <div aria-hidden="true">
               <div className="flex items-center gap-1.5 text-muted-foreground">
                 <GoalIcon icon={ki.icon} className="size-3.5" />
                 <span className="truncate text-[11px] font-medium tracking-wide uppercase">
@@ -63,8 +63,14 @@ export function KeyIndicatorTiles({
                 target={ki.target}
                 behind={ki.behind}
               />
-            </Card>
-          </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => setOpenGoalId(ki.goalId)}
+              aria-label={`${ki.title}: ${fmt(ki.done, ki.unit)} done of ${fmt(ki.target, ki.unit)}. Open breakdown.`}
+              className="absolute inset-0 rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset"
+            />
+          </Card>
         ))}
       </div>
 
