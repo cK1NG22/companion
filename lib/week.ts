@@ -30,6 +30,11 @@ export function toIsoDate(date: Date): IsoDate {
   return format(date, "yyyy-MM-dd");
 }
 
+/** "2026-07-27T09:00:00" → "2026-07-27" — the date part of a local-naive timestamp. */
+export function datePart(iso: string): IsoDate {
+  return iso.slice(0, 10);
+}
+
 export function fromIsoDate(iso: IsoDate): Date {
   return parseISO(iso);
 }

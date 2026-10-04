@@ -10,22 +10,15 @@ import type {
 } from "../types";
 import { subDays } from "date-fns";
 import { toIsoDate } from "../week";
-import {
-  MOCK_MONTHLY_STUDY_GOAL,
-  MOCK_MORNING_SECTIONS,
-  MOCK_NIGHTLY,
-  MOCK_QUESTIONS,
-  MOCK_READINGS,
-  MOCK_SCRIPTURE_NOTES,
-} from "../mock/rhythm";
+import { MOCK_MONTHLY_STUDY_GOAL } from "../mock/rhythm";
+import { store } from "../mock/store";
 
-const sections: MorningSection[] = structuredClone(MOCK_MORNING_SECTIONS);
-const nightly: NightlyEntry[] = structuredClone(MOCK_NIGHTLY);
-const notes: ScriptureNote[] = structuredClone(MOCK_SCRIPTURE_NOTES);
-const questions: CarriedQuestion[] = structuredClone(MOCK_QUESTIONS);
-const readings: Reading[] = structuredClone(MOCK_READINGS);
+const sections = store.morningSections;
+const nightly = store.nightly;
+const notes = store.scriptureNotes;
+const questions = store.questions;
+const readings = store.readings;
 
-let morningDoneOn: string | null = null;
 let counter = 1;
 
 // ---------------------------------------------------------------------------
@@ -73,11 +66,11 @@ export async function deleteMorningSection(id: string): Promise<void> {
  * marked done, returning the next day (PRD §4.8).
  */
 export async function isMorningDone(): Promise<boolean> {
-  return morningDoneOn === toIsoDate(new Date());
+  return store.morningDoneOn === toIsoDate(new Date());
 }
 
 export async function markMorningDone(): Promise<void> {
-  morningDoneOn = toIsoDate(new Date());
+  store.morningDoneOn = toIsoDate(new Date());
 }
 
 // ---------------------------------------------------------------------------

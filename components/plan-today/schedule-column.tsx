@@ -2,16 +2,12 @@ import { format, parseISO } from "date-fns";
 import { Card } from "@/components/ui/card";
 import { GoalIcon } from "@/components/common/goal-icon";
 import { cn } from "@/lib/utils";
+import { formatMinutes } from "@/lib/format";
 import type { CalendarBlock, IconKey, OpenWindow } from "@/lib/types";
 
 /** "9:00 – 12:00" */
 const span = (start: string, end: string) =>
   `${format(parseISO(start), "h:mm")} – ${format(parseISO(end), "h:mm a")}`;
-
-const hours = (minutes: number) =>
-  minutes >= 60
-    ? `${Math.floor(minutes / 60)}h${minutes % 60 ? ` ${minutes % 60}m` : ""}`
-    : `${minutes}m`;
 
 /**
  * Left side of Plan Today (PRD §4.7): today's blocks, plus where the free time
@@ -87,7 +83,7 @@ export function ScheduleColumn({
               >
                 {span(w.start, w.end)}
                 <span className="ml-1.5 text-muted-foreground">
-                  {hours(w.minutes)}
+                  {formatMinutes(w.minutes)}
                 </span>
               </li>
             ))}

@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { GoalIcon } from "@/components/common/goal-icon";
 import { confirmHoursAction, saveNightlyAction } from "@/lib/actions/rhythm";
+import { sumHours } from "@/lib/format";
 import type { CalendarBlock, IconKey, NightlyEntry } from "@/lib/types";
 
 /**
@@ -167,7 +168,7 @@ function ConfirmHoursCard({
     minutes: parseMinutes(minutes[b.id] ?? ""),
   }));
   const invalid = parsed.filter((p) => p.minutes === null);
-  const totalHours = parsed.reduce((sum, p) => sum + (p.minutes ?? 0), 0) / 60;
+  const totalHours = sumHours(parsed.map((p) => p.minutes));
 
   function confirm() {
     if (invalid.length > 0) {

@@ -1,4 +1,4 @@
-import { differenceInMinutes, format, parseISO } from "date-fns";
+import { addMinutes, differenceInMinutes, format, parseISO } from "date-fns";
 import type { CalendarBlock, OpenWindow } from "./types";
 
 /**
@@ -8,6 +8,11 @@ import type { CalendarBlock, OpenWindow } from "./types";
  */
 export const toLocalIso = (d: Date): string =>
   format(d, "yyyy-MM-dd'T'HH:mm:ss");
+
+/** Helper for scheduling: end time for a start + duration. */
+export function endFor(start: string, durationMinutes: number): string {
+  return toLocalIso(addMinutes(parseISO(start), durationMinutes));
+}
 
 /**
  * Does this block occupy any part of `dayIso`?

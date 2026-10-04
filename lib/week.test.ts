@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DAY_LABELS,
+  datePart,
   dayIndex,
   formatWeekLabel,
   isSameWeek,
@@ -64,5 +65,15 @@ describe("toIsoDate", () => {
     // in a negative-offset timezone. Local formatting must not.
     expect(toIsoDate(new Date(2026, 6, 13, 23, 30))).toBe("2026-07-13");
     expect(toIsoDate(new Date(2026, 6, 13, 0, 15))).toBe("2026-07-13");
+  });
+});
+
+describe("datePart", () => {
+  it("takes the date off a local-naive timestamp", () => {
+    expect(datePart("2026-07-13T23:30:00")).toBe("2026-07-13");
+  });
+
+  it("leaves a bare date unchanged", () => {
+    expect(datePart("2026-07-13")).toBe("2026-07-13");
   });
 });

@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { formatDuration } from "@/lib/format";
 import {
   addTodoAction,
   deleteTodoAction,
@@ -15,15 +16,6 @@ import {
   toggleTodoAction,
 } from "@/lib/actions/todos";
 import type { Todo } from "@/lib/types";
-
-/** "90 min" → "1h 30m" once it passes an hour. */
-function formatDuration(minutes: number | null): string | null {
-  if (!minutes) return null;
-  if (minutes < 60) return `${minutes} min`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m ? `${h}h ${m}m` : `${h}h`;
-}
 
 export function TodoList({ todos }: { todos: Todo[] }) {
   const [, startTransition] = useTransition();

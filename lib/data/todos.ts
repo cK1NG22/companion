@@ -8,12 +8,9 @@
 import type { Todo } from "../types";
 import type { TodoCountItem } from "../rollup";
 import { nextId, store } from "../mock/store";
-import {
-  createBlock,
-  endFor,
-  firstWindowFitting,
-  toLocalIso,
-} from "./calendar";
+import { datePart } from "../week";
+import { endFor, toLocalIso } from "../windows";
+import { createBlock, firstWindowFitting } from "./calendar";
 
 const todos = store.todos;
 
@@ -31,13 +28,13 @@ export async function getTodos(): Promise<Todo[]> {
  * anything was checked or unchecked. Dated by completion, so the contribution
  * lands in the week the act happened.
  */
-export function getCountContributions(): TodoCountItem[] {
+export async function getCountContributions(): Promise<TodoCountItem[]> {
   return todos
     .filter((t) => t.done && t.goalId !== null && t.completedAt !== null)
     .map((t) => ({
       goalId: t.goalId as string,
       label: t.name,
-      date: (t.completedAt as string).slice(0, 10),
+      date: datePart(t.completedAt as string),
     }));
 }
 

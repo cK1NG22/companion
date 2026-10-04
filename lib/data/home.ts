@@ -37,7 +37,7 @@ export async function getPurposeStatement(): Promise<string> {
  */
 export async function getKeyIndicators(anchor: Date): Promise<KeyIndicator[]> {
   const weekBlocks = blocksInWeek(store.blocks, anchor);
-  const weekTodos = todoItemsInWeek(getCountContributions(), anchor);
+  const weekTodos = todoItemsInWeek(await getCountContributions(), anchor);
   return store.goals
     .filter((g) => g.tier === "week")
     .sort((a, b) => a.sortOrder - b.sortOrder)
@@ -52,7 +52,7 @@ export async function getAllocation(
   const goal = store.goals.find((g) => g.id === goalId);
   if (!goal) return null;
   const weekBlocks = blocksInWeek(store.blocks, anchor);
-  const weekTodos = todoItemsInWeek(getCountContributions(), anchor);
+  const weekTodos = todoItemsInWeek(await getCountContributions(), anchor);
   return computeAllocation(goal, weekBlocks, weekTodos);
 }
 

@@ -1,20 +1,10 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import {
-  ArrowLeft,
-  Dice5,
-  ExternalLink,
-  Globe,
-  MapPin,
-  Phone,
-  Star,
-} from "lucide-react";
-import { toast } from "sonner";
+import { ArrowLeft, Dice5, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -23,39 +13,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { ResponsiveModal } from "@/components/common/responsive-modal";
-import { cn } from "@/lib/utils";
-import { appleMapsUrl, distanceMiles, mapsEmbedUrl } from "@/lib/geo";
 import {
-  exploreNearAction,
-  rollDiceAction,
-  scheduleDateAction,
-} from "@/lib/actions/dates";
+  DetailPopup,
+  label,
+  prettyCuisine,
+  price,
+  type Row,
+} from "@/components/dates/detail-popup";
+import { DiceCard } from "@/components/dates/dice-card";
+import { cn } from "@/lib/utils";
+import { lastDoneChip } from "@/lib/format";
+import { distanceMiles } from "@/lib/geo";
+import { exploreNearAction, rollDiceAction } from "@/lib/actions/dates";
 import type { Activity, DateMode, DiceRoll, FoodPlace } from "@/lib/types";
-
-type Row = ({ kind: "food" } & FoodPlace) | ({ kind: "activity" } & Activity);
-
-const price = (tier: number | null) => (tier ? "$".repeat(tier) : "—");
-
-const prettyCuisine = (c: string) =>
-  c.replace(/_restaurant$/, "").replace(/_/g, " ");
-
-const label = (row: Row) =>
-  row.kind === "food" ? prettyCuisine(row.cuisine) : row.category;
-
-/** Activities have no address field; food does. One place to resolve that. */
-const addressOf = (row: Row) => (row.kind === "food" ? row.address : "");
-
-const placeOf = (row: Row) => ({ name: row.name, address: addressOf(row) });
-
-/** "3 days ago" chips, but terse. `now` is passed in so render stays pure. */
-function lastDoneChip(lastDone: string | null, now: number): string | null {
-  if (!lastDone) return null;
-  const days = Math.round((now - new Date(lastDone).getTime()) / 86_400_000);
-  if (days <= 0) return "today";
-  if (days < 30) return `${days}d ago`;
-  return `${Math.round(days / 30)}mo ago`;
-}
 
 /**
  * The Date planner (PRD §4.12). One toggled list, never two side by side.
@@ -350,227 +320,5 @@ export function DatesView({
         }}
       />
     </div>
-  );
-}
-
-function DiceCard({
-  roll,
-  onClose,
-  onReroll,
-}: {
-  roll: DiceRoll;
-  onClose: () => void;
-  onReroll: () => void;
-}) {
-  const [pending, startTransition] = useTransition();
-  const places = [roll.food, roll.activity].filter(Boolean) as {
-    name: string;
-    address?: string;
-  }[];
-
-  return (
-    <Card className="gap-3 border-2 px-5 py-4 shadow-card">
-      <div className="flex items-center gap-2">
-        <Dice5 className="size-4 text-warm" />
-        <h2 className="text-sm font-semibold">Try something new</h2>
-      </div>
-      <div className="grid gap-1 text-sm">
-        <p>
-          <span className="text-muted-foreground">Food · </span>
-          {roll.food?.name ?? "nothing in range"}
-        </p>
-        <p>
-          <span className="text-muted-foreground">Activity · </span>
-          {roll.activity?.name ?? "nothing in range"}
-        </p>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        <Button
-          size="sm"
-          disabled={pending || places.length === 0}
-          onClick={() =>
-            startTransition(async () => {
-              const result = await scheduleDateAction({
-                places: places.map((p) => ({
-                  name: p.name,
-                  address: p.address ?? "",
-                })),
-              });
-              if (result.ok) toast.success(result.message);
-              else toast.error(result.error);
-            })
-          }
-        >
-          Schedule both
-        </Button>
-        <Button size="sm" variant="outline" onClick={onReroll}>
-          Re-roll
-        </Button>
-        <Button size="sm" variant="ghost" onClick={onClose}>
-          Dismiss
-        </Button>
-      </div>
-    </Card>
-  );
-}
-
-function DetailPopup({
-  row,
-  anchorRow,
-  mapsKey,
-  onClose,
-  onExplore,
-}: {
-  row: Row | null;
-  anchorRow: Row | null;
-  mapsKey?: string;
-  onClose: () => void;
-  onExplore: (row: Row) => void;
-}) {
-  // Pairing is offered only when you arrived here by crossing over.
-  const paired = anchorRow !== null && row !== null;
-  const [includeAnchor, setIncludeAnchor] = useState(true);
-  const [pending, startTransition] = useTransition();
-
-  if (!row) {
-    return (
-      <ResponsiveModal open={false} onOpenChange={onClose} title="">
-        <span />
-      </ResponsiveModal>
-    );
-  }
-
-  // Narrowed past the early return, so callbacks below don't need assertions.
-  const current: Row = row;
-  const embed = mapsEmbedUrl(`${row.name} ${addressOf(row)}`.trim(), mapsKey);
-  const otherType = row.kind === "food" ? "activities" : "food";
-
-  function schedule() {
-    // Order follows selection: the place picked first leads the event name.
-    const places =
-      paired && includeAnchor && anchorRow
-        ? [placeOf(anchorRow), placeOf(current)]
-        : [placeOf(current)];
-
-    startTransition(async () => {
-      const result = await scheduleDateAction({ places });
-      if (result.ok) {
-        toast.success(result.message);
-        onClose();
-      } else {
-        toast.error(result.error);
-      }
-    });
-  }
-
-  return (
-    <ResponsiveModal
-      open
-      onOpenChange={(o) => !o && onClose()}
-      title={row.name}
-      description={`${label(row)} · ${price(row.priceTier)}`}
-    >
-      <div className="grid gap-3">
-        {embed ? (
-          <iframe
-            title={`Map of ${row.name}`}
-            src={embed}
-            loading="lazy"
-            className="h-40 w-full rounded-lg border"
-            referrerPolicy="no-referrer-when-downgrade"
-          />
-        ) : (
-          <div className="grid h-24 place-items-center rounded-lg border bg-muted text-xs text-muted-foreground">
-            Map appears once a Google Maps embed key is configured.
-          </div>
-        )}
-
-        <div className="grid gap-1 text-sm">
-          {"rating" in row && row.rating ? (
-            <p className="flex items-center gap-1.5">
-              <Star className="size-3.5 text-warm" />
-              <span className="tabular-nums">{row.rating}</span>
-            </p>
-          ) : null}
-          {"address" in row && row.address ? (
-            <p className="text-muted-foreground">{row.address}</p>
-          ) : null}
-          {"priceNote" in row && row.priceNote ? (
-            <p className="text-muted-foreground">{row.priceNote}</p>
-          ) : null}
-          {"notes" in row && row.notes ? <p>{row.notes}</p> : null}
-          {"phone" in row && row.phone ? (
-            <a
-              href={`tel:${row.phone}`}
-              className="flex items-center gap-1.5 text-muted-foreground hover:underline"
-            >
-              <Phone className="size-3.5" /> {row.phone}
-            </a>
-          ) : null}
-          {"website" in row && row.website ? (
-            <a
-              href={row.website}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 text-muted-foreground hover:underline"
-            >
-              <Globe className="size-3.5" /> Website
-            </a>
-          ) : null}
-          {"bookingUrl" in row && row.bookingUrl ? (
-            <a
-              href={row.bookingUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 text-muted-foreground hover:underline"
-            >
-              <Globe className="size-3.5" /> Book
-            </a>
-          ) : null}
-        </div>
-
-        {paired && anchorRow ? (
-          <label className="flex items-start gap-2.5 rounded-lg border bg-muted/40 px-3 py-2.5">
-            <Checkbox
-              checked={includeAnchor}
-              onCheckedChange={(v) => setIncludeAnchor(v === true)}
-              aria-label={`Include ${anchorRow.name}`}
-              className="mt-0.5"
-            />
-            <span className="text-sm">
-              Include {anchorRow.name}?
-              <span className="mt-0.5 block text-xs text-muted-foreground">
-                {includeAnchor
-                  ? `Event: “${anchorRow.name} + ${row.name}”`
-                  : `Event: “${row.name}”`}
-              </span>
-            </span>
-          </label>
-        ) : null}
-
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={schedule} disabled={pending} className="flex-1">
-            Schedule
-          </Button>
-          <Button
-            variant="outline"
-            nativeButton={false}
-            render={
-              <a
-                href={appleMapsUrl(row.name, { lat: row.lat, lng: row.lng })}
-                target="_blank"
-                rel="noreferrer"
-              />
-            }
-          >
-            Directions <ExternalLink className="size-3.5" />
-          </Button>
-        </div>
-
-        <Button variant="secondary" onClick={() => onExplore(row)}>
-          Explore {otherType} near {row.name} →
-        </Button>
-      </div>
-    </ResponsiveModal>
   );
 }
