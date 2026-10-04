@@ -23,6 +23,10 @@ const eslintConfig = defineConfig([
     "test-results/**",
     "blob-report/**",
     ".lighthouseci/**",
+    // Agent worktrees are full copies of this repo (with their own build
+    // output), and the ECC library is symlinked in. Neither is this
+    // checkout's code; each worktree is linted from inside itself.
+    ".claude/**",
   ]),
   {
     // Lighthouse CI loads its config with `require`, so this one file has to
