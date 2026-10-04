@@ -1,0 +1,1 @@
+/Users/carterking/Projects/memory-management/ecc/commands/setup-pm.md
