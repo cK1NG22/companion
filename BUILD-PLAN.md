@@ -9,6 +9,10 @@ Created 2026-07-27 · Owner: Carter
 Lighthouse CI accessibility gates (both green on every route). Shipped in draft PR
 [ck22coding/companion#1](https://github.com/ck22coding/companion/pull/1).
 **Part C not started** — it needs Google/Neon credentials.
+**Status (2026-10-04): Part B reopened.** The PRD gained a goal-agnostic direction
+(§1.6, §4.0), People tags and an outreach mark (§4.4), and a Dates location
+requirement (§4.12). That is new screen work — phases **B11–B15** below, none
+started. Several are blocked on decisions the PRD marks `[NMT]`; §8 lists which.
 
 ---
 
@@ -17,6 +21,7 @@ Lighthouse CI accessibility gates (both green on every route). Shipped in draft 
 - **Part A** builds the empty house — shell, theme, routing, the data seam. No features.
 - **Part B** builds each room — one screen per phase, fully clickable, running on fake data.
 - **Part C** wires the plumbing — database, Google, agents. The UI never changes.
+- **Part B, reopened (2026-10-04)** — phases B11–B15 add what the PRD gained after Part B shipped. Same rules as Part B: screens on the mock seam.
 
 Each phase has a **Deliverable** (what exists when it's done) and a **Done when** (how we prove it). Step-level task detail is written **per phase, just before we build it** — writing 20 phases of step-by-step now would be guesswork, since each phase's details depend on what the last one taught us.
 
@@ -214,6 +219,26 @@ Order is by dependency and daily value: **Home and Goals first** (they define th
 
 **Done when (each):** the screen matches `mockup.html` side by side, works at phone width, works in dark mode, and every interaction does something visible. Verify with `/browse` against the Vercel preview, not just locally.
 
+### Part B, reopened — the 2026-10-04 direction
+
+New screen work from PRD §4.0, §4.2, §4.4 and §4.12. Built on the mock seam like the rest of Part B. **None started.**
+
+| Phase | What | PRD | Buildable now | Waiting on a decision (§8) |
+|---|---|---|---|---|
+| **B11** | **Goals: reorder + delete** | §4.2, §4.0 | Reorder at every tier. `Goal.sortOrder` already exists; dnd-kit is already in the stack (Morning Review). | Delete — what it does to child goals and to the blocks and to-dos tagged to the goal. |
+| **B12** | **Remove goal lookups by meaning** | §4.0 | Drop the meanings from icon labels (`goal-icon.tsx`). Replace the heart-icon lookup in `lib/actions/dates.ts` with an explicit user setting for which goal a date is tagged to. | Where that setting lives. No Settings page exists; one is only proposed (PRD §8). |
+| **B13** | **Page location and layout** | §4.0 | Nothing. | Layout depth: an ordered list with show/hide, or a free-form grid. Also whether Scripture and Gym become optional pages. |
+| **B14** | **People: tags + outreach mark** | §4.4 | Tags: add, remove, filter and sort by tag. New `Tag` type; `Person` gains `tags`. | Outreach mark: whether it is the existing exclusion toggle or a separate one. |
+| **B15** | **Dates: location bar** | §4.12 | Live location (the browser's geolocation, sent to the server through a server action) and the radius control. Home read from stored data, not a fixture. | How a manual location is entered. Whether live coordinates are stored. |
+
+Notes:
+- **B15 was in scope for B9 and was not built.** §3's per-screen mapping lists a radius `select` for Dates; the shipped screen has cuisine, price and category only, and the radii are fixed in `lib/data/dates.ts`.
+- **B13 touches the gates.** A page that can move or hide still has to be in `e2e/routes.json`, and the heading-order rule (`PageHeader` owns the `<h1>`) has to hold in every arrangement.
+- **Not given a phase, because each is an open question rather than a requirement** (PRD §4.0): user-defined habit groups, editable Nightly questions, more input units, what past weeks show after a goal changes.
+- **Order against Part C is not decided.** B11, B12 and B14 change `lib/types.ts`. The C1 schema is derived from those types, so building them first means the schema is written once; building them after means a migration.
+
+**Done when (each):** the Part B bar above, plus every new route in `e2e/routes.json` and every new dialog, menu or popover in `a11y-open.spec.ts`'s `OPENABLE` list.
+
 ---
 
 ## Part C — Backend
@@ -222,9 +247,9 @@ The UI is finished and clickable before this starts. Nothing here changes a scre
 
 | Phase | What | Notes |
 |---|---|---|
-| **C1** | **Neon + Drizzle schema**, then swap `lib/data/` bodies to real queries | Full table list in PRD §7. Do it screen-by-screen so the app is never fully broken. Delete `lib/mock/` when the last function is swapped. |
+| **C1** | **Neon + Drizzle schema**, then swap `lib/data/` bodies to real queries | Full table list in PRD §7, which now adds `tags` + `person_tags` and an outreach-rotation column on `people`. Do it screen-by-screen so the app is never fully broken. Delete `lib/mock/` when the last function is swapped — by then the seed goals, habits and people have to exist as user data, since PRD §4.0 allows none of it in code. |
 | **C2** | **Auth.js Google OAuth** | One consent: Calendar r/w, Gmail read, Contacts read, Docs write. Single-user allowlist on email. Refresh-token storage — this is the fiddly part. |
-| **C3** | **Google Calendar two-way sync** | Read Google events in, write Companion blocks out, `google_event_id` as the join. Conflict rule needs deciding here. |
+| **C3** | **Google Calendar two-way sync** | Read Google events in, write Companion blocks out, `google_event_id` as the join. Both directions reaffirmed 2026-10-04 (PRD §4.3). Five things need deciding here, all listed in PRD §4.3: the conflict rule, which calendars, where goal assignment and confirmed duration live for a Google-originated event, deletes and recurrence, and when a pull happens. |
 | **C4** | **Journal → Google Doc append** | Build against the **test doc** `1sYDPE4nSE…` per PRD §4.9. Do not point at the real journal until appends are proven — doc id stays in config. |
 | **C5** | **People signals** | Cloud: Contacts + Gmail + Calendar. Local: the launchd iMessage agent — flag-based, **metadata only, never reads the `text` column**. Prereq: Carter's one-time iCloud → Google Contacts sync. |
 | **C6** | **Google Places (Dates)** | Live food search, curated `activities` table, Maps Embed. **Set the hard quota + $0 budget cap on day one, before the first call** — not after. |
@@ -238,12 +263,13 @@ The UI is finished and clickable before this starts. Nothing here changes a scre
 
 1. **Week is Monday → Sunday.** Everywhere. `date-fns` `{ weekStartsOn: 1 }`.
 2. **The calendar is the only place *time* is entered.** One sanctioned exception: a checked-off to-do increments a `count` KI (PRD §4.1a).
-3. **Two KI units only:** `hours` and `count`. `days` is `count`. Do not build `tally` or `value`.
+3. **Two KI units only:** `hours` and `count`. `days` is `count`. Do not build `tally` or `value`. *(PRD §4.0 lists "are two units enough" as `[NMT]`. The constraint stands until that is decided.)*
 4. **Palette is fixed:** white / near-black navy-biased / navy accent / one muted clay. No neon. Georgia serif **only** for devotional and journal text.
-5. **Single user.** No accounts system, no roles, no multi-tenant anything.
+5. **Single user.** No accounts system, no roles, no multi-tenant anything. *(PRD §1.5 marks this `[NMT]` as of 2026-10-04. The constraint stands until that is decided.)*
 6. **$0 budget.** Free tiers only; Google Places gets a hard quota cap that makes billing impossible.
 7. **Never edit `components/ui/`** by hand — it's shadcn-generated. Wrap, don't modify.
 8. **Message bodies are never read.** The iMessage agent selects handle + timestamp only.
+9. **No goal detail in code** (added 2026-10-04, PRD §1.6 and §4.0). Goals, plans and inputs are user data. No feature finds a goal by its icon or its title — it reads an explicit user setting.
 
 ---
 
@@ -253,10 +279,10 @@ Named here so they don't get quietly rebuilt:
 
 - **TanStack Query** — add only if Server Actions prove too slow for calendar dragging.
 - **Offline PWA / service worker** — add a manifest for "add to home screen"; skip offline until a real train ride demands it.
-- **`tally` / `value` KI units** — PRD §4.1a says no use case yet.
+- **`tally` / `value` KI units** — PRD §4.1a says no use case yet. *(Reopened as a question by PRD §4.0, 2026-10-04; still deferred until decided.)*
 - **"Count once per day" boolean** — only if inflated counts actually show up in real use.
 - **Custom goal icons** — the 7-icon lucide set ships first.
-- **Goal reordering / deletion** — Edit Goals ships with add + rename only.
+- ~~**Goal reordering / deletion**~~ — **no longer deferred** (2026-10-04). PRD §4.0 and §4.2 require both; now phase B11.
 - **Mac Contacts fallback** — only if the iCloud → Google sync proves flaky.
 
 ---
@@ -293,7 +319,23 @@ Neither blocks Phase A0 — both are answerable by the time they're needed.
 
 1. ~~**Calendar library**~~ — **RESOLVED**: FullCalendar 6.1.21. Its CSS was not
    hostile; v6 exposes CSS variables, so theming was a ~90-line remap, not a fight.
-2. **Google Calendar conflict rule** — when a block is edited in both Google and Companion, which wins? Decide in C3.
+2. **Google Calendar conflict rule** — when a block is edited in both Google and Companion, which wins? Decide in C3. *(One of five C3 questions now listed in PRD §4.3.)*
+
+**Opened 2026-10-04.** The PRD marks each `[NMT]` and spells it out in the section named. Listed here by the phase it blocks:
+
+| Decision | PRD | Blocks |
+|---|---|---|
+| What deleting a goal does to its children, blocks and to-dos | §4.0 | B11 (delete half) |
+| Where the "which goal is a date tagged to" setting lives | §4.0, §8 | B12 |
+| Layout depth — ordered list with show/hide, or a free-form grid | §4.0 | B13 |
+| Whether Scripture and Gym are optional pages | §4.0 | B13 |
+| Outreach mark — the exclusion toggle, or a separate mark | §4.4 | B14 (mark half) |
+| How a manual location is entered | §4.12 | B15 (manual half) |
+| Whether live coordinates are stored | §4.12 | B15 |
+| Whether calendar events carry a location | §4.12 | C3 (it would round-trip to Google) |
+| Sync: calendars, ownership of goal assignment, deletes and recurrence, pull timing | §4.3 | C3 |
+| Single-user or not | §1.5, §6 | C2 (allowlist vs accounts), constraint 5 |
+| User-defined habit groups, editable Nightly questions, more input units, goal history | §4.0 | No phase yet — each needs a decision before it is work |
 
 ---
 
