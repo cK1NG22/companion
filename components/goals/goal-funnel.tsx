@@ -1,7 +1,27 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { ArrowUp, Plus } from "lucide-react";
+import { useMemo, useState, useTransition } from "react";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type Announcements,
+  type DragEndEvent,
+  type UniqueIdentifier,
+} from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { ArrowUp, GripVertical, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,8 +29,13 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { GoalIcon } from "@/components/common/goal-icon";
 import { IconPicker } from "@/components/goals/icon-picker";
-import { createGoalAction, updateGoalAction } from "@/lib/actions/goals";
+import {
+  createGoalAction,
+  moveGoalAction,
+  updateGoalAction,
+} from "@/lib/actions/goals";
 import type { Goal, GoalTier, IconKey } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 /**
  * Goals → Plans → Inputs (PRD §4.2). The three tiers mean three things:
@@ -59,23 +84,125 @@ export function GoalFunnel({
               <h3 className="text-sm font-semibold">{label}</h3>
               <p className="text-xs text-muted-foreground">{caption}</p>
             </div>
-            <ul className="divide-y">
-              {goals[tier].map((goal) => (
-                <GoalRow
-                  key={goal.id}
-                  goal={goal}
-                  editing={editing}
-                  parentTitle={
-                    goal.parentId ? parentTitles[goal.parentId] : undefined
-                  }
-                />
-              ))}
-            </ul>
+            <GoalList
+              tier={tier}
+              goals={goals[tier]}
+              editing={editing}
+              parentTitles={parentTitles}
+            />
             {editing ? <AddGoalRow tier={tier} /> : null}
           </Card>
         ))}
       </div>
     </div>
+  );
+}
+
+/**
+ * One tier's rows. In edit mode each row has a handle: drag it, or focus it
+ * and use Space, the arrow keys, then Space again.
+ */
+function GoalList({
+  tier,
+  goals,
+  editing,
+  parentTitles,
+}: {
+  tier: GoalTier;
+  goals: Goal[];
+  editing: boolean;
+  parentTitles: Record<string, string>;
+}) {
+  // Only the ordering is held locally, as ids — same reasoning as Morning
+  // Review: the rows themselves always come from props, so a goal added or
+  // renamed on the server still shows up.
+  const [localOrder, setLocalOrder] = useState<string[] | null>(null);
+  const [, startTransition] = useTransition();
+
+  const order = useMemo(() => {
+    if (!localOrder) return goals;
+    const byId = new Map(goals.map((g) => [g.id, g]));
+    const moved = localOrder
+      .map((id) => byId.get(id))
+      .filter((g): g is Goal => g !== undefined);
+    // Anything added since the last reorder goes on the end.
+    const added = goals.filter((g) => !localOrder.includes(g.id));
+    return [...moved, ...added];
+  }, [goals, localOrder]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const from = order.findIndex((g) => g.id === active.id);
+    const to = order.findIndex((g) => g.id === over.id);
+    if (from < 0 || to < 0) return;
+    const next = arrayMove(order, from, to).map((g) => g.id);
+    setLocalOrder(next);
+    startTransition(async () => {
+      // Sent as "this goal now sits after that one", not as the whole list:
+      // a stale list here must not overwrite an order saved elsewhere.
+      const result = await moveGoalAction({
+        id: next[to],
+        afterId: to > 0 ? next[to - 1] : null,
+      });
+      if (!result.ok) {
+        setLocalOrder(null);
+        toast.error(result.error);
+      }
+    });
+  }
+
+  // dnd-kit's default announcements read out raw ids.
+  const titleOf = (id: UniqueIdentifier) =>
+    order.find((g) => g.id === id)?.title ?? "Item";
+  const placeOf = (id: UniqueIdentifier) =>
+    `position ${order.findIndex((g) => g.id === id) + 1} of ${order.length}`;
+  const announcements: Announcements = {
+    onDragStart: ({ active }) => `Picked up ${titleOf(active.id)}.`,
+    onDragOver: ({ active, over }) =>
+      over ? `${titleOf(active.id)} moved to ${placeOf(over.id)}.` : undefined,
+    onDragEnd: ({ active, over }) =>
+      over
+        ? `${titleOf(active.id)} dropped at ${placeOf(over.id)}.`
+        : `${titleOf(active.id)} dropped.`,
+    onDragCancel: ({ active }) =>
+      `Reorder cancelled. ${titleOf(active.id)} is back where it was.`,
+  };
+
+  return (
+    <DndContext
+      id={`goals-${tier}`}
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      modifiers={[restrictToVerticalAxis]}
+      accessibility={{ announcements }}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext
+        items={order.map((g) => g.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        <ul className="divide-y">
+          {order.map((goal) => (
+            <GoalRow
+              key={goal.id}
+              goal={goal}
+              editing={editing}
+              parentTitle={
+                goal.parentId ? parentTitles[goal.parentId] : undefined
+              }
+            />
+          ))}
+        </ul>
+      </SortableContext>
+    </DndContext>
   );
 }
 
@@ -90,6 +217,14 @@ function GoalRow({
 }) {
   const [title, setTitle] = useState(goal.title);
   const [, startTransition] = useTransition();
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: goal.id, disabled: !editing });
 
   function save(patch: { title?: string; icon?: IconKey }) {
     startTransition(async () => {
@@ -99,7 +234,29 @@ function GoalRow({
   }
 
   return (
-    <li className="flex items-start gap-2.5 px-4 py-2.5">
+    <li
+      ref={setNodeRef}
+      // Translate, not Transform: rows differ in height, and Transform would
+      // scale the dragged row to fit the slot it is passing over.
+      style={{ transform: CSS.Translate.toString(transform), transition }}
+      className={cn(
+        "flex items-start gap-2.5 bg-card px-4 py-2.5",
+        isDragging && "relative z-10 shadow-lg",
+      )}
+    >
+      {editing ? (
+        <button
+          type="button"
+          // touch-none: without it a touch drag scrolls the page instead.
+          className="mt-1.5 shrink-0 cursor-grab touch-none text-muted-foreground active:cursor-grabbing"
+          aria-label={`Reorder ${goal.title}`}
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="size-4" />
+        </button>
+      ) : null}
+
       {editing ? (
         <IconPicker value={goal.icon} onChange={(icon) => save({ icon })} />
       ) : (

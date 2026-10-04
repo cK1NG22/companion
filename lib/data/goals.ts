@@ -3,6 +3,7 @@
  */
 import type { Goal, GoalTier, IconKey, KeyIndicatorUnit } from "../types";
 import { nextId, store } from "../mock/store";
+import { moveAfter } from "../reorder";
 
 const goals = store.goals;
 
@@ -66,4 +67,29 @@ export async function updateGoal(
   const goal = goals.find((g) => g.id === id);
   if (!goal) return;
   Object.assign(goal, patch);
+}
+
+/**
+ * Move a goal to sit directly after another goal in its own tier (`null` = the
+ * top). Position in the resulting list becomes sortOrder. An unknown id, or an
+ * anchor from another tier, changes nothing.
+ */
+export async function moveGoal(
+  id: string,
+  afterId: string | null,
+): Promise<void> {
+  const goal = goals.find((g) => g.id === id);
+  if (!goal) return;
+  const inTier = goals
+    .filter((g) => g.tier === goal.tier)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+  const byId = new Map(inTier.map((g) => [g.id, g]));
+  moveAfter(
+    inTier.map((g) => g.id),
+    id,
+    afterId,
+  ).forEach((goalId, i) => {
+    const moved = byId.get(goalId);
+    if (moved) moved.sortOrder = i;
+  });
 }
