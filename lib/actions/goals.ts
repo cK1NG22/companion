@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { createGoal, updateGoal } from "@/lib/data/goals";
+import { createGoal, moveGoal, updateGoal } from "@/lib/data/goals";
 import { ICON_KEYS } from "@/lib/types";
 
 const IconEnum = z.enum(ICON_KEYS);
@@ -52,6 +52,24 @@ export async function updateGoalAction(input: unknown): Promise<ActionResult> {
   const { id, ...patch } = parsed.data;
   await updateGoal(id, patch);
   revalidatePath("/goals");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+const MoveGoalSchema = z.object({
+  id: z.string().min(1),
+  // The goal it should now sit directly after; null puts it at the top.
+  afterId: z.string().min(1).nullable(),
+});
+
+export async function moveGoalAction(input: unknown): Promise<ActionResult> {
+  const parsed = MoveGoalSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "Could not save the new order." };
+  }
+  await moveGoal(parsed.data.id, parsed.data.afterId);
+  revalidatePath("/goals");
+  // Weekly Inputs are the Home tiles, which follow the same order.
   revalidatePath("/");
   return { ok: true };
 }
