@@ -1,13 +1,14 @@
 import { PageBody, PageHeader } from "@/components/shell/page-header";
 import { PeopleList } from "@/components/people/people-list";
-import { getLastSyncedAt, getPeople } from "@/lib/data/people";
+import { getLastSyncedAt, getPeople, getTags } from "@/lib/data/people";
 
 export default async function PeoplePage() {
-  const [people, allPeople, lastSyncedAt] = await Promise.all([
+  const [people, allPeople, tags, lastSyncedAt] = await Promise.all([
     // The default list hides excluded people...
     getPeople(false),
     // ...but search reaches everyone, so someone can be toggled back on.
     getPeople(true),
+    getTags(),
     getLastSyncedAt(),
   ]);
 
@@ -21,6 +22,7 @@ export default async function PeoplePage() {
         <PeopleList
           people={people}
           allPeople={allPeople}
+          tags={tags}
           lastSyncedAt={lastSyncedAt}
         />
       </PageBody>
