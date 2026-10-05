@@ -3,12 +3,15 @@
 // only one of the two audits.
 const routes = require("./e2e/routes.json");
 
+// Same PORT override as playwright.config.ts; `next start` reads it too.
+const port = process.env.PORT ?? "3000";
+
 module.exports = {
   ci: {
     collect: {
       startServerCommand: "npm run start",
       startServerReadyPattern: "Ready in",
-      url: routes.map((r) => `http://127.0.0.1:3000${r}`),
+      url: routes.map((r) => `http://127.0.0.1:${port}${r}`),
       numberOfRuns: 1,
       settings: { preset: "desktop" },
     },
