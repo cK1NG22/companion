@@ -26,6 +26,49 @@ export function distanceMiles(a: LatLng, b: LatLng): number {
   return round(2 * EARTH_RADIUS_MILES * Math.asin(Math.min(1, Math.sqrt(h))));
 }
 
+/** The radius each list uses until the user picks one. */
+export const DEFAULT_FOOD_RADIUS_MILES = 15;
+export const DEFAULT_ACTIVITY_RADIUS_MILES = 40;
+
+/** Bounds on a radius a caller may ask for. Anything outside is rejected. */
+export const MIN_RADIUS_MILES = 1;
+export const MAX_RADIUS_MILES = 100;
+
+/** What the radius control offers. */
+export const RADIUS_OPTIONS_MILES = [2, 5, 10, 25, 50] as const;
+
+/** A real point on the globe: both numbers finite and in range. */
+export function isLatLng(point: LatLng): boolean {
+  return (
+    Number.isFinite(point.lat) &&
+    Number.isFinite(point.lng) &&
+    Math.abs(point.lat) <= 90 &&
+    Math.abs(point.lng) <= 180
+  );
+}
+
+export function isRadiusMiles(miles: number): boolean {
+  return (
+    Number.isFinite(miles) &&
+    miles >= MIN_RADIUS_MILES &&
+    miles <= MAX_RADIUS_MILES
+  );
+}
+
+/** The places within `radiusMiles` of `anchor`, each with its distance. */
+export function withinRadius<T extends LatLng>(
+  anchor: LatLng,
+  places: readonly T[],
+  radiusMiles: number,
+): (T & { distanceMiles: number })[] {
+  return places
+    .map((place) => ({
+      ...place,
+      distanceMiles: distanceMiles(anchor, { lat: place.lat, lng: place.lng }),
+    }))
+    .filter((place) => place.distanceMiles <= radiusMiles);
+}
+
 /** An Apple Maps hand-off URL — a free link, not an API call. */
 export function appleMapsUrl(name: string, coords: LatLng): string {
   const q = encodeURIComponent(name);

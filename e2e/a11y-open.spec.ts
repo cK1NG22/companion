@@ -86,6 +86,12 @@ const OPENABLE: {
     role: "listbox",
   },
   {
+    name: "radius select",
+    route: "/dates",
+    open: (p) => p.getByRole("combobox", { name: "Radius" }).click(),
+    role: "listbox",
+  },
+  {
     name: "add tag popover",
     route: "/people",
     open: (p) =>

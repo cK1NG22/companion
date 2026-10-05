@@ -5,7 +5,13 @@ import { z } from "zod";
 import { createBlock, firstWindowFitting } from "@/lib/data/calendar";
 import { endFor } from "@/lib/windows";
 import { getFunnel } from "@/lib/data/goals";
-import { rollTheDice, searchActivities, searchFood } from "@/lib/data/dates";
+import {
+  getHomeLocation,
+  rollTheDice,
+  searchActivities,
+  searchFood,
+} from "@/lib/data/dates";
+import { isLatLng, isRadiusMiles } from "@/lib/geo";
 import type { Activity, DiceRoll, FoodPlace } from "@/lib/types";
 
 const PlaceSchema = z.object({
@@ -64,9 +70,76 @@ export async function scheduleDateAction(input: unknown): Promise<DateResult> {
   };
 }
 
-const CoordsSchema = z.object({
+/**
+ * Coordinates come from the browser, so they are untrusted: finite numbers,
+ * latitude -90..90, longitude -180..180, or the request is refused.
+ */
+const CoordsSchema = z.strictObject({
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
+});
+
+/** Longest id accepted for "not this one again". Real ids are far shorter. */
+const MAX_ID_LENGTH = 100;
+
+/** A radius between MIN_RADIUS_MILES and MAX_RADIUS_MILES (lib/geo.ts). */
+const RadiusSchema = z.number().refine(isRadiusMiles);
+
+const SearchSchema = z
+  .discriminatedUnion("anchor", [
+    // Home carries no coordinates: the server reads its own stored home.
+    z.strictObject({
+      anchor: z.literal("home"),
+      radiusMiles: RadiusSchema.optional(),
+    }),
+    z.strictObject({
+      anchor: z.literal("live"),
+      lat: z.number(),
+      lng: z.number(),
+      radiusMiles: RadiusSchema.optional(),
+    }),
+  ])
+  .refine((s) => s.anchor === "home" || isLatLng(s));
+
+export type DateSearchResult =
+  | { ok: true; food: FoodPlace[]; activities: Activity[] }
+  | { ok: false; error: string };
+
+/**
+ * The proximity bar's search (PRD §4.12): both lists, measured from Home or
+ * from the device's current location, inside one radius.
+ *
+ * Live coordinates are used for this one search and then dropped. They are
+ * never written to the store, a cookie, a URL or a log — whether they may be
+ * stored at all is undecided in the PRD. So: no revalidatePath (nothing
+ * changed), and nothing here may log `input`.
+ *
+ * With no radius chosen each list keeps its own default.
+ */
+export async function searchDatesAction(
+  input: unknown,
+): Promise<DateSearchResult> {
+  const parsed = SearchSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "That location or radius could not be used." };
+  }
+  const search = parsed.data;
+  const anchor =
+    search.anchor === "live"
+      ? { lat: search.lat, lng: search.lng }
+      : await getHomeLocation();
+  const filters = { radiusMiles: search.radiusMiles };
+
+  const [food, activities] = await Promise.all([
+    searchFood(anchor, filters),
+    searchActivities(anchor, filters),
+  ]);
+  return { ok: true, food, activities };
+}
+
+const ExploreSchema = z.strictObject({
+  ...CoordsSchema.shape,
+  want: z.enum(["food", "activity"]),
 });
 
 /**
@@ -79,9 +152,7 @@ const CoordsSchema = z.object({
 export async function exploreNearAction(
   input: unknown,
 ): Promise<{ food: FoodPlace[] } | { activities: Activity[] } | null> {
-  const parsed = CoordsSchema.extend({
-    want: z.enum(["food", "activity"]),
-  }).safeParse(input);
+  const parsed = ExploreSchema.safeParse(input);
   if (!parsed.success) return null;
 
   const { lat, lng, want } = parsed.data;
@@ -90,9 +161,11 @@ export async function exploreNearAction(
     : { activities: await searchActivities({ lat, lng }, { radiusMiles: 25 }) };
 }
 
-const RollSchema = CoordsSchema.extend({
-  excludePlaceId: z.string().optional(),
-  excludeActivityId: z.string().optional(),
+// Strict like the search: a key the screen does not send is a refusal.
+const RollSchema = z.strictObject({
+  ...CoordsSchema.shape,
+  excludePlaceId: z.string().max(MAX_ID_LENGTH).optional(),
+  excludeActivityId: z.string().max(MAX_ID_LENGTH).optional(),
 });
 
 /** Dice Roll, server-side so it uses the real novelty filter (PRD §4.12). */
