@@ -30,15 +30,19 @@ const ICONS: Record<IconKey, LucideIcon> = {
   target: Target,
 };
 
+/**
+ * Each label names the picture, never a meaning. Goals are the user's own, so
+ * no icon stands for a life area (PRD §4.0): "Heart", not "Family".
+ */
 export const ICON_LABELS: Record<IconKey, string> = {
-  book: "Scripture / study",
-  dumbbell: "Health",
-  laptop: "Deep work",
-  phone: "Outreach",
-  heart: "Family",
+  book: "Book",
+  dumbbell: "Dumbbell",
+  laptop: "Laptop",
+  phone: "Phone",
+  heart: "Heart",
   temple: "Temple",
-  moon: "Review",
-  target: "Goal",
+  moon: "Moon",
+  target: "Target",
 };
 
 export function GoalIcon({
