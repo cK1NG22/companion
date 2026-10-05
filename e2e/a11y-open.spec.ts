@@ -91,6 +91,16 @@ const OPENABLE: {
     open: (p) => p.getByRole("combobox", { name: "Radius" }).click(),
     role: "listbox",
   },
+  {
+    name: "add tag popover",
+    route: "/people",
+    open: (p) =>
+      p
+        .getByRole("button", { name: /^Add tag to / })
+        .first()
+        .click(),
+    role: "dialog",
+  },
 ];
 
 for (const theme of THEMES) {

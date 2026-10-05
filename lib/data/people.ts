@@ -6,9 +6,10 @@
  * iMessage scan itself so their handles are never queried.
  */
 import { subDays } from "date-fns";
-import type { Person } from "../types";
+import type { Person, Tag } from "../types";
 import { MOCK_PEOPLE, OVERDUE_AFTER_DAYS } from "../mock/people";
-import { store } from "../mock/store";
+import { nextId, store } from "../mock/store";
+import { findTagByName, normalizeTagName } from "../tags";
 
 const excluded = store.excludedPeople;
 
@@ -53,6 +54,68 @@ export async function setPersonExcluded(
 ): Promise<void> {
   if (value) excluded.add(id);
   else excluded.delete(id);
+}
+
+/** Every tag, in sort order. Tags are user data — none are assumed to exist. */
+export async function getTags(): Promise<Tag[]> {
+  return [...store.tags].sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+const personExists = (id: string) => MOCK_PEOPLE.some((p) => p.id === id);
+
+/** Finds the tag with this name, ignoring case, or makes it. */
+function findOrCreateTag(name: string): Tag {
+  const existing = findTagByName(store.tags, name);
+  if (existing) return existing;
+  const tag: Tag = {
+    id: nextId("t"),
+    name,
+    sortOrder: Math.max(-1, ...store.tags.map((t) => t.sortOrder)) + 1,
+  };
+  store.tags = [...store.tags, tag];
+  return tag;
+}
+
+/** @returns false when the person or the tag does not exist. */
+export async function addTagToPerson(
+  personId: string,
+  tagId: string,
+): Promise<boolean> {
+  if (!personExists(personId)) return false;
+  if (!store.tags.some((t) => t.id === tagId)) return false;
+  const current = store.personTags[personId] ?? [];
+  if (current.includes(tagId)) return true;
+  store.personTags = { ...store.personTags, [personId]: [...current, tagId] };
+  return true;
+}
+
+/**
+ * Adds a tag by name, reusing one that differs only by case and creating it
+ * otherwise. Nothing is created when the person is unknown or the name is
+ * empty or too long once normalised.
+ *
+ * @returns false in either of those cases.
+ */
+export async function addNamedTagToPerson(
+  personId: string,
+  rawName: string,
+): Promise<boolean> {
+  const name = normalizeTagName(rawName);
+  if (name === null || !personExists(personId)) return false;
+  return addTagToPerson(personId, findOrCreateTag(name).id);
+}
+
+/** Takes the tag off the person. The tag itself stays, for other people. */
+export async function removeTagFromPerson(
+  personId: string,
+  tagId: string,
+): Promise<void> {
+  const current = store.personTags[personId];
+  if (!current?.includes(tagId)) return;
+  store.personTags = {
+    ...store.personTags,
+    [personId]: current.filter((id) => id !== tagId),
+  };
 }
 
 export async function getLastSyncedAt(): Promise<string> {
