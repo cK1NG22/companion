@@ -17,15 +17,18 @@ import type {
   ExerciseSet,
   FeedbackItem,
   Goal,
+  HomeLocation,
   MorningSection,
   NightlyEntry,
   Reading,
   ScriptureNote,
+  Tag,
   Todo,
 } from "../types";
 import { MOCK_BLOCKS } from "./calendar";
+import { MOCK_HOME } from "./dates";
 import { MOCK_EXERCISES, MOCK_SETS } from "./gym";
-import { MOCK_PEOPLE } from "./people";
+import { MOCK_PEOPLE, MOCK_PERSON_TAGS, MOCK_TAGS } from "./people";
 import {
   MOCK_GOALS,
   MOCK_HABIT_CHECKS,
@@ -59,6 +62,11 @@ export interface MockStore {
   readings: Reading[];
   /** Ids of people left out of the list and the iMessage scan. */
   excludedPeople: Set<string>;
+  tags: Tag[];
+  /** personId → tag ids. */
+  personTags: Record<string, string[]>;
+  /** The anchor the Date planner measures distance from. */
+  home: HomeLocation;
   /** When the on-demand Mac agent last ran. Drives the "synced 2h ago" label. */
   lastSyncedAt: string;
   feedback: FeedbackItem[];
@@ -81,6 +89,9 @@ export const store: MockStore = {
   excludedPeople: new Set(
     MOCK_PEOPLE.filter((p) => p.excluded).map((p) => p.id),
   ),
+  tags: structuredClone(MOCK_TAGS),
+  personTags: structuredClone(MOCK_PERSON_TAGS),
+  home: structuredClone(MOCK_HOME),
   lastSyncedAt: new Date().toISOString(),
   feedback: [],
 };
